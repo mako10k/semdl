@@ -115,6 +115,15 @@ step S8A:
     annotation rationale:
       "SEMDL 自体と query layer の grammar を先に整えるほうが、仕様の焦点として自然であるため"
 
+step S8B:
+  decision D8B based_on D8A:
+    |
+      `.ssd` / `.ssm` の primary grammar artifact は docs/ssd.ebnf に、
+      `.ssq` の primary grammar artifact は docs/ssq.ebnf に置く。
+      ただし `.ssq` は initial minimal profile から始め、full query language の完成版を直ちに要求しない。
+    annotation rationale:
+      "priority shift を concrete artifact に落としつつ、sample 不足の `.ssq` で過剰設計しないため"
+
 step S9:
   decision D9 based_on D7:
     |
