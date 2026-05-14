@@ -92,6 +92,45 @@
       "notes": "annotate subcommand help should be command-specific"
     },
     {
+      "id": "remove-help",
+      "command": "ssd remove --help",
+      "argv": ["ssd", "remove", "--help"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-help.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "remove subcommand help should be command-specific"
+    },
+    {
+      "id": "split-help",
+      "command": "ssd split --help",
+      "argv": ["ssd", "split", "--help"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/split-help.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "split subcommand help should be command-specific"
+    },
+    {
+      "id": "merge-help",
+      "command": "ssd merge --help",
+      "argv": ["ssd", "merge", "--help"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-help.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "merge subcommand help should be command-specific"
+    },
+    {
       "id": "check-minimal",
       "command": "ssd check docs/examples/minimal.ssd",
       "argv": ["ssd", "check", "docs/examples/minimal.ssd"],

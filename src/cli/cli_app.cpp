@@ -240,6 +240,48 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd annotate id:H1 rationale 原文に主語がないため補完 --target sidecar --dry-run docs/examples/minimal.ssd`\n";
     }
 
+    if (target == "remove") {
+        return "SEMDL Help Topic: reference remove\n\n"
+               "Usage:\n"
+               "- `ssd remove <selector> <file>`\n"
+               "- `ssd remove type:<kind> --allow-multi <file>`\n\n"
+               "Purpose:\n"
+               "- Check selector resolution and removal safety for one target.\n"
+               "- In the current slice, failure diagnostics are fixed before apply behavior.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help recipes wrong-layer`\n\n"
+               "Sample:\n"
+               "- `ssd remove type:alternative docs/examples/minimal.ssd`\n";
+    }
+
+    if (target == "split") {
+        return "SEMDL Help Topic: reference split\n\n"
+               "Usage:\n"
+               "- `ssd split <input.ssd> --dry-run`\n\n"
+               "Purpose:\n"
+               "- Preview an inline-to-sidecar separation while preserving meaning.\n"
+               "- In the current slice, apply behavior is not implemented yet.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help samples`\n\n"
+               "Sample:\n"
+               "- `ssd split docs/examples/minimal.inline.ssd --dry-run`\n";
+    }
+
+    if (target == "merge") {
+        return "SEMDL Help Topic: reference merge\n\n"
+               "Usage:\n"
+               "- `ssd merge <input.ssd> --stdout`\n\n"
+               "Purpose:\n"
+               "- Produce the merged inline view of `.ssd` plus paired `.ssm`.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help samples`\n\n"
+               "Sample:\n"
+               "- `ssd merge docs/examples/minimal.ssd --stdout`\n";
+    }
+
     return "SEMDL Help Topic: reference\n\n"
            "Known subcommands:\n"
            "- check\n"
