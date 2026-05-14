@@ -66,6 +66,19 @@
       "notes": "unknown long option is rejected during option parsing"
     },
     {
+      "id": "check-trailing-unknown-option-long",
+      "command": "ssd check docs/examples/minimal.ssd --strict",
+      "argv": ["ssd", "check", "docs/examples/minimal.ssd", "--strict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/check-trailing-unknown-option.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "unknown trailing option is rejected instead of being ignored"
+    },
+    {
       "id": "annotate-unterminated-quoted-string",
       "command": "ssd annotate id:H1 rationale \"未完 docs/examples/minimal.ssd",
       "argv": ["ssd", "annotate", "id:H1", "rationale", "\"未完", "docs/examples/minimal.ssd"],

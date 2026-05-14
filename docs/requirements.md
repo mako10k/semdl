@@ -667,6 +667,7 @@ test runner 定義:
 - [docs/examples/golden/annotate-invalid-kind.error.stderr](docs/examples/golden/annotate-invalid-kind.error.stderr)
 - [docs/examples/golden/set-malformed-selector.error.stderr](docs/examples/golden/set-malformed-selector.error.stderr)
 - [docs/examples/golden/check-unknown-option.error.stderr](docs/examples/golden/check-unknown-option.error.stderr)
+- [docs/examples/golden/check-trailing-unknown-option.error.stderr](docs/examples/golden/check-trailing-unknown-option.error.stderr)
 - [docs/examples/golden/annotate-unterminated-quoted-string.error.stderr](docs/examples/golden/annotate-unterminated-quoted-string.error.stderr)
 - [docs/examples/golden/set-id-missing-target.error.stderr](docs/examples/golden/set-id-missing-target.error.stderr)
 - [docs/examples/golden/set-path-wrong-layer.error.stderr](docs/examples/golden/set-path-wrong-layer.error.stderr)
@@ -715,6 +716,9 @@ test runner 定義:
 - `ssd check --strict docs/examples/minimal.ssd`
   - 未定義オプションのため option parsing 段階で失敗する
   - 期待 stderr は [docs/examples/golden/check-unknown-option.error.stderr](docs/examples/golden/check-unknown-option.error.stderr) と一致する
+- `ssd check docs/examples/minimal.ssd --strict`
+  - trailing にある未定義オプションも無視せず option parsing 段階で失敗する
+  - 期待 stderr は [docs/examples/golden/check-trailing-unknown-option.error.stderr](docs/examples/golden/check-trailing-unknown-option.error.stderr) と一致する
 - `ssd annotate id:H1 rationale "未完 docs/examples/minimal.ssd`
   - quoted string が閉じていないため字句段階で失敗する
   - 期待 stderr は [docs/examples/golden/annotate-unterminated-quoted-string.error.stderr](docs/examples/golden/annotate-unterminated-quoted-string.error.stderr) と一致する

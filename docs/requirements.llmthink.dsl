@@ -118,7 +118,7 @@ step S12:
   decision D12 based_on D8, D10:
     |
       EBNF に対応する初期 parser / lexer failure cases として、
-      malformed selector、unknown option、unterminated quoted string を golden 化する。
+      malformed selector、leading / trailing unknown option、unterminated quoted string を golden 化する。
       これらは command 表示とは別に argv ベースで実行条件を固定する。
     annotation rationale:
       "字句境界と option parsing の回帰は成功系だけでは検出しづらく、EBNF に直結した失敗系が必要である"
