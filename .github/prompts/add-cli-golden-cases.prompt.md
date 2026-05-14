@@ -1,5 +1,5 @@
 ---
-description: "Add SEMDL CLI golden cases and manifests. Use when defining new success or failure cases for selectors, parser behavior, runner behavior, or CLI output."
+description: "Add SEMDL CLI golden cases and manifests. Use when defining success or failure regressions for selectors, parser behavior, runner behavior, argv cases, stdout/stderr output, or CLI edge cases."
 name: "Add CLI Golden Cases"
 argument-hint: "Describe the CLI behavior or edge case to capture"
 agent: "agent"

@@ -844,6 +844,7 @@ SEMDL のアーキテクチャ判断は ADR で固定することを推奨する
 
 - 運用ルールは [docs/adr/README.md](docs/adr/README.md) に置く
 - 初期 ADR は [docs/adr/0001-use-architecture-decision-records.md](docs/adr/0001-use-architecture-decision-records.md) とする
+- 実装層分離の初期 ADR は [docs/adr/0002-separate-library-cli-and-runner.md](docs/adr/0002-separate-library-cli-and-runner.md) とする
 
 少なくとも以下は ADR 対象とする。
 
@@ -852,6 +853,22 @@ SEMDL のアーキテクチャ判断は ADR で固定することを推奨する
 - selector 解決規則の変更
 - test runner 契約の変更
 - ライブラリ層と CLI 層の責務変更
+
+## 9.2 実装レイヤの初期分離
+
+実装フェーズへ入る前提として、少なくとも以下の 3 層を分離することを推奨する。
+
+- core library
+  - .ssd / .ssm の parse、validate、resolve、merge view を担当する
+  - CLI 引数解釈や golden 比較には依存しない
+- ssd CLI
+  - 引数解釈、入出力、exit code、エラー整形、ファイル更新を担当する
+  - 文書意味解釈そのものは core library に委譲する
+- test runner
+  - manifest 読み込み、argv 実行、stdout / stderr / exit code 比較を担当する
+  - CLI の外側に位置し、core library API に直接依存しない
+
+初期分離の判断理由と境界は [docs/adr/0002-separate-library-cli-and-runner.md](docs/adr/0002-separate-library-cli-and-runner.md) を正とする。
 
 ## 9.1 埋め込み生成
 

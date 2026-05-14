@@ -1,6 +1,6 @@
 ---
 name: semdl-spec-change
-description: 'Plan or execute a SEMDL specification change. Use for coordinated updates across requirements, ADRs, CLI grammar, manifests, and golden files.'
+description: 'Plan or execute a SEMDL specification change. Use for coordinated, test-first updates across requirements, ADRs, CLI grammar, manifests, golden files, and implementation-boundary decisions.'
 argument-hint: 'Describe the SEMDL spec change'
 ---
 # SEMDL Spec Change Workflow

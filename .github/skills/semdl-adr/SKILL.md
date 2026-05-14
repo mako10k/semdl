@@ -1,6 +1,6 @@
 ---
 name: semdl-adr
-description: 'Create or update SEMDL ADRs. Use for architecture-impacting changes such as format boundaries, CLI contracts, selector rules, runner contracts, or layer responsibility changes.'
+description: 'Create or update SEMDL ADRs and architecture decision records. Use for architecture-impacting changes such as format boundaries, CLI contracts, selector rules, runner contracts, implementation layering, or layer responsibility changes.'
 argument-hint: 'Describe the architecture decision to record'
 ---
 # SEMDL ADR Workflow

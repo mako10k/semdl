@@ -153,3 +153,26 @@ step S15:
       これにより selector の解決対象と層境界も golden 化する。
     annotation rationale:
       "selector は構文だけ合っていても誤った層に向けると破綻するため、解決境界の failure cases が必要である"
+
+problem P5:
+  "implementation フェーズへ入る前に、core library、ssd CLI、test runner の責務をどう分離するか"
+  annotation rationale:
+    "実装着手前に層境界を固定しないと、CLI 引数処理、文書意味解釈、golden 比較が癒着しやすい"
+
+step S16:
+  decision D16 based_on P5, D14:
+    |
+      初期実装では core library、ssd CLI、test runner を分離する。
+      core library は parse、validate、resolve、merge view を担当し、
+      ssd CLI は引数解釈と入出力とファイル更新を担当し、
+      test runner は manifest 読み込みと argv 実行と golden 比較を担当する。
+    annotation rationale:
+      "意味解釈、CLI 契約、テスト実行契約を分離すると、将来の組み込み利用と回帰テスト維持がしやすい"
+
+step S17:
+  decision D17 based_on D16:
+    |
+      test runner は CLI の外側に位置し、初期段階では core library API に直接依存しない。
+      期待動作の正本は CLI 契約と golden assets に置き、ライブラリ内部 API を runner 契約へ露出しない。
+    annotation rationale:
+      "runner が library へ直接結合すると、CLI 公開契約と golden 回帰の境界が崩れやすい"

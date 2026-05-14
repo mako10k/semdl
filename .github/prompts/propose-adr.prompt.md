@@ -1,5 +1,5 @@
 ---
-description: "Propose an ADR for a SEMDL architecture change. Use when format boundaries, CLI contracts, selector rules, runner contracts, or layer responsibilities may change."
+description: "Propose an ADR or architecture decision record for a SEMDL architecture change. Use when format boundaries, CLI contracts, selector rules, runner contracts, implementation layering, or layer responsibilities may change."
 name: "Propose ADR"
 argument-hint: "Describe the architecture change or decision to evaluate"
 agent: "agent"

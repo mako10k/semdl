@@ -1,5 +1,5 @@
 ---
-description: "Plan a SEMDL specification change across requirements, ADRs, EBNF, manifests, and golden files. Use when changing CLI behavior, selectors, sidecar semantics, or runner behavior."
+description: "Plan a SEMDL specification change across requirements, ADRs, EBNF, manifests, and golden files. Use for test-first planning when changing CLI behavior, selectors, sidecar semantics, runner behavior, or implementation boundaries."
 name: "Plan SEMDL Spec Change"
 argument-hint: "Describe the spec change to plan"
 agent: "agent"

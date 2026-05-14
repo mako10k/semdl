@@ -1,5 +1,5 @@
 ---
-description: "Review a proposed or completed SEMDL change for requirement fit, architecture consistency, complexity, symmetry, and missing coverage."
+description: "Review a proposed or completed SEMDL change for requirement fit, architecture consistency, stopgap design, unnecessary compatibility, complexity, symmetry, and missing coverage."
 name: "Review SEMDL Change"
 argument-hint: "Describe the change or list the files to review"
 agent: "semantics-code-reviewer"

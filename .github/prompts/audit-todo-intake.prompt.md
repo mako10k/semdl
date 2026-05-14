@@ -1,5 +1,5 @@
 ---
-description: "Audit a user request or draft ToDo list for ambiguity, hidden assumptions, shallow task breakdowns, or missing clarification."
+description: "Audit a user request or draft ToDo list for ambiguity, hidden assumptions, shallow task breakdowns, weak goal fit, or missing user clarification."
 name: "Audit ToDo Intake"
 argument-hint: "Paste the user request and current ToDo or plan"
 agent: "todo-intake-auditor"

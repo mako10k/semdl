@@ -1,6 +1,6 @@
 ---
 name: semdl-golden-tests
-description: 'Add or revise SEMDL golden tests. Use for CLI success cases, failure cases, manifest updates, selector boundary cases, and runner-facing expected outputs.'
+description: 'Add or revise SEMDL golden tests. Use for CLI success cases, failure cases, manifest updates, selector boundary cases, argv-based runner cases, and exact stdout or stderr expectations.'
 argument-hint: 'Describe the behavior or edge case to capture'
 ---
 # SEMDL Golden Test Workflow
