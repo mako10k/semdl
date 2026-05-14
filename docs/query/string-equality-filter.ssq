@@ -1,0 +1,6 @@
+# String equality-based .ssq example for grammar anchoring
+query {
+  select: assertion
+  where: provenance_kind = "extracted"
+  return: matches
+}

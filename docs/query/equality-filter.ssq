@@ -1,0 +1,6 @@
+# Equality-based .ssq example for grammar anchoring
+query {
+  select: assertion
+  where: source_presence = true
+  return: matches
+}

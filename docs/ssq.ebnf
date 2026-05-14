@@ -14,7 +14,11 @@ similar-entry       = "similar", colon, [ ws ], selector-ref, line-end ;
 return-entry        = "return", colon, [ ws ], result-mode, line-end ;
 
 selector-ref        = identifier | quoted-string ;
-filter-expr         = quoted-string ;
+filter-expr         = presence-filter | equality-filter ;
+presence-filter     = field-ref ;
+equality-filter     = field-ref, [ ws ], "=", [ ws ], filter-value ;
+field-ref           = identifier ;
+filter-value        = quoted-string | number | boolean ;
 result-mode         = "matches" | "subgraph" ;
 
 block-open          = "{" ;
@@ -28,6 +32,8 @@ comment-line        = { " " | "\t" }, "#", { character - newline }, line-end ;
 newline             = "\n" | "\r\n" ;
 identifier          = alpha, { alpha | digit | "_" | "-" } ;
 quoted-string       = '"', { character - '"' }, '"' ;
+number              = [ "-" ], digit, { digit }, [ ".", digit, { digit } ] ;
+boolean             = "true" | "false" ;
 alpha               = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
                     | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
                     | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"

@@ -1,6 +1,6 @@
 # Initial .ssq example for grammar anchoring
 query {
   select: assertion
-  where: "source_presence"
+  where: source_presence
   return: matches
 }

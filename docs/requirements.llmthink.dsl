@@ -124,6 +124,15 @@ step S8B:
     annotation rationale:
       "priority shift を concrete artifact に落としつつ、sample 不足の `.ssq` で過剰設計しないため"
 
+step S8C:
+  decision D8C based_on D8B:
+    |
+      `.ssq` の initial minimal filter profile は、presence check と scalar equality check に限定する。
+      `where` は sample-backed な最小構文のみを formalize し、scalar equality の右辺は quoted string、number、boolean に限定する。
+      range 条件、論理結合、関数呼び出しは後続 slice に分離する。
+    annotation rationale:
+      "filter slot の存在だけを先に置くと中身が空洞化する一方、豊富な条件構文を先回りで固定すると sample 不足の段階では過剰設計になるため"
+
 step S9:
   decision D9 based_on D7:
     |

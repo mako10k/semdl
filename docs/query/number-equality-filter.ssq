@@ -1,0 +1,6 @@
+# Number equality-based .ssq example for grammar anchoring
+query {
+  select: assertion
+  where: confidence = 1
+  return: matches
+}
