@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(semdl_core STATIC
     src/core/document_store.cpp
+    src/core/semantic_model.cpp
 )
 
 target_include_directories(semdl_core
@@ -27,6 +28,8 @@ target_link_libraries(ssd PRIVATE semdl_core)
 add_executable(semdl_runner
     src/runner/main.cpp
     src/runner/discovery.cpp
+    src/runner/manifest.cpp
+    src/runner/executor.cpp
 )
 
 target_include_directories(semdl_runner
