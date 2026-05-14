@@ -87,3 +87,21 @@ step S8:
       サブコマンド、selector、共通オプション、字句境界は docs/cli.ebnf に集約する。
     annotation rationale:
       "selector やオプション順序の曖昧さを減らし、将来の parser 実装とテストケース生成の基準にできる"
+
+step S9:
+  decision D9 based_on D7:
+    |
+      CLI の受け入れ例と golden test は、runner が機械収集できる JSON manifest 形式で保持する。
+      case ごとに command、expected_exit、expected_stdout、expected_stderr を固定し、
+      成功系と失敗系を同じ構造で扱う。
+    annotation rationale:
+      "runner 入力形式を先に固定すると、テスト実装が docs 依存で自動収集しやすくなる"
+
+step S10:
+  decision D10 based_on D9, D6:
+    |
+      初期 failure cases として、複数対象 selector の既定失敗、
+      参照中構造要素の remove 失敗、未定義 annotation kind の parse 失敗を golden 化する。
+      失敗系は stderr golden と expected_exit を必須にする。
+    annotation rationale:
+      "成功系だけでなく失敗系を早めに固定すると、安全制約とエラーメッセージ方針の回帰を防ぎやすい"

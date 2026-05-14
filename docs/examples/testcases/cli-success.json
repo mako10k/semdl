@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "id": "check-minimal",
+      "command": "ssd check docs/examples/minimal.ssd",
+      "cwd": ".",
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/check-minimal.stdout",
+      "expected_stderr": "",
+      "notes": "sidecar auto-discovery succeeds"
+    },
+    {
+      "id": "explain-A1",
+      "command": "ssd explain A1 docs/examples/minimal.ssd",
+      "cwd": ".",
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/explain-A1.stdout",
+      "expected_stderr": "",
+      "notes": "merged assertion view"
+    },
+    {
+      "id": "set-path-A1-label-dryrun",
+      "command": "ssd set path:A1.label \"売上報告書\" --dry-run docs/examples/minimal.ssd",
+      "cwd": ".",
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-path-A1-label.dryrun.stdout",
+      "expected_stderr": "",
+      "notes": "inline field update preview"
+    },
+    {
+      "id": "set-meta-A1-confidence-dryrun",
+      "command": "ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd",
+      "cwd": ".",
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-meta-A1-confidence.dryrun.stdout",
+      "expected_stderr": "",
+      "notes": "sidecar metadata update preview"
+    },
+    {
+      "id": "annotate-H1-rationale-dryrun",
+      "command": "ssd annotate id:H1 rationale \"原文に主語がないため補完\" --target sidecar --dry-run docs/examples/minimal.ssd",
+      "cwd": ".",
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-H1-rationale.dryrun.stdout",
+      "expected_stderr": "",
+      "notes": "sidecar annotation preview"
+    },
+    {
+      "id": "split-minimal-dryrun",
+      "command": "ssd split docs/examples/minimal.inline.ssd --dry-run",
+      "cwd": ".",
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/split-minimal.dryrun.stdout",
+      "expected_stderr": "",
+      "notes": "inline-to-sidecar split preview"
+    },
+    {
+      "id": "merge-minimal-stdout",
+      "command": "ssd merge docs/examples/minimal.ssd --stdout",
+      "cwd": ".",
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/minimal.inline.ssd",
+      "expected_stderr": "",
+      "notes": "sidecar merge output"
+    }
+  ]
+}

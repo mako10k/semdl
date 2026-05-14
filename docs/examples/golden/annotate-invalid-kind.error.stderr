@@ -1,0 +1,9 @@
+ERROR invalid_annotation_kind
+command: ssd annotate id:H1 note "補足" docs/examples/minimal.ssd
+annotation_kind: note
+allowed:
+  - rationale
+  - caveat
+  - todo
+  - status
+  - explanation

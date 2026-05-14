@@ -648,6 +648,12 @@ SEMDL の CLI 仕様は、実装より先に受け入れ例を固定するテス
 - [docs/examples/minimal.ssm](docs/examples/minimal.ssm)
 - [docs/examples/minimal.inline.ssd](docs/examples/minimal.inline.ssd)
 
+test runner 定義:
+
+- [docs/test-runner-format.md](docs/test-runner-format.md)
+- [docs/examples/testcases/cli-success.json](docs/examples/testcases/cli-success.json)
+- [docs/examples/testcases/cli-failure.json](docs/examples/testcases/cli-failure.json)
+
 期待出力ファイル:
 
 - [docs/examples/golden/check-minimal.stdout](docs/examples/golden/check-minimal.stdout)
@@ -656,6 +662,9 @@ SEMDL の CLI 仕様は、実装より先に受け入れ例を固定するテス
 - [docs/examples/golden/set-meta-A1-confidence.dryrun.stdout](docs/examples/golden/set-meta-A1-confidence.dryrun.stdout)
 - [docs/examples/golden/annotate-H1-rationale.dryrun.stdout](docs/examples/golden/annotate-H1-rationale.dryrun.stdout)
 - [docs/examples/golden/split-minimal.dryrun.stdout](docs/examples/golden/split-minimal.dryrun.stdout)
+- [docs/examples/golden/remove-type-alternative.error.stderr](docs/examples/golden/remove-type-alternative.error.stderr)
+- [docs/examples/golden/remove-id-A1.error.stderr](docs/examples/golden/remove-id-A1.error.stderr)
+- [docs/examples/golden/annotate-invalid-kind.error.stderr](docs/examples/golden/annotate-invalid-kind.error.stderr)
 
 受け入れ例:
 
@@ -683,23 +692,44 @@ SEMDL の CLI 仕様は、実装より先に受け入れ例を固定するテス
 
 これらの例は説明用サンプルではなく、仕様の期待動作を固定するための最小受け入れケースとして扱う。
 
-## 8.12 CLI 引数仕様の EBNF
+失敗系ケースも同様に固定することを推奨する。
 
-初期 CLI 引数仕様は、曖昧な自然言語だけでなく、形式文法でも固定することを推奨する。
+- `ssd remove type:alternative docs/examples/minimal.ssd`
+  - 複数対象に一致するため既定で失敗する
+  - 期待 stderr は [docs/examples/golden/remove-type-alternative.error.stderr](docs/examples/golden/remove-type-alternative.error.stderr) と一致する
+- `ssd remove id:A1 docs/examples/minimal.ssd`
+  - 参照されている構造要素のため既定で失敗する
+  - 期待 stderr は [docs/examples/golden/remove-id-A1.error.stderr](docs/examples/golden/remove-id-A1.error.stderr) と一致する
+- `ssd annotate id:H1 note "補足" docs/examples/minimal.ssd`
+  - 未定義 annotation kind のため失敗する
+  - 期待 stderr は [docs/examples/golden/annotate-invalid-kind.error.stderr](docs/examples/golden/annotate-invalid-kind.error.stderr) と一致する
 
-正式な初期文法は [docs/cli.ebnf](docs/cli.ebnf) に置く。
+成功系と失敗系の両方は、runner から収集可能な manifest 形式で保持する。
 
-この EBNF は少なくとも以下を固定する。
+## 8.11 test runner 入力形式
 
-- サブコマンド一覧
-- add / set / remove / annotate の引数順序
-- selector の構文
-- 共通オプションの構文
-- quoted string、number、boolean、identifier の字句境界
+CLI の受け入れ例と golden test は、runner が機械的に収集できる manifest 形式で保持することを推奨する。
 
-CLI の breaking change を行う場合は、受け入れ例だけでなく [docs/cli.ebnf](docs/cli.ebnf) も同一変更で更新すること。
+初期形式は [docs/test-runner-format.md](docs/test-runner-format.md) で定義する。
 
-## 8.11 selector とサンプルの対応
+初期 manifest は次の 2 つを持つ。
+
+- [docs/examples/testcases/cli-success.json](docs/examples/testcases/cli-success.json)
+- [docs/examples/testcases/cli-failure.json](docs/examples/testcases/cli-failure.json)
+
+各 case は少なくとも以下を持つこと。
+
+- id
+- command
+- cwd
+- expected_exit
+- expected_stdout
+- expected_stderr
+- notes
+
+成功系と失敗系は同一構造で表し、expected_exit と stdout / stderr golden の組み合わせで区別する。
+
+## 8.12 selector とサンプルの対応
 
 [docs/examples/minimal.ssd](docs/examples/minimal.ssd) と [docs/examples/minimal.ssm](docs/examples/minimal.ssm) には、少なくとも以下の selector 対応が存在することを推奨する。
 
@@ -717,6 +747,23 @@ CLI の breaking change を行う場合は、受け入れ例だけでなく [doc
   - .ssm にある埋め込みメタデータ
 - `doc:self`
   - 文書自体
+
+## 8.13 CLI 引数仕様の EBNF
+
+初期 CLI 引数仕様は、曖昧な自然言語だけでなく、形式文法でも固定することを推奨する。
+
+正式な初期文法は [docs/cli.ebnf](docs/cli.ebnf) に置く。
+
+この EBNF は少なくとも以下を固定する。
+
+- サブコマンド一覧
+- add / set / remove / annotate の引数順序
+- selector の構文
+- 共通オプションの構文
+- quoted string、number、boolean、identifier の字句境界
+- `--allow-multi` のような更新系安全オプション
+
+CLI の breaking change を行う場合は、受け入れ例だけでなく [docs/cli.ebnf](docs/cli.ebnf) も同一変更で更新すること。
 
 check は少なくとも以下を検証できること。
 
