@@ -40,6 +40,19 @@
       "notes": "topic help isolates grammar guidance"
     },
     {
+      "id": "help-troubleshooting",
+      "command": "ssd help troubleshooting",
+      "argv": ["ssd", "help", "troubleshooting"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/help-troubleshooting.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "troubleshooting should route within help surfaces instead of repository documents"
+    },
+    {
       "id": "help-root-semdl",
       "command": "ssd help --format semdl",
       "argv": ["ssd", "help", "--format", "semdl"],

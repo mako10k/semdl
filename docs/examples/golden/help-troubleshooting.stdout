@@ -1,0 +1,8 @@
+SEMDL Help Topic: troubleshooting
+
+- Use `ssd help grammar` for option order, selector syntax, value forms, and common option roles.
+- Use `ssd help reference <subcommand>` for canonical command-specific usage.
+- Use `ssd help recipes wrong-layer` for path/meta layer mistakes.
+- Use `ssd help recipes explain-not-found` when `ssd explain` cannot resolve an id.
+- Use `--format semdl` when another tool needs structured help output.
+- Report problems with command, argv, inputs, expected output, actual output, and the help topic or subcommand help you used.

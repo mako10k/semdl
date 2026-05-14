@@ -7,11 +7,24 @@ SEMDL Help Topic: grammar
 - Global help alias: `ssd --help [--format semdl]`
 - Subcommand help alias: `ssd <subcommand> --help [--format semdl]`
 
+Topic targeting:
+- `overview`, `toc`, `grammar`, `samples`, and `troubleshooting` do not accept a trailing target
+- `reference` accepts a `<subcommand>` target
+- `recipes` accepts a `<topic>` target
+
 Key syntax forms:
 - `ssd check <file>`
+- `ssd search <query.ssq> <file>...`
+- `ssd extract --out <output.ssd> <input>...`
+- `ssd similarity <target-ref> <target-ref>`
 - `ssd explain <id> <file>`
+- `ssd add <kind> <file> [field=value ...]`
 - `ssd set <selector> <value-or-field> ... <file>`
+- `ssd remove <selector> <file>`
 - `ssd annotate <selector> <kind> <text> ... <file>`
+- `ssd split <input.ssd> [common options]`
+- `ssd merge <input.ssd> [common options]`
+- `ssd normalize <input.ssd> [common options]`
 - `ssd help grammar --format semdl`
 
 Selectors:
@@ -20,7 +33,19 @@ Selectors:
 - `path:<id>.<field>`
 - `meta:<id>.<field>`
 - `doc:self`
+- Use `path:` for inline `.ssd` structure and `meta:` for sidecar `.ssm` metadata
 
-For the formal grammar, see `docs/cli.ebnf`.
+Value forms:
+- text with spaces should be passed as a quoted string
+- update-oriented scalar values accept quoted-string, number, boolean, or identifier forms
+
+Common options:
+- `--dry-run` previews update-oriented commands
+- `--out <file>`, `--stdout`, and `--format inline|sidecar` choose emitted output destinations or profile when the command supports them
+- `--target inline|sidecar|auto` controls update destination selection
+- `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms
+
+This topic is the canonical user-facing operational syntax summary.
+Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details.
 Use `--format semdl` for line-preserving SEMDL help output.
 For command-specific help, see `ssd help reference <subcommand>`.

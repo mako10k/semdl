@@ -1,4 +1,4 @@
-(* SEMDL CLI grammar, initial revision *)
+(* SEMDL CLI argv operational notation artifact, secondary to .ssd and query-language grammar work *)
 
 command         = "ssd" , ws , root-help | "ssd" , ws , subcommand ;
 root-help       = help-opt , [ ws , help-render-opt ] | help-cmd ;

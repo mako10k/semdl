@@ -18,6 +18,25 @@ step S1:
     annotation rationale:
       "参照系と更新系を分離すると、読み取り専用の理解容易性を保ちつつ、運用変換を mutation から切り離せる"
 
+step S27:
+  decision D27 based_on D26:
+    |
+      self-contained canonical help の要件は、単に外部参照を外すことではない。
+      利用者は `ssd help` を入口に、help topic と subcommand help だけで、
+      help 入口形式、target 境界、selector 形式、値の受理形、共通 option、
+      command-specific usage を取得できなければならない。
+    annotation rationale:
+      "参照を消しただけの薄い summary では、CLI help を正本とする要件を満たしたことにならないため"
+
+step S28:
+  decision D28 based_on D27:
+    |
+      help は homonymous option の役割差も説明しなければならない。
+      少なくとも `--format semdl` と `--format inline|sidecar` は help 面の中で区別可能であること。
+      `troubleshooting` は repository 文書参照に逃がさず、他の help surface への導線で閉じる。
+    annotation rationale:
+      "正本情報が help 内だけで取得できるなら、同名 option の意味衝突も help 内で解ける必要があるため"
+
 step S2:
   decision D2 based_on D1:
     "初期更新機能は言語拡張ではなく CLI の最小集合 add / set / remove / annotate として提供する"
@@ -83,10 +102,18 @@ step S7:
 step S8:
   decision D8 based_on D3:
     |
-      CLI の初期引数仕様は自然言語説明だけでなく EBNF でも固定する。
-      サブコマンド、selector、共通オプション、字句境界は docs/cli.ebnf に集約する。
+      CLI の初期引数仕様は secondary operational artifact として EBNF でも整合確認できるようにする。
+      サブコマンド、selector、共通オプション、字句境界に対応する補助的 formal notation artifact は docs/cli.ebnf に保持する。
     annotation rationale:
       "selector やオプション順序の曖昧さを減らし、将来の parser 実装とテストケース生成の基準にできる"
+
+step S8A:
+  decision D8A based_on D3:
+    |
+      grammar の主対象として優先するのは CLI argv ではなく、`.ssd` と `.ssq`、および将来の semql family である。
+      CLI grammar は運用上必要でも、language grammar より上位の規範対象としては扱わない。
+    annotation rationale:
+      "SEMDL 自体と query layer の grammar を先に整えるほうが、仕様の焦点として自然であるため"
 
 step S9:
   decision D9 based_on D7:
@@ -178,6 +205,14 @@ step S17:
       "runner が library へ直接結合すると、CLI 公開契約と golden 回帰の境界が崩れやすい"
 
 step S18:
+
+step S27A:
+  decision D27A based_on D27, D8A:
+    |
+      `ssd help grammar` は language grammar の完全記述ではなく、CLI を使うための operational syntax summary とする。
+      detailed command usage は reference help で補い、language grammar work は `.ssd` と `.ssq` / semql 側へ寄せる。
+    annotation rationale:
+      "help を入口として保ちつつ、grammar の主戦場を CLI 以外へ移すため"
   decision D18 based_on D16:
     |
       初期実装では repository layout も 3 層境界に合わせて分ける。
@@ -256,3 +291,12 @@ step S25:
       初期受け入れ面では search、extract、similarity、add、normalize の `--help` も固定する。
     annotation rationale:
       "未実装時でも使い方と状態を CLI 上で説明できると、subcommand_not_implemented error からの導線が途切れない"
+
+step S26:
+  decision D26 based_on D20, D21:
+    |
+      grammar topic を含む CLI help は user-facing な規範的要約を自前で保持する。
+      `docs/cli.ebnf` は repository 上の aligned formal notation artifact として残してよいが、
+      CLI help は利用者をそのファイル参照へ導いてはならない。
+    annotation rationale:
+      "help を正本とする原則を保つには、grammar help が別 artifact への単純な権威移譲にならないことを明示する必要がある"

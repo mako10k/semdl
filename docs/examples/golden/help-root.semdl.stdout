@@ -32,265 +32,260 @@ segment HELP_LINE_4 {
 
 segment HELP_LINE_5 {
   source: HELP_TOPIC
-  text_quote: "- Formal grammar lives in `docs/cli.ebnf`."
+  text_quote: "- Necessary canonical CLI syntax can be obtained from this help and its topic pages without opening repository files."
 }
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- Acceptance manifests live in `docs/examples/testcases/`."
+  text_quote: "- Repository artifacts for requirements, acceptance, and formal notation may exist, but they are aligned maintenance assets rather than the user-facing authority."
 }
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "- Requirements live in `docs/requirements.md`."
+  text_quote: "2. Table of Contents"
 }
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "2. Table of Contents"
+  text_quote: "- `ssd help overview`"
 }
 
 segment HELP_LINE_9 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help overview`"
+  text_quote: "- `ssd help toc`"
 }
 
 segment HELP_LINE_10 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help toc`"
+  text_quote: "- `ssd help grammar`"
 }
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "- `ssd help reference [subcommand]`"
 }
 
 segment HELP_LINE_12 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help reference [subcommand]`"
+  text_quote: "- `ssd help recipes [topic]`"
 }
 
 segment HELP_LINE_13 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help recipes [topic]`"
+  text_quote: "- `ssd help samples`"
 }
 
 segment HELP_LINE_14 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help samples`"
+  text_quote: "- `ssd help troubleshooting`"
 }
 
 segment HELP_LINE_15 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help troubleshooting`"
+  text_quote: "3. Grammar"
 }
 
 segment HELP_LINE_16 {
   source: HELP_TOPIC
-  text_quote: "3. Grammar"
+  text_quote: "- Root: `ssd <subcommand> ...`"
 }
 
 segment HELP_LINE_17 {
   source: HELP_TOPIC
-  text_quote: "- Root: `ssd <subcommand> ...`"
+  text_quote: "- Root help: `ssd help [topic] [--format semdl]`"
 }
 
 segment HELP_LINE_18 {
   source: HELP_TOPIC
-  text_quote: "- Root help: `ssd help [topic] [--format semdl]`"
+  text_quote: "- Targeted reference help: `ssd help reference [subcommand] [--format semdl]`"
 }
 
 segment HELP_LINE_19 {
   source: HELP_TOPIC
-  text_quote: "- Targeted reference help: `ssd help reference [subcommand] [--format semdl]`"
+  text_quote: "- Targeted recipe help: `ssd help recipes [topic] [--format semdl]`"
 }
 
 segment HELP_LINE_20 {
   source: HELP_TOPIC
-  text_quote: "- Targeted recipe help: `ssd help recipes [topic] [--format semdl]`"
+  text_quote: "- Global help: `ssd --help [--format semdl]`"
 }
 
 segment HELP_LINE_21 {
   source: HELP_TOPIC
-  text_quote: "- Global help: `ssd --help [--format semdl]`"
+  text_quote: "- Subcommand help: `ssd <subcommand> --help [--format semdl]`"
 }
 
 segment HELP_LINE_22 {
   source: HELP_TOPIC
-  text_quote: "- Subcommand help: `ssd <subcommand> --help [--format semdl]`"
+  text_quote: "- This CLI help remains the canonical user-facing operational guide."
 }
 
 segment HELP_LINE_23 {
   source: HELP_TOPIC
-  text_quote: "- See `docs/cli.ebnf` for the formal grammar."
+  text_quote: "4. Reference"
 }
 
 segment HELP_LINE_24 {
   source: HELP_TOPIC
-  text_quote: "4. Reference"
+  text_quote: "- `check`: validate syntax and references for a document set"
 }
 
 segment HELP_LINE_25 {
   source: HELP_TOPIC
-  text_quote: "- `check`: validate syntax and references for a document set"
+  text_quote: "- `search`: evaluate a read-only query against document inputs"
 }
 
 segment HELP_LINE_26 {
   source: HELP_TOPIC
-  text_quote: "- `search`: evaluate a read-only query against document inputs"
+  text_quote: "- `extract`: build an initial semantic document from raw inputs"
 }
 
 segment HELP_LINE_27 {
   source: HELP_TOPIC
-  text_quote: "- `extract`: build an initial semantic document from raw inputs"
+  text_quote: "- `similarity`: compare two semantic targets"
 }
 
 segment HELP_LINE_28 {
   source: HELP_TOPIC
-  text_quote: "- `similarity`: compare two semantic targets"
+  text_quote: "- `explain`: show the merged semantic view for an entity id"
 }
 
 segment HELP_LINE_29 {
   source: HELP_TOPIC
-  text_quote: "- `explain`: show the merged semantic view for an entity id"
+  text_quote: "- `normalize`: canonicalize document shape and output profile"
 }
 
 segment HELP_LINE_30 {
   source: HELP_TOPIC
-  text_quote: "- `normalize`: canonicalize document shape and output profile"
+  text_quote: "- `add`: add one semantic entity skeleton"
 }
 
 segment HELP_LINE_31 {
   source: HELP_TOPIC
-  text_quote: "- `add`: add one semantic entity skeleton"
+  text_quote: "- `set`: update one inline or sidecar field"
 }
 
 segment HELP_LINE_32 {
   source: HELP_TOPIC
-  text_quote: "- `set`: update one inline or sidecar field"
+  text_quote: "- `remove`: remove one target or fail on unsafe removal"
 }
 
 segment HELP_LINE_33 {
   source: HELP_TOPIC
-  text_quote: "- `remove`: remove one target or fail on unsafe removal"
+  text_quote: "- `annotate`: add rationale/caveat/todo-like notes"
 }
 
 segment HELP_LINE_34 {
   source: HELP_TOPIC
-  text_quote: "- `annotate`: add rationale/caveat/todo-like notes"
+  text_quote: "- `split`: move sidecar-eligible metadata out of inline form"
 }
 
 segment HELP_LINE_35 {
   source: HELP_TOPIC
-  text_quote: "- `split`: move sidecar-eligible metadata out of inline form"
+  text_quote: "- `merge`: produce a merged inline view"
 }
 
 segment HELP_LINE_36 {
   source: HELP_TOPIC
-  text_quote: "- `merge`: produce a merged inline view"
+  text_quote: "- `help`: navigate this help system"
 }
 
 segment HELP_LINE_37 {
   source: HELP_TOPIC
-  text_quote: "- `help`: navigate this help system"
+  text_quote: "5. Reverse Lookup"
 }
 
 segment HELP_LINE_38 {
   source: HELP_TOPIC
-  text_quote: "5. Reverse Lookup"
+  text_quote: "- Validate a document: `ssd check <file>`"
 }
 
 segment HELP_LINE_39 {
   source: HELP_TOPIC
-  text_quote: "- Validate a document: `ssd check <file>`"
+  text_quote: "- Explain an assertion: `ssd explain <id> <file>`"
 }
 
 segment HELP_LINE_40 {
   source: HELP_TOPIC
-  text_quote: "- Explain an assertion: `ssd explain <id> <file>`"
+  text_quote: "- Preview an inline edit: `ssd set path:<id>.<field> <value> --dry-run <file>`"
 }
 
 segment HELP_LINE_41 {
   source: HELP_TOPIC
-  text_quote: "- Preview an inline edit: `ssd set path:<id>.<field> <value> --dry-run <file>`"
+  text_quote: "- Preview a sidecar annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`"
 }
 
 segment HELP_LINE_42 {
   source: HELP_TOPIC
-  text_quote: "- Preview a sidecar annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`"
+  text_quote: "- Machine-readable help: `ssd help grammar --format semdl`"
 }
 
 segment HELP_LINE_43 {
   source: HELP_TOPIC
-  text_quote: "- Machine-readable help: `ssd help grammar --format semdl`"
+  text_quote: "- Understand an option error: `ssd help grammar`"
 }
 
 segment HELP_LINE_44 {
   source: HELP_TOPIC
-  text_quote: "- Understand an option error: `ssd help grammar`"
+  text_quote: "- Understand a selector-layer error: `ssd help recipes wrong-layer`"
 }
 
 segment HELP_LINE_45 {
   source: HELP_TOPIC
-  text_quote: "- Understand a selector-layer error: `ssd help recipes wrong-layer`"
+  text_quote: "6. Samples"
 }
 
 segment HELP_LINE_46 {
   source: HELP_TOPIC
-  text_quote: "6. Samples"
+  text_quote: "- `ssd check docs/examples/minimal.ssd`"
 }
 
 segment HELP_LINE_47 {
   source: HELP_TOPIC
-  text_quote: "- `ssd check docs/examples/minimal.ssd`"
+  text_quote: "- `ssd explain A1 docs/examples/minimal.ssd`"
 }
 
 segment HELP_LINE_48 {
   source: HELP_TOPIC
-  text_quote: "- `ssd explain A1 docs/examples/minimal.ssd`"
+  text_quote: "- `ssd help reference check`"
 }
 
 segment HELP_LINE_49 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help reference check`"
+  text_quote: "- `ssd check --help --format semdl`"
 }
 
 segment HELP_LINE_50 {
   source: HELP_TOPIC
-  text_quote: "- `ssd check --help --format semdl`"
+  text_quote: "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`"
 }
 
 segment HELP_LINE_51 {
   source: HELP_TOPIC
-  text_quote: "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`"
+  text_quote: "7. Cautions, Known Bugs, Reporting"
 }
 
 segment HELP_LINE_52 {
   source: HELP_TOPIC
-  text_quote: "7. Cautions, Known Bugs, Reporting"
+  text_quote: "- In this initial slice, `search`, `extract`, `similarity`, `add`, and `normalize` are not implemented yet."
 }
 
 segment HELP_LINE_53 {
   source: HELP_TOPIC
-  text_quote: "- In this initial slice, `search`, `extract`, `similarity`, `add`, and `normalize` are not implemented yet."
+  text_quote: "- Use `--format semdl` when another tool needs structured help output."
 }
 
 segment HELP_LINE_54 {
   source: HELP_TOPIC
-  text_quote: "- Use `--format semdl` when another tool needs structured help output."
+  text_quote: "- Update flows are acceptance-driven and still incomplete for full file rewriting."
 }
 
 segment HELP_LINE_55 {
   source: HELP_TOPIC
-  text_quote: "- Update flows are acceptance-driven and still incomplete for full file rewriting."
-}
-
-segment HELP_LINE_56 {
-  source: HELP_TOPIC
   text_quote: "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file."
 }
 
-segment HELP_LINE_57 {
+segment HELP_LINE_56 {
   source: HELP_TOPIC
   text_quote: "- Preferred reporting path: repository issue or change request with a reproducing CLI case."
 }

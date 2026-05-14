@@ -47,75 +47,185 @@ segment HELP_LINE_7 {
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "Key syntax forms:"
+  text_quote: "Topic targeting:"
 }
 
 segment HELP_LINE_9 {
   source: HELP_TOPIC
-  text_quote: "- `ssd check <file>`"
+  text_quote: "- `overview`, `toc`, `grammar`, `samples`, and `troubleshooting` do not accept a trailing target"
 }
 
 segment HELP_LINE_10 {
   source: HELP_TOPIC
-  text_quote: "- `ssd explain <id> <file>`"
+  text_quote: "- `reference` accepts a `<subcommand>` target"
 }
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- `ssd set <selector> <value-or-field> ... <file>`"
+  text_quote: "- `recipes` accepts a `<topic>` target"
 }
 
 segment HELP_LINE_12 {
   source: HELP_TOPIC
-  text_quote: "- `ssd annotate <selector> <kind> <text> ... <file>`"
+  text_quote: "Key syntax forms:"
 }
 
 segment HELP_LINE_13 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar --format semdl`"
+  text_quote: "- `ssd check <file>`"
 }
 
 segment HELP_LINE_14 {
   source: HELP_TOPIC
-  text_quote: "Selectors:"
+  text_quote: "- `ssd search <query.ssq> <file>...`"
 }
 
 segment HELP_LINE_15 {
   source: HELP_TOPIC
-  text_quote: "- `id:<id>`"
+  text_quote: "- `ssd extract --out <output.ssd> <input>...`"
 }
 
 segment HELP_LINE_16 {
   source: HELP_TOPIC
-  text_quote: "- `type:<kind>`"
+  text_quote: "- `ssd similarity <target-ref> <target-ref>`"
 }
 
 segment HELP_LINE_17 {
   source: HELP_TOPIC
-  text_quote: "- `path:<id>.<field>`"
+  text_quote: "- `ssd explain <id> <file>`"
 }
 
 segment HELP_LINE_18 {
   source: HELP_TOPIC
-  text_quote: "- `meta:<id>.<field>`"
+  text_quote: "- `ssd add <kind> <file> [field=value ...]`"
 }
 
 segment HELP_LINE_19 {
   source: HELP_TOPIC
-  text_quote: "- `doc:self`"
+  text_quote: "- `ssd set <selector> <value-or-field> ... <file>`"
 }
 
 segment HELP_LINE_20 {
   source: HELP_TOPIC
-  text_quote: "For the formal grammar, see `docs/cli.ebnf`."
+  text_quote: "- `ssd remove <selector> <file>`"
 }
 
 segment HELP_LINE_21 {
   source: HELP_TOPIC
-  text_quote: "Use `--format semdl` for line-preserving SEMDL help output."
+  text_quote: "- `ssd annotate <selector> <kind> <text> ... <file>`"
 }
 
 segment HELP_LINE_22 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd split <input.ssd> [common options]`"
+}
+
+segment HELP_LINE_23 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd merge <input.ssd> [common options]`"
+}
+
+segment HELP_LINE_24 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd normalize <input.ssd> [common options]`"
+}
+
+segment HELP_LINE_25 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help grammar --format semdl`"
+}
+
+segment HELP_LINE_26 {
+  source: HELP_TOPIC
+  text_quote: "Selectors:"
+}
+
+segment HELP_LINE_27 {
+  source: HELP_TOPIC
+  text_quote: "- `id:<id>`"
+}
+
+segment HELP_LINE_28 {
+  source: HELP_TOPIC
+  text_quote: "- `type:<kind>`"
+}
+
+segment HELP_LINE_29 {
+  source: HELP_TOPIC
+  text_quote: "- `path:<id>.<field>`"
+}
+
+segment HELP_LINE_30 {
+  source: HELP_TOPIC
+  text_quote: "- `meta:<id>.<field>`"
+}
+
+segment HELP_LINE_31 {
+  source: HELP_TOPIC
+  text_quote: "- `doc:self`"
+}
+
+segment HELP_LINE_32 {
+  source: HELP_TOPIC
+  text_quote: "- Use `path:` for inline `.ssd` structure and `meta:` for sidecar `.ssm` metadata"
+}
+
+segment HELP_LINE_33 {
+  source: HELP_TOPIC
+  text_quote: "Value forms:"
+}
+
+segment HELP_LINE_34 {
+  source: HELP_TOPIC
+  text_quote: "- text with spaces should be passed as a quoted string"
+}
+
+segment HELP_LINE_35 {
+  source: HELP_TOPIC
+  text_quote: "- update-oriented scalar values accept quoted-string, number, boolean, or identifier forms"
+}
+
+segment HELP_LINE_36 {
+  source: HELP_TOPIC
+  text_quote: "Common options:"
+}
+
+segment HELP_LINE_37 {
+  source: HELP_TOPIC
+  text_quote: "- `--dry-run` previews update-oriented commands"
+}
+
+segment HELP_LINE_38 {
+  source: HELP_TOPIC
+  text_quote: "- `--out <file>`, `--stdout`, and `--format inline|sidecar` choose emitted output destinations or profile when the command supports them"
+}
+
+segment HELP_LINE_39 {
+  source: HELP_TOPIC
+  text_quote: "- `--target inline|sidecar|auto` controls update destination selection"
+}
+
+segment HELP_LINE_40 {
+  source: HELP_TOPIC
+  text_quote: "- `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms"
+}
+
+segment HELP_LINE_41 {
+  source: HELP_TOPIC
+  text_quote: "This topic is the canonical user-facing operational syntax summary."
+}
+
+segment HELP_LINE_42 {
+  source: HELP_TOPIC
+  text_quote: "Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details."
+}
+
+segment HELP_LINE_43 {
+  source: HELP_TOPIC
+  text_quote: "Use `--format semdl` for line-preserving SEMDL help output."
+}
+
+segment HELP_LINE_44 {
   source: HELP_TOPIC
   text_quote: "For command-specific help, see `ssd help reference <subcommand>`."
 }

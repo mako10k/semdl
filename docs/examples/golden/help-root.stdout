@@ -3,9 +3,8 @@ SEMDL CLI Help
 1. Overview
 - `ssd` validates, explains, transforms, and updates `.ssd` and `.ssm` assets.
 - This help output is the canonical entrypoint for CLI guidance.
-- Formal grammar lives in `docs/cli.ebnf`.
-- Acceptance manifests live in `docs/examples/testcases/`.
-- Requirements live in `docs/requirements.md`.
+- Necessary canonical CLI syntax can be obtained from this help and its topic pages without opening repository files.
+- Repository artifacts for requirements, acceptance, and formal notation may exist, but they are aligned maintenance assets rather than the user-facing authority.
 
 2. Table of Contents
 - `ssd help overview`
@@ -23,7 +22,7 @@ SEMDL CLI Help
 - Targeted recipe help: `ssd help recipes [topic] [--format semdl]`
 - Global help: `ssd --help [--format semdl]`
 - Subcommand help: `ssd <subcommand> --help [--format semdl]`
-- See `docs/cli.ebnf` for the formal grammar.
+- This CLI help remains the canonical user-facing operational guide.
 
 4. Reference
 - `check`: validate syntax and references for a document set

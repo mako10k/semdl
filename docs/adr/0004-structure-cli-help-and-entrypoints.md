@@ -78,7 +78,10 @@ error message は完全な全文を root help に複製せず、該当 topic へ
 
 ### 5. related artifacts
 
-help は CLI 正本だが、次の資産への案内を持つ。
+help は CLI の user-facing operational guidance に関する正本であり、
+CLI を使うための syntax summary と導線の説明責務を CLI 側に置く。
+ただし `.ssd` や `.ssq` / semql family 自体の primary grammar work は 0006 に従う。
+次の資産は aligned artifact として保持してよいが、help から利用者をそれらの参照へ導いてはならない。
 
 - `docs/cli.ebnf`
 - `docs/examples/testcases/*.json`
