@@ -4,3 +4,5 @@ output*.txt
 stderr_output
 tmp_*.stdout
 tmp_*.stderr
+actual.stdout
+temp_repo/
