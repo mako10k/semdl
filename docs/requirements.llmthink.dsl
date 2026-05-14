@@ -122,3 +122,34 @@ step S12:
       これらは command 表示とは別に argv ベースで実行条件を固定する。
     annotation rationale:
       "字句境界と option parsing の回帰は成功系だけでは検出しづらく、EBNF に直結した失敗系が必要である"
+
+problem P4:
+  "SEMDL の architecture 変更と runner 公開契約を、どの文書単位で固定するか"
+  annotation rationale:
+    "requirements だけでは判断理由や supersede 関係が埋もれやすく、runner 契約変更も追跡しづらい"
+
+step S13:
+  decision D13 based_on P4:
+    |
+      SEMDL の architecture 判断は docs/adr 以下の ADR で管理する。
+      format 境界、CLI 公開契約、selector 解決規則、runner 契約の変更は ADR 対象とする。
+    annotation rationale:
+      "要求仕様と判断理由を分けると、why と boundary の変更履歴を保持しやすい"
+
+step S14:
+  decision D14 based_on D11, D13:
+    |
+      test runner には manifest 形式とは別に実行契約文書を持たせる。
+      runner は argv を正規入力とし、shell を介さずにプロセスを起動し、
+      expected_output_kind に従って stdout / stderr を比較する。
+    annotation rationale:
+      "manifest だけでは discovery と比較順序が曖昧になりやすく、実行契約を別文書で固定した方が実装差を減らせる"
+
+step S15:
+  decision D15 based_on D3, D10:
+    |
+      selector failure cases には字句失敗だけでなく、
+      missing target、wrong layer for path、wrong layer for meta を含める。
+      これにより selector の解決対象と層境界も golden 化する。
+    annotation rationale:
+      "selector は構文だけ合っていても誤った層に向けると破綻するため、解決境界の failure cases が必要である"

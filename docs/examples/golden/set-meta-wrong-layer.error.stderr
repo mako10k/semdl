@@ -1,0 +1,7 @@
+ERROR selector_resolved_wrong_layer
+command: ssd set meta:A1.label "別名" docs/examples/minimal.ssd
+selector: meta:A1.label
+resolved_target: A1
+expected_layer: sidecar metadata
+actual_location: inline .ssd structure
+hint: use a path: selector for fields stored in the main .ssd file

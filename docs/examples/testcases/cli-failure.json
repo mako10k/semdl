@@ -77,6 +77,45 @@
       "expected_stderr": "docs/examples/golden/annotate-unterminated-quoted-string.error.stderr",
       "expected_output_kind": "exact",
       "notes": "quoted-string lexical failure is surfaced explicitly"
+    },
+    {
+      "id": "set-id-missing-target",
+      "command": "ssd set id:Z9 label \"未知\" docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:Z9", "label", "未知", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-id-missing-target.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "selector may be syntactically valid but resolve to no target"
+    },
+    {
+      "id": "set-path-wrong-layer",
+      "command": "ssd set path:H1.caveat \"注意\" docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:H1.caveat", "注意", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-path-wrong-layer.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "path selector cannot target sidecar-only fields"
+    },
+    {
+      "id": "set-meta-wrong-layer",
+      "command": "ssd set meta:A1.label \"別名\" docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "meta:A1.label", "別名", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-meta-wrong-layer.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "meta selector cannot target inline-only fields"
     }
   ]
 }

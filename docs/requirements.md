@@ -668,6 +668,9 @@ test runner 定義:
 - [docs/examples/golden/set-malformed-selector.error.stderr](docs/examples/golden/set-malformed-selector.error.stderr)
 - [docs/examples/golden/check-unknown-option.error.stderr](docs/examples/golden/check-unknown-option.error.stderr)
 - [docs/examples/golden/annotate-unterminated-quoted-string.error.stderr](docs/examples/golden/annotate-unterminated-quoted-string.error.stderr)
+- [docs/examples/golden/set-id-missing-target.error.stderr](docs/examples/golden/set-id-missing-target.error.stderr)
+- [docs/examples/golden/set-path-wrong-layer.error.stderr](docs/examples/golden/set-path-wrong-layer.error.stderr)
+- [docs/examples/golden/set-meta-wrong-layer.error.stderr](docs/examples/golden/set-meta-wrong-layer.error.stderr)
 
 受け入れ例:
 
@@ -787,6 +790,39 @@ parser / lexer 系の失敗ケースでは、shell 差異を避けるため `arg
 
 CLI の breaking change を行う場合は、受け入れ例だけでなく [docs/cli.ebnf](docs/cli.ebnf) も同一変更で更新すること。
 
+## 8.14 test runner 実行契約
+
+manifest 形式だけでなく、runner がどう実行し、どう比較するかの契約も固定することを推奨する。
+
+初期契約は [docs/test-runner-contract.md](docs/test-runner-contract.md) に置く。
+
+この契約は少なくとも以下を固定する。
+
+- manifest の探索単位
+- `argv` を正規入力として使うこと
+- `stdin` と `environment` の適用順序
+- stdout / stderr / exit code の比較順序
+- `exact`、`empty`、`fixture-file` の比較意味
+- shell を介さず直接プロセス起動すること
+
+runner の公開契約を変更する場合は、architecture 変更として ADR 対象に含める。
+
+## 8.15 selector 境界 failure cases
+
+selector の構文だけでなく、解決境界の failure cases も最小集合として維持することを推奨する。
+
+- `ssd set id:Z9 label "未知" docs/examples/minimal.ssd`
+  - 存在しない ID のため失敗する
+  - 期待 stderr は [docs/examples/golden/set-id-missing-target.error.stderr](docs/examples/golden/set-id-missing-target.error.stderr) と一致する
+- `ssd set path:H1.caveat "注意" docs/examples/minimal.ssd`
+  - `.ssd` 本体に存在しない field のため失敗する
+  - 期待 stderr は [docs/examples/golden/set-path-wrong-layer.error.stderr](docs/examples/golden/set-path-wrong-layer.error.stderr) と一致する
+- `ssd set meta:A1.label "別名" docs/examples/minimal.ssd`
+  - sidecar ではなく `.ssd` 本体に属する field のため失敗する
+  - 期待 stderr は [docs/examples/golden/set-meta-wrong-layer.error.stderr](docs/examples/golden/set-meta-wrong-layer.error.stderr) と一致する
+
+これらは selector 構文そのものではなく、selector が指す層と対象解決の境界を固定する failure cases である。
+
 check は少なくとも以下を検証できること。
 
 - 構文妥当性
@@ -801,6 +837,21 @@ check は少なくとも以下を検証できること。
 - 依存関係は最小限にする
 - 標準入出力を扱いやすい CLI とする
 - ライブラリ部と CLI 部を分離し、将来の組み込み利用に備える
+
+## 9.0 アーキテクチャ判断の固定
+
+SEMDL のアーキテクチャ判断は ADR で固定することを推奨する。
+
+- 運用ルールは [docs/adr/README.md](docs/adr/README.md) に置く
+- 初期 ADR は [docs/adr/0001-use-architecture-decision-records.md](docs/adr/0001-use-architecture-decision-records.md) とする
+
+少なくとも以下は ADR 対象とする。
+
+- format 境界の変更
+- CLI 公開契約の変更
+- selector 解決規則の変更
+- test runner 契約の変更
+- ライブラリ層と CLI 層の責務変更
 
 ## 9.1 埋め込み生成
 
