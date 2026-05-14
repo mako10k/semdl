@@ -1,0 +1,6 @@
+# Valid .ssq example: CRLF line endings remain within the minimal filter profile
+query {
+  select: assertion
+  where: confidence = 1
+  return: matches
+}

@@ -1,0 +1,6 @@
+# Invalid .ssq example: logical composition exceeds the minimal filter profile
+query {
+  select: assertion
+  where: source_presence and confidence = 1
+  return: matches
+}

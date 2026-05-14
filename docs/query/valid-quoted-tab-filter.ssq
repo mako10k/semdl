@@ -1,0 +1,6 @@
+# Valid .ssq example: tabs inside a quoted rhs remain valid
+query {
+  select: assertion
+  where: label = "A	B"
+  return: matches
+}

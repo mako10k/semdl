@@ -1,6 +1,7 @@
 #include "semdl/cli/cli_app.hpp"
 
 #include "semdl/core/document_store.hpp"
+#include "semdl/core/query_validation.hpp"
 #include "semdl/core/semantic_model.hpp"
 
 #include <filesystem>
@@ -623,6 +624,20 @@ CommandResult make_subcommand_not_implemented_error(const std::vector<std::strin
     };
 }
 
+CommandResult make_invalid_query_filter_error(const std::vector<std::string_view>& args,
+                                              const std::filesystem::path& query_file,
+                                              const semdl::core::QueryValidationIssue& issue) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_query_filter\ncommand: " + join_args(args) +
+                       "\nquery_file: " + query_file.generic_string() +
+                       "\nwhere: " + issue.expression +
+                       "\nreason: " + issue.reason +
+                       "\nallowed:\n  - field\n  - field = \"value\"\n  - field = 1\n  - field = true|false\nhint: see `ssd help reference search`\n",
+    };
+}
+
 CommandResult make_explain_target_not_found_error(const std::vector<std::string_view>& args) {
     return CommandResult{
         .exit_code = 3,
@@ -1037,7 +1052,24 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
     }
 
-    if (args[0] == "search" || args[0] == "extract" || args[0] == "similarity" || args[0] == "add" || args[0] == "normalize") {
+    if (args[0] == "search") {
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", args[0], parsed.format);
+        }
+        if (args.size() >= 3) {
+            const auto issue = semdl::core::validate_initial_ssq_profile(std::filesystem::path(args[1]));
+            if (!issue.valid) {
+                return make_invalid_query_filter_error(args, std::filesystem::path(args[1]), issue);
+            }
+        }
+        return make_subcommand_not_implemented_error(args);
+    }
+
+    if (args[0] == "extract" || args[0] == "similarity" || args[0] == "add" || args[0] == "normalize") {
         if (args.size() >= 2 && args[1] == "--help") {
             const auto parsed = parse_help_format_tail(args, 2);
             if (!parsed.valid) {

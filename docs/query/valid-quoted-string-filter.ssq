@@ -1,0 +1,6 @@
+# Valid .ssq example: quoted string rhs may contain logical/comparison text
+query {
+  select: assertion
+  where: label = "A and B = C"
+  return: matches
+}

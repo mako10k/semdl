@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(semdl_core STATIC
     src/core/document_store.cpp
+    src/core/query_validation.cpp
     src/core/semantic_model.cpp
 )
 
