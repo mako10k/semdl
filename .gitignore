@@ -1,1 +1,6 @@
 **/.llmthink/
+build/
+output*.txt
+stderr_output
+tmp_*.stdout
+tmp_*.stderr
