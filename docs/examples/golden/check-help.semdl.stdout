@@ -1,0 +1,62 @@
+document HELP {
+  title: "SEMDL Help Topic: reference check"
+  command: "ssd check --help --format semdl"
+  topic: "reference"
+  target: "check"
+  format: "semdl"
+}
+
+resource HELP_TOPIC {
+  type: help-topic
+  label: "reference check"
+}
+
+segment HELP_LINE_1 {
+  source: HELP_TOPIC
+  text_quote: "SEMDL Help Topic: reference check"
+}
+
+segment HELP_LINE_2 {
+  source: HELP_TOPIC
+  text_quote: "Usage:"
+}
+
+segment HELP_LINE_3 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd check <file>`"
+}
+
+segment HELP_LINE_4 {
+  source: HELP_TOPIC
+  text_quote: "Purpose:"
+}
+
+segment HELP_LINE_5 {
+  source: HELP_TOPIC
+  text_quote: "- Validate syntax, reference integrity, and sidecar discovery for a document input."
+}
+
+segment HELP_LINE_6 {
+  source: HELP_TOPIC
+  text_quote: "Related help:"
+}
+
+segment HELP_LINE_7 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help grammar`"
+}
+
+segment HELP_LINE_8 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help samples`"
+}
+
+segment HELP_LINE_9 {
+  source: HELP_TOPIC
+  text_quote: "Sample:"
+}
+
+segment HELP_LINE_10 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd check docs/examples/minimal.ssd`"
+}

@@ -1,16 +1,28 @@
 #include "semdl/cli/cli_app.hpp"
 
-#include "semdl/core/semantic_model.hpp"
 #include "semdl/core/document_store.hpp"
+#include "semdl/core/semantic_model.hpp"
 
 #include <filesystem>
 #include <fstream>
-#include <string_view>
 #include <sstream>
+#include <string_view>
 
 namespace semdl::cli {
 
 namespace {
+
+enum class HelpOutputFormat {
+    text,
+    semdl,
+};
+
+struct ParsedHelpFormat {
+    bool valid = true;
+    HelpOutputFormat format = HelpOutputFormat::text;
+    std::size_t positional_end = 0;
+    std::string_view invalid_value;
+};
 
 std::string join_args(const std::vector<std::string_view>& args) {
     std::ostringstream stream;
@@ -78,6 +90,80 @@ bool has_flag(const std::vector<std::string_view>& args, std::string_view flag) 
     return false;
 }
 
+ParsedHelpFormat parse_help_format_tail(const std::vector<std::string_view>& args, std::size_t minimum_positional_end) {
+    ParsedHelpFormat parsed;
+    parsed.positional_end = args.size();
+
+    if (args.size() >= minimum_positional_end + 2 && args[args.size() - 2] == "--format") {
+        parsed.positional_end = args.size() - 2;
+        if (args.back() == "semdl") {
+            parsed.format = HelpOutputFormat::semdl;
+        } else {
+            parsed.valid = false;
+            parsed.invalid_value = args.back();
+        }
+    }
+
+    return parsed;
+}
+
+bool help_topic_accepts_target(std::string_view topic) {
+    return topic == "reference" || topic == "recipes";
+}
+
+std::string escape_semdl_string(std::string_view value) {
+    std::string escaped;
+    escaped.reserve(value.size());
+    for (const char character : value) {
+        if (character == '\\' || character == '"') {
+            escaped.push_back('\\');
+        }
+        escaped.push_back(character);
+    }
+    return escaped;
+}
+
+std::string render_help_as_semdl(const std::vector<std::string_view>& args,
+                                 std::string_view topic,
+                                 std::string_view target,
+                                 const std::string& text) {
+    std::istringstream input(text);
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(input, line)) {
+        if (!line.empty()) {
+            lines.push_back(line);
+        }
+    }
+
+    const std::string title = lines.empty() ? "SEMDL CLI Help" : lines.front();
+    const std::string label = topic.empty() ? "root" : (target.empty() ? std::string(topic) : std::string(topic) + " " + std::string(target));
+
+    std::ostringstream output;
+    output << "document HELP {\n";
+    output << "  title: \"" << escape_semdl_string(title) << "\"\n";
+    output << "  command: \"" << escape_semdl_string(join_args(args)) << "\"\n";
+    output << "  topic: \"" << escape_semdl_string(topic.empty() ? std::string_view{"root"} : topic) << "\"\n";
+    if (!target.empty()) {
+        output << "  target: \"" << escape_semdl_string(target) << "\"\n";
+    }
+    output << "  format: \"semdl\"\n";
+    output << "}\n\n";
+    output << "resource HELP_TOPIC {\n";
+    output << "  type: help-topic\n";
+    output << "  label: \"" << escape_semdl_string(label) << "\"\n";
+    output << "}\n";
+
+    for (std::size_t index = 0; index < lines.size(); ++index) {
+        output << "\nsegment HELP_LINE_" << (index + 1) << " {\n";
+        output << "  source: HELP_TOPIC\n";
+        output << "  text_quote: \"" << escape_semdl_string(lines[index]) << "\"\n";
+        output << "}\n";
+    }
+
+    return output.str();
+}
+
 CommandResult make_dry_run_result(const UpdatePreview& preview) {
     std::ostringstream output;
     output << "DRY-RUN\n";
@@ -108,9 +194,9 @@ std::string root_help_text() {
            "1. Overview\n"
            "- `ssd` validates, explains, transforms, and updates `.ssd` and `.ssm` assets.\n"
            "- This help output is the canonical entrypoint for CLI guidance.\n"
-            "- Formal grammar lives in `docs/cli.ebnf`.\n"
-            "- Acceptance manifests live in `docs/examples/testcases/`.\n"
-            "- Requirements live in `docs/requirements.md`.\n\n"
+           "- Formal grammar lives in `docs/cli.ebnf`.\n"
+           "- Acceptance manifests live in `docs/examples/testcases/`.\n"
+           "- Requirements live in `docs/requirements.md`.\n\n"
            "2. Table of Contents\n"
            "- `ssd help overview`\n"
            "- `ssd help toc`\n"
@@ -121,13 +207,20 @@ std::string root_help_text() {
            "- `ssd help troubleshooting`\n\n"
            "3. Grammar\n"
            "- Root: `ssd <subcommand> ...`\n"
-           "- Root help: `ssd help [topic] [target]`\n"
-           "- Global help: `ssd --help`\n"
-           "- Subcommand help: `ssd <subcommand> --help`\n"
+           "- Root help: `ssd help [topic] [--format semdl]`\n"
+           "- Targeted reference help: `ssd help reference [subcommand] [--format semdl]`\n"
+           "- Targeted recipe help: `ssd help recipes [topic] [--format semdl]`\n"
+           "- Global help: `ssd --help [--format semdl]`\n"
+           "- Subcommand help: `ssd <subcommand> --help [--format semdl]`\n"
            "- See `docs/cli.ebnf` for the formal grammar.\n\n"
            "4. Reference\n"
            "- `check`: validate syntax and references for a document set\n"
+           "- `search`: evaluate a read-only query against document inputs\n"
+           "- `extract`: build an initial semantic document from raw inputs\n"
+           "- `similarity`: compare two semantic targets\n"
            "- `explain`: show the merged semantic view for an entity id\n"
+           "- `normalize`: canonicalize document shape and output profile\n"
+           "- `add`: add one semantic entity skeleton\n"
            "- `set`: update one inline or sidecar field\n"
            "- `remove`: remove one target or fail on unsafe removal\n"
            "- `annotate`: add rationale/caveat/todo-like notes\n"
@@ -139,15 +232,18 @@ std::string root_help_text() {
            "- Explain an assertion: `ssd explain <id> <file>`\n"
            "- Preview an inline edit: `ssd set path:<id>.<field> <value> --dry-run <file>`\n"
            "- Preview a sidecar annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`\n"
+           "- Machine-readable help: `ssd help grammar --format semdl`\n"
            "- Understand an option error: `ssd help grammar`\n"
            "- Understand a selector-layer error: `ssd help recipes wrong-layer`\n\n"
            "6. Samples\n"
            "- `ssd check docs/examples/minimal.ssd`\n"
            "- `ssd explain A1 docs/examples/minimal.ssd`\n"
            "- `ssd help reference check`\n"
+           "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
            "- In this initial slice, `search`, `extract`, `similarity`, `add`, and `normalize` are not implemented yet.\n"
+           "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
            "- Preferred reporting path: repository issue or change request with a reproducing CLI case.\n";
@@ -156,14 +252,17 @@ std::string root_help_text() {
 std::string grammar_help_text() {
     return "SEMDL Help Topic: grammar\n\n"
            "- Root form: `ssd <subcommand> ...`\n"
-           "- Help form: `ssd help [topic] [target]`\n"
-           "- Global help alias: `ssd --help`\n"
-           "- Subcommand help alias: `ssd <subcommand> --help`\n\n"
+           "- Help form: `ssd help [topic] [--format semdl]`\n"
+           "- Targeted reference help: `ssd help reference [subcommand] [--format semdl]`\n"
+           "- Targeted recipe help: `ssd help recipes [topic] [--format semdl]`\n"
+           "- Global help alias: `ssd --help [--format semdl]`\n"
+           "- Subcommand help alias: `ssd <subcommand> --help [--format semdl]`\n\n"
            "Key syntax forms:\n"
            "- `ssd check <file>`\n"
            "- `ssd explain <id> <file>`\n"
            "- `ssd set <selector> <value-or-field> ... <file>`\n"
-           "- `ssd annotate <selector> <kind> <text> ... <file>`\n\n"
+           "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
+           "- `ssd help grammar --format semdl`\n\n"
            "Selectors:\n"
            "- `id:<id>`\n"
            "- `type:<kind>`\n"
@@ -171,6 +270,7 @@ std::string grammar_help_text() {
            "- `meta:<id>.<field>`\n"
            "- `doc:self`\n\n"
            "For the formal grammar, see `docs/cli.ebnf`.\n"
+           "Use `--format semdl` for line-preserving SEMDL help output.\n"
            "For command-specific help, see `ssd help reference <subcommand>`.\n";
 }
 
@@ -212,6 +312,29 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd help troubleshooting`\n";
     }
 
+    if (target == "extract") {
+        return "SEMDL Help Topic: reference extract\n\n"
+               "Usage:\n"
+               "- `ssd extract --out <output.ssd> <input>...`\n"
+               "- `ssd extract --stdout <input>...`\n\n"
+               "Status:\n"
+               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help troubleshooting`\n";
+    }
+
+    if (target == "similarity") {
+        return "SEMDL Help Topic: reference similarity\n\n"
+               "Usage:\n"
+               "- `ssd similarity <target-ref> <target-ref>`\n\n"
+               "Status:\n"
+               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help troubleshooting`\n";
+    }
+
     if (target == "set") {
         return "SEMDL Help Topic: reference set\n\n"
                "Usage:\n"
@@ -227,19 +350,6 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n";
     }
 
-    if (target == "annotate") {
-        return "SEMDL Help Topic: reference annotate\n\n"
-               "Usage:\n"
-               "- `ssd annotate <selector> <kind> <text> --target sidecar --dry-run <file>`\n\n"
-               "Purpose:\n"
-               "- Append rationale, caveat, todo, status, or explanation metadata.\n\n"
-               "Related help:\n"
-               "- `ssd help grammar`\n"
-               "- `ssd help samples`\n\n"
-               "Sample:\n"
-               "- `ssd annotate id:H1 rationale 原文に主語がないため補完 --target sidecar --dry-run docs/examples/minimal.ssd`\n";
-    }
-
     if (target == "remove") {
         return "SEMDL Help Topic: reference remove\n\n"
                "Usage:\n"
@@ -253,6 +363,19 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd help recipes wrong-layer`\n\n"
                "Sample:\n"
                "- `ssd remove type:alternative docs/examples/minimal.ssd`\n";
+    }
+
+    if (target == "annotate") {
+        return "SEMDL Help Topic: reference annotate\n\n"
+               "Usage:\n"
+               "- `ssd annotate <selector> <kind> <text> --target sidecar --dry-run <file>`\n\n"
+               "Purpose:\n"
+               "- Append rationale, caveat, todo, status, or explanation metadata.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help samples`\n\n"
+               "Sample:\n"
+               "- `ssd annotate id:H1 rationale 原文に主語がないため補完 --target sidecar --dry-run docs/examples/minimal.ssd`\n";
     }
 
     if (target == "split") {
@@ -282,11 +405,37 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd merge docs/examples/minimal.ssd --stdout`\n";
     }
 
+    if (target == "normalize") {
+        return "SEMDL Help Topic: reference normalize\n\n"
+               "Usage:\n"
+               "- `ssd normalize <input.ssd> [--stdout]`\n\n"
+               "Status:\n"
+               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help troubleshooting`\n";
+    }
+
+    if (target == "add") {
+        return "SEMDL Help Topic: reference add\n\n"
+               "Usage:\n"
+               "- `ssd add <kind> <file> [field=value ...]`\n\n"
+               "Status:\n"
+               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help troubleshooting`\n";
+    }
+
     return "SEMDL Help Topic: reference\n\n"
            "Known subcommands:\n"
            "- check\n"
-           "- explain\n"
            "- search\n"
+           "- extract\n"
+           "- similarity\n"
+           "- explain\n"
+           "- normalize\n"
+           "- add\n"
            "- set\n"
            "- remove\n"
            "- annotate\n"
@@ -323,6 +472,7 @@ std::string samples_help_text() {
     return "SEMDL Help Topic: samples\n\n"
            "- `ssd check docs/examples/minimal.ssd`\n"
            "- `ssd explain A1 docs/examples/minimal.ssd`\n"
+           "- `ssd check --help --format semdl`\n"
            "- `ssd set path:A1.label 売上報告書 --dry-run docs/examples/minimal.ssd`\n"
            "- `ssd annotate id:H1 rationale 原文に主語がないため補完 --target sidecar --dry-run docs/examples/minimal.ssd`\n";
 }
@@ -331,35 +481,85 @@ std::string troubleshooting_help_text() {
     return "SEMDL Help Topic: troubleshooting\n\n"
            "- Use `ssd help grammar` for option order and selector syntax.\n"
            "- Use `ssd help reference <subcommand>` for command-specific usage.\n"
+           "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Use `ssd help recipes wrong-layer` for path/meta layer mistakes.\n"
            "- Inspect `docs/examples/testcases/` for acceptance manifests and `docs/requirements.md` for the broader contract.\n"
            "- Report problems with command, argv, inputs, expected output, actual output, and golden file path.\n";
 }
 
-CommandResult make_help_result(std::string_view topic = {}, std::string_view target = {}) {
+CommandResult make_invalid_help_format_error(const std::vector<std::string_view>& args, std::string_view invalid_value) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_help_format\ncommand: " + join_args(args) +
+                       "\nformat: " + std::string(invalid_value) +
+                       "\nallowed:\n  - semdl\nhint: use `--format semdl` for opt-in SEMDL help output\n",
+    };
+}
+
+CommandResult make_unexpected_help_target_error(const std::vector<std::string_view>& args,
+                                                std::string_view topic,
+                                                std::string_view target) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR unexpected_help_target\ncommand: " + join_args(args) +
+                       "\ntopic: " + std::string(topic) +
+                       "\ntarget: " + std::string(target) +
+                       "\nhint: only `reference` and `recipes` accept a help target\n",
+    };
+}
+
+CommandResult make_help_result(const std::vector<std::string_view>& args,
+                               std::string_view topic = {},
+                               std::string_view target = {},
+                               HelpOutputFormat format = HelpOutputFormat::text) {
+    const auto make_output = [&](const std::string& text) {
+        return CommandResult{
+            .exit_code = 0,
+            .stdout_text = format == HelpOutputFormat::semdl ? render_help_as_semdl(args, topic, target, text) : text,
+            .stderr_text = "",
+        };
+    };
+
     if (topic.empty()) {
-        return CommandResult{.exit_code = 0, .stdout_text = root_help_text(), .stderr_text = ""};
+        return make_output(root_help_text());
     }
     if (topic == "overview") {
-        return CommandResult{.exit_code = 0, .stdout_text = root_help_text(), .stderr_text = ""};
+        if (!target.empty()) {
+            return make_unexpected_help_target_error(args, topic, target);
+        }
+        return make_output(root_help_text());
     }
     if (topic == "toc") {
-        return CommandResult{.exit_code = 0, .stdout_text = root_help_text(), .stderr_text = ""};
+        if (!target.empty()) {
+            return make_unexpected_help_target_error(args, topic, target);
+        }
+        return make_output(root_help_text());
     }
     if (topic == "grammar") {
-        return CommandResult{.exit_code = 0, .stdout_text = grammar_help_text(), .stderr_text = ""};
+        if (!target.empty()) {
+            return make_unexpected_help_target_error(args, topic, target);
+        }
+        return make_output(grammar_help_text());
     }
     if (topic == "reference") {
-        return CommandResult{.exit_code = 0, .stdout_text = reference_help_text(target), .stderr_text = ""};
+        return make_output(reference_help_text(target));
     }
     if (topic == "recipes") {
-        return CommandResult{.exit_code = 0, .stdout_text = recipes_help_text(target), .stderr_text = ""};
+        return make_output(recipes_help_text(target));
     }
     if (topic == "samples") {
-        return CommandResult{.exit_code = 0, .stdout_text = samples_help_text(), .stderr_text = ""};
+        if (!target.empty()) {
+            return make_unexpected_help_target_error(args, topic, target);
+        }
+        return make_output(samples_help_text());
     }
     if (topic == "troubleshooting") {
-        return CommandResult{.exit_code = 0, .stdout_text = troubleshooting_help_text(), .stderr_text = ""};
+        if (!target.empty()) {
+            return make_unexpected_help_target_error(args, topic, target);
+        }
+        return make_output(troubleshooting_help_text());
     }
 
     return CommandResult{
@@ -442,12 +642,12 @@ CommandResult make_wrong_layer_error(const std::vector<std::string_view>& args) 
     return CommandResult{
         .exit_code = 3,
         .stdout_text = "",
-          .stderr_text = is_path
-                       ? "ERROR selector_resolved_wrong_layer\ncommand: " + join_args_with_quoted_index(args, 2) +
+        .stderr_text = is_path
+                           ? "ERROR selector_resolved_wrong_layer\ncommand: " + join_args_with_quoted_index(args, 2) +
                                  "\nselector: " + std::string(args[1]) +
                                  "\nresolved_target: " + target_id +
                                  "\nexpected_layer: inline .ssd structure\nactual_location: sidecar metadata\nhint: use a meta: selector for fields stored only in .ssm\n"
-                       : "ERROR selector_resolved_wrong_layer\ncommand: " + join_args_with_quoted_index(args, 2) +
+                           : "ERROR selector_resolved_wrong_layer\ncommand: " + join_args_with_quoted_index(args, 2) +
                                  "\nselector: " + std::string(args[1]) +
                                  "\nresolved_target: " + target_id +
                                  "\nexpected_layer: sidecar metadata\nactual_location: inline .ssd structure\nhint: use a path: selector for fields stored in the main .ssd file\n",
@@ -591,26 +791,43 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "--help") {
-        return make_help_result();
+        const auto parsed = parse_help_format_tail(args, 1);
+        if (!parsed.valid) {
+            return make_invalid_help_format_error(args, parsed.invalid_value);
+        }
+        return make_help_result(args, {}, {}, parsed.format);
     }
 
     if (args[0] == "help") {
-        if (args.size() == 1) {
-            return make_help_result();
+        const auto parsed = parse_help_format_tail(args, 1);
+        if (!parsed.valid) {
+            return make_invalid_help_format_error(args, parsed.invalid_value);
         }
-        if (args.size() == 2) {
-            return make_help_result(args[1]);
+        if (parsed.positional_end == 1) {
+            return make_help_result(args, {}, {}, parsed.format);
         }
-        return make_help_result(args[1], args[2]);
+        if (parsed.positional_end == 2) {
+            return make_help_result(args, args[1], {}, parsed.format);
+        }
+        if (parsed.positional_end > 3) {
+            return make_unexpected_help_target_error(args, args[1], args[2]);
+        }
+        if (!help_topic_accepts_target(args[1])) {
+            return make_unexpected_help_target_error(args, args[1], args[2]);
+        }
+        return make_help_result(args, args[1], args[2], parsed.format);
     }
 
     if (args[0] == "check") {
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", "check", parsed.format);
+        }
         if (args.size() < 2) {
             return make_missing_required_argument_error(args, "ssd check <file>", "check");
-        }
-
-        if (args.size() == 2 && args[1] == "--help") {
-            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("check"), .stderr_text = ""};
         }
 
         if (args[1].starts_with("--")) {
@@ -652,10 +869,14 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "explain") {
-        if (args.size() < 3) {
-            if (args.size() == 2 && args[1] == "--help") {
-                return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("explain"), .stderr_text = ""};
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
             }
+            return make_help_result(args, "reference", "explain", parsed.format);
+        }
+        if (args.size() < 3) {
             return make_missing_required_argument_error(args, "ssd explain <id> <file>", "explain");
         }
 
@@ -685,8 +906,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "set") {
-        if (args.size() == 2 && args[1] == "--help") {
-            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("set"), .stderr_text = ""};
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", "set", parsed.format);
         }
         if (args.size() >= 4) {
             semdl::core::DocumentStore store;
@@ -712,8 +937,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "annotate") {
-        if (args.size() == 2 && args[1] == "--help") {
-            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("annotate"), .stderr_text = ""};
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", "annotate", parsed.format);
         }
         if (args.size() < 4) {
             return make_missing_required_argument_error(args, "ssd annotate <selector> <kind> <text> <file>", "annotate");
@@ -732,8 +961,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "remove") {
-        if (args.size() == 2 && args[1] == "--help") {
-            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("remove"), .stderr_text = ""};
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", "remove", parsed.format);
         }
         if (args.size() < 3) {
             return make_missing_required_argument_error(args, "ssd remove <selector> <file>", "remove");
@@ -751,8 +984,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "split") {
-        if (args.size() == 2 && args[1] == "--help") {
-            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("split"), .stderr_text = ""};
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", "split", parsed.format);
         }
         if (args.size() >= 3 && args[2] == "--dry-run") {
             return make_dry_run_result(build_split_preview(args));
@@ -763,8 +1000,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "merge") {
-        if (args.size() == 2 && args[1] == "--help") {
-            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("merge"), .stderr_text = ""};
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", "merge", parsed.format);
         }
         if (args.size() >= 3 && args[2] == "--stdout") {
             return CommandResult{
@@ -776,8 +1017,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "search" || args[0] == "extract" || args[0] == "similarity" || args[0] == "add" || args[0] == "normalize") {
-        if (args.size() == 2 && args[1] == "--help") {
-            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text(args[0]), .stderr_text = ""};
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", args[0], parsed.format);
         }
         return make_subcommand_not_implemented_error(args);
     }

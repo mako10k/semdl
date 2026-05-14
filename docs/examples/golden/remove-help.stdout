@@ -1,0 +1,16 @@
+SEMDL Help Topic: reference remove
+
+Usage:
+- `ssd remove <selector> <file>`
+- `ssd remove type:<kind> --allow-multi <file>`
+
+Purpose:
+- Check selector resolution and removal safety for one target.
+- In the current slice, failure diagnostics are fixed before apply behavior.
+
+Related help:
+- `ssd help grammar`
+- `ssd help recipes wrong-layer`
+
+Sample:
+- `ssd remove type:alternative docs/examples/minimal.ssd`

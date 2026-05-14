@@ -18,14 +18,21 @@ SEMDL CLI Help
 
 3. Grammar
 - Root: `ssd <subcommand> ...`
-- Root help: `ssd help [topic] [target]`
-- Global help: `ssd --help`
-- Subcommand help: `ssd <subcommand> --help`
+- Root help: `ssd help [topic] [--format semdl]`
+- Targeted reference help: `ssd help reference [subcommand] [--format semdl]`
+- Targeted recipe help: `ssd help recipes [topic] [--format semdl]`
+- Global help: `ssd --help [--format semdl]`
+- Subcommand help: `ssd <subcommand> --help [--format semdl]`
 - See `docs/cli.ebnf` for the formal grammar.
 
 4. Reference
 - `check`: validate syntax and references for a document set
+- `search`: evaluate a read-only query against document inputs
+- `extract`: build an initial semantic document from raw inputs
+- `similarity`: compare two semantic targets
 - `explain`: show the merged semantic view for an entity id
+- `normalize`: canonicalize document shape and output profile
+- `add`: add one semantic entity skeleton
 - `set`: update one inline or sidecar field
 - `remove`: remove one target or fail on unsafe removal
 - `annotate`: add rationale/caveat/todo-like notes
@@ -38,6 +45,7 @@ SEMDL CLI Help
 - Explain an assertion: `ssd explain <id> <file>`
 - Preview an inline edit: `ssd set path:<id>.<field> <value> --dry-run <file>`
 - Preview a sidecar annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`
+- Machine-readable help: `ssd help grammar --format semdl`
 - Understand an option error: `ssd help grammar`
 - Understand a selector-layer error: `ssd help recipes wrong-layer`
 
@@ -45,10 +53,12 @@ SEMDL CLI Help
 - `ssd check docs/examples/minimal.ssd`
 - `ssd explain A1 docs/examples/minimal.ssd`
 - `ssd help reference check`
+- `ssd check --help --format semdl`
 - `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`
 
 7. Cautions, Known Bugs, Reporting
 - In this initial slice, `search`, `extract`, `similarity`, `add`, and `normalize` are not implemented yet.
+- Use `--format semdl` when another tool needs structured help output.
 - Update flows are acceptance-driven and still incomplete for full file rewriting.
 - Report problems with the command, argv, input paths, expected output, actual output, and related golden file.
 - Preferred reporting path: repository issue or change request with a reproducing CLI case.

@@ -1,0 +1,52 @@
+document HELP {
+  title: "SEMDL Help Topic: reference normalize"
+  command: "ssd normalize --help --format semdl"
+  topic: "reference"
+  target: "normalize"
+  format: "semdl"
+}
+
+resource HELP_TOPIC {
+  type: help-topic
+  label: "reference normalize"
+}
+
+segment HELP_LINE_1 {
+  source: HELP_TOPIC
+  text_quote: "SEMDL Help Topic: reference normalize"
+}
+
+segment HELP_LINE_2 {
+  source: HELP_TOPIC
+  text_quote: "Usage:"
+}
+
+segment HELP_LINE_3 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd normalize <input.ssd> [--stdout]`"
+}
+
+segment HELP_LINE_4 {
+  source: HELP_TOPIC
+  text_quote: "Status:"
+}
+
+segment HELP_LINE_5 {
+  source: HELP_TOPIC
+  text_quote: "- This subcommand is planned but not implemented in the current slice."
+}
+
+segment HELP_LINE_6 {
+  source: HELP_TOPIC
+  text_quote: "Related help:"
+}
+
+segment HELP_LINE_7 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help grammar`"
+}
+
+segment HELP_LINE_8 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help troubleshooting`"
+}

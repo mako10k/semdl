@@ -1,0 +1,11 @@
+SEMDL Help Topic: reference similarity
+
+Usage:
+- `ssd similarity <target-ref> <target-ref>`
+
+Status:
+- This subcommand is planned but not implemented in the current slice.
+
+Related help:
+- `ssd help grammar`
+- `ssd help troubleshooting`

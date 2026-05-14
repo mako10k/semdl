@@ -1,0 +1,6 @@
+ERROR invalid_help_format
+command: ssd check --help --format json
+format: json
+allowed:
+  - semdl
+hint: use `--format semdl` for opt-in SEMDL help output

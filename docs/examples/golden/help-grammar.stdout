@@ -1,15 +1,18 @@
 SEMDL Help Topic: grammar
 
 - Root form: `ssd <subcommand> ...`
-- Help form: `ssd help [topic] [target]`
-- Global help alias: `ssd --help`
-- Subcommand help alias: `ssd <subcommand> --help`
+- Help form: `ssd help [topic] [--format semdl]`
+- Targeted reference help: `ssd help reference [subcommand] [--format semdl]`
+- Targeted recipe help: `ssd help recipes [topic] [--format semdl]`
+- Global help alias: `ssd --help [--format semdl]`
+- Subcommand help alias: `ssd <subcommand> --help [--format semdl]`
 
 Key syntax forms:
 - `ssd check <file>`
 - `ssd explain <id> <file>`
 - `ssd set <selector> <value-or-field> ... <file>`
 - `ssd annotate <selector> <kind> <text> ... <file>`
+- `ssd help grammar --format semdl`
 
 Selectors:
 - `id:<id>`
@@ -19,4 +22,5 @@ Selectors:
 - `doc:self`
 
 For the formal grammar, see `docs/cli.ebnf`.
+Use `--format semdl` for line-preserving SEMDL help output.
 For command-specific help, see `ssd help reference <subcommand>`.

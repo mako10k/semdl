@@ -1,28 +1,29 @@
 (* SEMDL CLI grammar, initial revision *)
 
 command         = "ssd" , ws , root-help | "ssd" , ws , subcommand ;
-root-help       = help-opt | help-cmd ;
+root-help       = help-opt , [ ws , help-render-opt ] | help-cmd ;
 subcommand      = check-cmd | search-cmd | extract-cmd | similarity-cmd
                 | explain-cmd | split-cmd | merge-cmd | normalize-cmd
                 | add-cmd | set-cmd | remove-cmd | annotate-cmd | help-cmd ;
 
-help-cmd        = "help" , [ ws , help-topic , [ ws , help-target ] ] ;
-help-topic      = "overview" | "toc" | "grammar" | "reference" | "recipes" | "samples" | "troubleshooting" ;
-help-target     = identifier | help-topic ;
+help-cmd        = "help" , [ ws , ( help-single-topic | reference-help | recipe-help ) ] , [ ws , help-render-opt ] ;
+help-single-topic = "overview" | "toc" | "grammar" | "samples" | "troubleshooting" ;
+reference-help  = "reference" , [ ws , identifier ] ;
+recipe-help     = "recipes" , [ ws , identifier ] ;
 
-check-cmd       = "check" , ws , input-file | "check" , ws , help-opt ;
-search-cmd      = "search" , ws , query-file , ws , input-file , { ws , input-file } | "search" , ws , help-opt ;
-extract-cmd     = "extract" , ws , out-opt , ws , output-file , ws , input-file , { ws , input-file } , [ ws , format-opt ] | "extract" , ws , help-opt ;
-similarity-cmd  = "similarity" , ws , target-ref , ws , target-ref | "similarity" , ws , help-opt ;
-explain-cmd     = "explain" , ws , id-ref , ws , input-file | "explain" , ws , help-opt ;
-split-cmd       = "split" , ws , input-file , { ws , common-opt } | "split" , ws , help-opt ;
-merge-cmd       = "merge" , ws , input-file , { ws , common-opt } | "merge" , ws , help-opt ;
-normalize-cmd   = "normalize" , ws , input-file , { ws , common-opt } | "normalize" , ws , help-opt ;
+check-cmd       = "check" , ws , input-file | "check" , ws , help-opt , [ ws , help-render-opt ] ;
+search-cmd      = "search" , ws , query-file , ws , input-file , { ws , input-file } | "search" , ws , help-opt , [ ws , help-render-opt ] ;
+extract-cmd     = "extract" , ws , out-opt , ws , output-file , ws , input-file , { ws , input-file } , [ ws , format-opt ] | "extract" , ws , help-opt , [ ws , help-render-opt ] ;
+similarity-cmd  = "similarity" , ws , target-ref , ws , target-ref | "similarity" , ws , help-opt , [ ws , help-render-opt ] ;
+explain-cmd     = "explain" , ws , id-ref , ws , input-file | "explain" , ws , help-opt , [ ws , help-render-opt ] ;
+split-cmd       = "split" , ws , input-file , { ws , common-opt } | "split" , ws , help-opt , [ ws , help-render-opt ] ;
+merge-cmd       = "merge" , ws , input-file , { ws , common-opt } | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
+normalize-cmd   = "normalize" , ws , input-file , { ws , common-opt } | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
 
-add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , { ws , common-opt } | "add" , ws , help-opt ;
-set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt ;
-remove-cmd      = "remove" , ws , selector , ws , input-file , { ws , remove-opt } , { ws , common-opt } | "remove" , ws , help-opt ;
-annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , { ws , common-opt } , ws , input-file | "annotate" , ws , help-opt ;
+add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , { ws , common-opt } | "add" , ws , help-opt , [ ws , help-render-opt ] ;
+set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;
+remove-cmd      = "remove" , ws , selector , ws , input-file , { ws , remove-opt } , { ws , common-opt } | "remove" , ws , help-opt , [ ws , help-render-opt ] ;
+annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , { ws , common-opt } , ws , input-file | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
 
 set-id-cmd      = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , input-file , { ws , common-opt } ;
 set-path-meta-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , { ws , common-opt } , ws , input-file ;
@@ -49,6 +50,7 @@ fail-on-conflict-opt = "--fail-on-conflict" ;
 allow-multi-opt = "--allow-multi" ;
 cascade-opt     = "--cascade" ;
 help-opt        = "--help" ;
+help-render-opt = "--format" , ws , "semdl" ;
 
 add-field       = field-name , "=" , scalar-value ;
 field-path      = field-name , { "." , field-name } ;

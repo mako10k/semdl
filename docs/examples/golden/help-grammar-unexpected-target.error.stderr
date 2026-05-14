@@ -1,0 +1,5 @@
+ERROR unexpected_help_target
+command: ssd help grammar extra
+topic: grammar
+target: extra
+hint: only `reference` and `recipes` accept a help target

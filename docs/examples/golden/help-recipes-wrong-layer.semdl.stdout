@@ -1,0 +1,42 @@
+document HELP {
+  title: "SEMDL Help Topic: recipes wrong-layer"
+  command: "ssd help recipes wrong-layer --format semdl"
+  topic: "recipes"
+  target: "wrong-layer"
+  format: "semdl"
+}
+
+resource HELP_TOPIC {
+  type: help-topic
+  label: "recipes wrong-layer"
+}
+
+segment HELP_LINE_1 {
+  source: HELP_TOPIC
+  text_quote: "SEMDL Help Topic: recipes wrong-layer"
+}
+
+segment HELP_LINE_2 {
+  source: HELP_TOPIC
+  text_quote: "If `path:` points to sidecar-only metadata, use `meta:` instead."
+}
+
+segment HELP_LINE_3 {
+  source: HELP_TOPIC
+  text_quote: "If `meta:` points to inline-only structure, use `path:` instead."
+}
+
+segment HELP_LINE_4 {
+  source: HELP_TOPIC
+  text_quote: "Examples:"
+}
+
+segment HELP_LINE_5 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd set path:A1.label \"売上報告書\" --dry-run docs/examples/minimal.ssd`"
+}
+
+segment HELP_LINE_6 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`"
+}

@@ -1,0 +1,14 @@
+SEMDL Help Topic: reference merge
+
+Usage:
+- `ssd merge <input.ssd> --stdout`
+
+Purpose:
+- Produce the merged inline view of `.ssd` plus paired `.ssm`.
+
+Related help:
+- `ssd help grammar`
+- `ssd help samples`
+
+Sample:
+- `ssd merge docs/examples/minimal.ssd --stdout`

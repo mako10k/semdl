@@ -225,3 +225,34 @@ step S22:
       help 自体も success/failure golden と manifest で受け入れ面を固定する。
     annotation rationale:
       "error を単独文字列で終わらせず、次の学習・修正経路へ接続すると CLI 全体の理解コストを下げられる"
+
+problem P7:
+  "SEMDL の help を人間向け text と機械処理向け表現の両方で出したいとき、既定の可読性を崩さずにどう共存させるか"
+  annotation rationale:
+    "help を完全に機械向けへ寄せると CLI の入口として読みにくくなり、逆に text 固定だと外部ツールから構造的に扱いにくい"
+
+step S23:
+  decision D23 based_on P7, D20:
+    |
+      help の既定出力は従来どおり text のまま維持し、
+      opt-in で `--format semdl` を受け付ける。
+      対象は `ssd help`、`ssd --help`、`ssd <subcommand> --help` とする。
+    annotation rationale:
+      "既定の使い勝手を壊さずに machine-readable surface を追加できる"
+
+step S24:
+  decision D24 based_on D23:
+    |
+      `--format semdl` の help 出力は line-preserving な SEMDL profile とし、
+      `document`、`resource`、`segment` block で文面順序を保持する。
+      初期 slice では CLI 出力契約として固定し、core parser の再読込互換までは要求しない。
+    annotation rationale:
+      "help の文面を既存 text 契約と 1 対 1 で対応付けやすく、golden 管理もしやすい"
+
+step S25:
+  decision D25 based_on D21, D22:
+    |
+      未実装 subcommand であっても、公開された command 名には command-specific help を用意する。
+      初期受け入れ面では search、extract、similarity、add、normalize の `--help` も固定する。
+    annotation rationale:
+      "未実装時でも使い方と状態を CLI 上で説明できると、subcommand_not_implemented error からの導線が途切れない"

@@ -1,0 +1,12 @@
+SEMDL Help Topic: reference extract
+
+Usage:
+- `ssd extract --out <output.ssd> <input>...`
+- `ssd extract --stdout <input>...`
+
+Status:
+- This subcommand is planned but not implemented in the current slice.
+
+Related help:
+- `ssd help grammar`
+- `ssd help troubleshooting`

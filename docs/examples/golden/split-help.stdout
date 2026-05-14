@@ -1,0 +1,15 @@
+SEMDL Help Topic: reference split
+
+Usage:
+- `ssd split <input.ssd> --dry-run`
+
+Purpose:
+- Preview an inline-to-sidecar separation while preserving meaning.
+- In the current slice, apply behavior is not implemented yet.
+
+Related help:
+- `ssd help grammar`
+- `ssd help samples`
+
+Sample:
+- `ssd split docs/examples/minimal.inline.ssd --dry-run`

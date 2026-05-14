@@ -1,0 +1,14 @@
+SEMDL Help Topic: reference explain
+
+Usage:
+- `ssd explain <id> <file>`
+
+Purpose:
+- Show the merged semantic view for one entity id.
+
+Related help:
+- `ssd help grammar`
+- `ssd help recipes explain-not-found`
+
+Sample:
+- `ssd explain A1 docs/examples/minimal.ssd`

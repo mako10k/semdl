@@ -1,0 +1,11 @@
+SEMDL Help Topic: reference normalize
+
+Usage:
+- `ssd normalize <input.ssd> [--stdout]`
+
+Status:
+- This subcommand is planned but not implemented in the current slice.
+
+Related help:
+- `ssd help grammar`
+- `ssd help troubleshooting`

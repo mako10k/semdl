@@ -1,0 +1,27 @@
+document HELP {
+  title: "SEMDL Help Topic: recipes explain-not-found"
+  command: "ssd help recipes explain-not-found --format semdl"
+  topic: "recipes"
+  target: "explain-not-found"
+  format: "semdl"
+}
+
+resource HELP_TOPIC {
+  type: help-topic
+  label: "recipes explain-not-found"
+}
+
+segment HELP_LINE_1 {
+  source: HELP_TOPIC
+  text_quote: "SEMDL Help Topic: recipes explain-not-found"
+}
+
+segment HELP_LINE_2 {
+  source: HELP_TOPIC
+  text_quote: "Check that the id exists in the current `.ssd` or paired `.ssm`."
+}
+
+segment HELP_LINE_3 {
+  source: HELP_TOPIC
+  text_quote: "Try `ssd check <file>` first, then retry `ssd explain <id> <file>`."
+}

@@ -1,0 +1,4 @@
+SEMDL Help Topic: recipes explain-not-found
+
+Check that the id exists in the current `.ssd` or paired `.ssm`.
+Try `ssd check <file>` first, then retry `ssd explain <id> <file>`.
