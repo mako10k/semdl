@@ -176,3 +176,21 @@ step S17:
       期待動作の正本は CLI 契約と golden assets に置き、ライブラリ内部 API を runner 契約へ露出しない。
     annotation rationale:
       "runner が library へ直接結合すると、CLI 公開契約と golden 回帰の境界が崩れやすい"
+
+step S18:
+  decision D18 based_on D16:
+    |
+      初期実装では repository layout も 3 層境界に合わせて分ける。
+      core library、ssd CLI、test runner は別ディレクトリとして配置し、依存方向は library <- CLI <- runner ではなく、
+      library を CLI が利用し、runner は CLI を外部プロセスとして実行する構成を保つ。
+    annotation rationale:
+      "責務だけでなく配置先も分けると、実装初期から層の癒着を防ぎやすい"
+
+step S19:
+  decision D19 based_on D18, D6:
+    |
+      最初の implementation change plan は、既存の plan-semdl-spec-change prompt または semdl-spec-change skill を入口として起こす。
+      初手の実装 slice は core library の parse / validate / resolve と、CLI の check / explain に必要な最小経路を優先し、
+      runner 自体の実装は後続 slice とする。
+    annotation rationale:
+      "最小の read-only 経路から入ると、golden success cases と requirements への適合を狭い範囲で検証しやすい"

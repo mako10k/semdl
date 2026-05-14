@@ -845,6 +845,7 @@ SEMDL のアーキテクチャ判断は ADR で固定することを推奨する
 - 運用ルールは [docs/adr/README.md](docs/adr/README.md) に置く
 - 初期 ADR は [docs/adr/0001-use-architecture-decision-records.md](docs/adr/0001-use-architecture-decision-records.md) とする
 - 実装層分離の初期 ADR は [docs/adr/0002-separate-library-cli-and-runner.md](docs/adr/0002-separate-library-cli-and-runner.md) とする
+- 実装骨格配置の初期 ADR は [docs/adr/0003-establish-initial-implementation-layout.md](docs/adr/0003-establish-initial-implementation-layout.md) とする
 
 少なくとも以下は ADR 対象とする。
 
@@ -869,6 +870,19 @@ SEMDL のアーキテクチャ判断は ADR で固定することを推奨する
   - CLI の外側に位置し、core library API に直接依存しない
 
 初期分離の判断理由と境界は [docs/adr/0002-separate-library-cli-and-runner.md](docs/adr/0002-separate-library-cli-and-runner.md) を正とする。
+
+## 9.3 初期実装骨格と最初の change plan
+
+初期実装の配置先と依存方向は [docs/adr/0003-establish-initial-implementation-layout.md](docs/adr/0003-establish-initial-implementation-layout.md) を正とする。
+
+最初の implementation change plan は [docs/plans/initial-implementation-change-plan.md](docs/plans/initial-implementation-change-plan.md) に置くことを推奨する。
+
+この plan は少なくとも以下を明記すること。
+
+- どの prompt または skill を入口として想定するか
+- 最初の実装 slice が core library、CLI、runner のどこまでを含むか
+- requirements、EBNF、manifest、golden への波及有無
+- success / failure のどの受け入れ例を最初に実装対象へ含めるか
 
 ## 9.1 埋め込み生成
 
