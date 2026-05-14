@@ -1,0 +1,6 @@
+# Valid .ssq example: anchor subgraph as a result mode
+query {
+  select: assertion
+  where: source_presence
+  return: subgraph
+}

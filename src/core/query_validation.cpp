@@ -204,6 +204,50 @@ QueryValidationIssue validate_where_expression(std::string_view expression) {
     return issue;
 }
 
+QueryValidationIssue validate_selector_ref_expression(std::string_view expression, std::string_view label) {
+    QueryValidationIssue issue;
+    issue.expression = trim_space_copy(expression);
+    if (issue.expression.empty()) {
+        issue.valid = false;
+        issue.reason = std::string(label) + " requires a selector reference";
+        return issue;
+    }
+
+    if (find_unquoted_char(issue.expression, '\t') != std::string::npos) {
+        issue.valid = false;
+        issue.reason = "tab characters are not supported in the current .ssq filter profile";
+        return issue;
+    }
+
+    if (!(is_identifier_token(issue.expression) || is_quoted_string_token(issue.expression))) {
+        issue.valid = false;
+        issue.reason = std::string(label) + " must use an identifier or quoted string selector";
+    }
+    return issue;
+}
+
+QueryValidationIssue validate_return_expression(std::string_view expression) {
+    QueryValidationIssue issue;
+    issue.expression = trim_space_copy(expression);
+    if (issue.expression.empty()) {
+        issue.valid = false;
+        issue.reason = "return requires a result mode";
+        return issue;
+    }
+
+    if (find_unquoted_char(issue.expression, '\t') != std::string::npos) {
+        issue.valid = false;
+        issue.reason = "tab characters are not supported in the current .ssq filter profile";
+        return issue;
+    }
+
+    if (issue.expression != "matches" && issue.expression != "subgraph") {
+        issue.valid = false;
+        issue.reason = "return must be matches or subgraph";
+    }
+    return issue;
+}
+
 }  // namespace
 
 QueryValidationIssue validate_initial_ssq_profile(const std::filesystem::path& query_file) {
@@ -211,10 +255,26 @@ QueryValidationIssue validate_initial_ssq_profile(const std::filesystem::path& q
     std::string line;
     while (std::getline(input, line)) {
         const std::string trimmed = ltrim_any_whitespace_copy(line);
-        if (!trimmed.starts_with("where:")) {
+        if (trimmed.starts_with("where:")) {
+            const auto issue = validate_where_expression(std::string_view(trimmed).substr(6));
+            if (!issue.valid) {
+                return issue;
+            }
             continue;
         }
-        return validate_where_expression(std::string_view(trimmed).substr(6));
+        if (trimmed.starts_with("similar:")) {
+            const auto issue = validate_selector_ref_expression(std::string_view(trimmed).substr(8), "similar");
+            if (!issue.valid) {
+                return issue;
+            }
+            continue;
+        }
+        if (trimmed.starts_with("return:")) {
+            const auto issue = validate_return_expression(std::string_view(trimmed).substr(7));
+            if (!issue.valid) {
+                return issue;
+            }
+        }
     }
     return QueryValidationIssue{};
 }

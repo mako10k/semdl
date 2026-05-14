@@ -209,6 +209,32 @@
       "notes": "tab characters inside a quoted rhs stay within the minimal equality profile"
     },
     {
+      "id": "search-valid-similar-slot-not-implemented",
+      "command": "ssd search docs/query/valid-similar-slot.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-similar-slot.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/search-valid-similar-slot-not-implemented.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "the minimal .ssq profile keeps a similar slot even before search behavior is implemented"
+    },
+    {
+      "id": "search-valid-subgraph-return-not-implemented",
+      "command": "ssd search docs/query/valid-subgraph-return.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-subgraph-return.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/search-valid-subgraph-return-not-implemented.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "the minimal .ssq profile allows subgraph as a result mode even before search behavior is implemented"
+    },
+    {
       "id": "search-invalid-range-filter",
       "command": "ssd search docs/query/invalid-range-filter.ssq docs/examples/minimal.ssd",
       "argv": ["ssd", "search", "docs/query/invalid-range-filter.ssq", "docs/examples/minimal.ssd"],

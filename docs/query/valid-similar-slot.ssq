@@ -1,0 +1,6 @@
+# Valid .ssq example: anchor the minimal similar slot
+query {
+  select: assertion
+  similar: assertion
+  return: matches
+}
