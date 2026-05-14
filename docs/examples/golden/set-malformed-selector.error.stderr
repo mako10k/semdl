@@ -1,0 +1,5 @@
+ERROR invalid_selector_syntax
+command: ssd set path:A1 0.91 docs/examples/minimal.ssd
+selector: path:A1
+expected_form: path:<id>.<field>
+hint: path selector requires a dotted field path after the identifier

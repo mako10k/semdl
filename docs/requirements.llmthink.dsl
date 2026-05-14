@@ -105,3 +105,20 @@ step S10:
       失敗系は stderr golden と expected_exit を必須にする。
     annotation rationale:
       "成功系だけでなく失敗系を早めに固定すると、安全制約とエラーメッセージ方針の回帰を防ぎやすい"
+
+step S11:
+  decision D11 based_on D9:
+    |
+      test runner manifest の正規入力は command 文字列だけでなく argv 配列としても保持する。
+      stdin、environment、expected_output_kind も case 単位で固定し、runner 実装差を減らす。
+    annotation rationale:
+      "parser や lexer の失敗系は shell の再解釈に左右されやすく、argv を正にした方が再現性が高い"
+
+step S12:
+  decision D12 based_on D8, D10:
+    |
+      EBNF に対応する初期 parser / lexer failure cases として、
+      malformed selector、unknown option、unterminated quoted string を golden 化する。
+      これらは command 表示とは別に argv ベースで実行条件を固定する。
+    annotation rationale:
+      "字句境界と option parsing の回帰は成功系だけでは検出しづらく、EBNF に直結した失敗系が必要である"

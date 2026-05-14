@@ -3,29 +3,80 @@
     {
       "id": "remove-type-alternative-without-allow-multi",
       "command": "ssd remove type:alternative docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "type:alternative", "docs/examples/minimal.ssd"],
       "cwd": ".",
+      "stdin": "",
+      "environment": {},
       "expected_exit": 2,
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/remove-type-alternative.error.stderr",
+      "expected_output_kind": "exact",
       "notes": "multi-match selector fails by default"
     },
     {
       "id": "remove-referenced-assertion-A1",
       "command": "ssd remove id:A1 docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:A1", "docs/examples/minimal.ssd"],
       "cwd": ".",
+      "stdin": "",
+      "environment": {},
       "expected_exit": 3,
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/remove-id-A1.error.stderr",
+      "expected_output_kind": "exact",
       "notes": "referenced structural element cannot be removed"
     },
     {
       "id": "annotate-invalid-kind-note",
       "command": "ssd annotate id:H1 note \"補足\" docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "note", "補足", "docs/examples/minimal.ssd"],
       "cwd": ".",
+      "stdin": "",
+      "environment": {},
       "expected_exit": 2,
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/annotate-invalid-kind.error.stderr",
+      "expected_output_kind": "exact",
       "notes": "annotation kind is validated before execution"
+    },
+    {
+      "id": "set-malformed-selector-missing-field",
+      "command": "ssd set path:A1 0.91 docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:A1", "0.91", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-malformed-selector.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "path selector must include dotted field path"
+    },
+    {
+      "id": "check-unknown-option-long",
+      "command": "ssd check --strict docs/examples/minimal.ssd",
+      "argv": ["ssd", "check", "--strict", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/check-unknown-option.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "unknown long option is rejected during option parsing"
+    },
+    {
+      "id": "annotate-unterminated-quoted-string",
+      "command": "ssd annotate id:H1 rationale \"未完 docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "rationale", "\"未完", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-unterminated-quoted-string.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "quoted-string lexical failure is surfaced explicitly"
     }
   ]
 }
