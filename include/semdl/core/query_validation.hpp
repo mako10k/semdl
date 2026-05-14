@@ -7,6 +7,7 @@ namespace semdl::core {
 
 struct QueryValidationIssue {
     bool valid = true;
+    std::string clause = "where";
     std::string expression;
     std::string reason;
 };

@@ -133,6 +133,31 @@ step S8C:
     annotation rationale:
       "filter slot の存在だけを先に置くと中身が空洞化する一方、豊富な条件構文を先回りで固定すると sample 不足の段階では過剰設計になるため"
 
+step S8D:
+  decision D8D based_on D8B, D4:
+    |
+      埋め込み生成は read path ではなく explicit write path の責務とする。
+      `ssd search`、`ssd similarity`、`.ssq` evaluation は既存埋め込みを読むだけに留め、暗黙の再計算や自動永続化を行わない。
+    annotation rationale:
+      "read-only query language と検索 command の責務を保ったまま、provider 設定や永続化ポリシーの混入を避けるため"
+
+step S8E:
+  decision D8E based_on D8D:
+    |
+      埋め込みの persist 境界は、`.ssd` 本体には existence だけを残し、ベクトル本体と詳細メタデータは `.ssm` または外部参照へ置く。
+      ranking や一時 index のような derived data は persist 必須にしない。
+    annotation rationale:
+      "本体の可読性を保ちつつ、検索に必要な補助データを sidecar / external reference に逃がせるようにするため"
+
+step S8F:
+  decision D8F based_on D8D, D8E:
+    |
+      初期 similarity resolution は precomputed embedding 前提とし、`.ssq` の `similar` は既存 target 基準、`ssd similarity` は既存 2 target の pairwise 比較とする。
+      同一 model と dimensions の組だけを既定で比較対象にし、similarity metric は execution policy 側の source of truth とする。
+      初期既定値は cosine としてよいが、結果には使用 metric を明示し、free-text query や cross-model alignment は後続 slice に分離する。
+    annotation rationale:
+      "similarity slot と pairwise command の責務を明確にし、未承認の text-to-vector や cross-model 変換を同時に持ち込まないため"
+
 step S9:
   decision D9 based_on D7:
     |

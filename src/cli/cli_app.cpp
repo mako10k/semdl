@@ -632,7 +632,7 @@ CommandResult make_invalid_query_filter_error(const std::vector<std::string_view
         .stdout_text = "",
         .stderr_text = "ERROR invalid_query_filter\ncommand: " + join_args(args) +
                        "\nquery_file: " + query_file.generic_string() +
-                       "\nwhere: " + issue.expression +
+                       "\n" + issue.clause + ": " + issue.expression +
                        "\nreason: " + issue.reason +
                        "\nallowed:\n  - field\n  - field = \"value\"\n  - field = 1\n  - field = true|false\nhint: see `ssd help reference search`\n",
     };

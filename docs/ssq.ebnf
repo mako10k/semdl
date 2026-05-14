@@ -10,10 +10,11 @@ query-block         = "query", ws, block-open,
 
 select-entry        = "select", colon, [ ws ], selector-ref, line-end ;
 where-entry         = "where", colon, [ ws ], filter-expr, line-end ;
-similar-entry       = "similar", colon, [ ws ], selector-ref, line-end ;
+similar-entry       = "similar", colon, [ ws ], target-ref, line-end ;
 return-entry        = "return", colon, [ ws ], result-mode, line-end ;
 
 selector-ref        = identifier | quoted-string ;
+target-ref          = identifier ;
 filter-expr         = presence-filter | equality-filter ;
 presence-filter     = field-ref ;
 equality-filter     = field-ref, [ ws ], "=", [ ws ], filter-value ;

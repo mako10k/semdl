@@ -147,6 +147,7 @@ std::size_t find_unquoted_char(std::string_view text, char target, std::size_t s
 
 QueryValidationIssue validate_where_expression(std::string_view expression) {
     QueryValidationIssue issue;
+    issue.clause = "where";
     issue.expression = trim_space_copy(expression);
     if (issue.expression.empty()) {
         issue.valid = false;
@@ -206,6 +207,7 @@ QueryValidationIssue validate_where_expression(std::string_view expression) {
 
 QueryValidationIssue validate_selector_ref_expression(std::string_view expression, std::string_view label) {
     QueryValidationIssue issue;
+    issue.clause = std::string(label);
     issue.expression = trim_space_copy(expression);
     if (issue.expression.empty()) {
         issue.valid = false;
@@ -219,6 +221,14 @@ QueryValidationIssue validate_selector_ref_expression(std::string_view expressio
         return issue;
     }
 
+    if (label == "similar") {
+        if (!is_identifier_token(issue.expression)) {
+            issue.valid = false;
+            issue.reason = "similar must use an existing target identifier";
+        }
+        return issue;
+    }
+
     if (!(is_identifier_token(issue.expression) || is_quoted_string_token(issue.expression))) {
         issue.valid = false;
         issue.reason = std::string(label) + " must use an identifier or quoted string selector";
@@ -228,6 +238,7 @@ QueryValidationIssue validate_selector_ref_expression(std::string_view expressio
 
 QueryValidationIssue validate_return_expression(std::string_view expression) {
     QueryValidationIssue issue;
+    issue.clause = "return";
     issue.expression = trim_space_copy(expression);
     if (issue.expression.empty()) {
         issue.valid = false;

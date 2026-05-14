@@ -1,0 +1,6 @@
+# Invalid .ssq example: similar must use an existing target identifier
+query {
+  select: assertion
+  similar: "revenue growth"
+  return: matches
+}
