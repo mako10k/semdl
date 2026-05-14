@@ -158,6 +158,16 @@ step S8F:
     annotation rationale:
       "similarity slot と pairwise command の責務を明確にし、未承認の text-to-vector や cross-model 変換を同時に持ち込まないため"
 
+step S8G:
+  decision D8G based_on D8D, D8E:
+    |
+      最初の埋め込み生成 command owner は `ssd extract` とし、初期 slice では既存 `.ssd` を semantic source として受け取り、
+      `--embed-provider ollama --embed-model <model>` を明示した場合だけ paired `.ssm` に embedding record を生成する。
+      `--embed-provider` と `--embed-model` は両方そろったときだけ有効とし、片側だけなら failure とする。
+      embeddable text は kind ごとの canonical field を 1 つだけ持ち、record は model、dimensions、generated_at、provider、source_field、vector を保持する。
+    annotation rationale:
+      "dedicated command の増設や raw extraction 全体の固定を先送りしつつ、ADR 0008 の explicit write-path 境界に沿った最初の実装面を確保するため"
+
 step S9:
   decision D9 based_on D7:
     |

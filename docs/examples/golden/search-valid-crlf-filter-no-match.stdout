@@ -1,0 +1,4 @@
+query_file: docs/query/valid-crlf-filter.ssq
+mode: matches
+inputs: 1
+matches: 0

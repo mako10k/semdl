@@ -1,0 +1,44 @@
+# Semantic mirror of docs/examples/fixtures/README.md.
+# This file stays human-sized and mirrors the prompt mapping in ollama-embeddings.psv.
+
+document D1 {
+  title: "Ollama embedding fixture overview"
+  source_ref: "docs/examples/fixtures/ollama-embeddings.psv"
+}
+
+# target_id: R1 | kind: resource | source_field: label | raw_capture: embeddings/r1.txt
+resource R1 {
+  type: document
+  label: "抽出元文書"
+}
+
+# target_id: S1 | kind: segment | source_field: text_quote | raw_capture: embeddings/s1.txt
+segment S1 {
+  source: R1
+  text_quote: "4月の売上は前年同月比で増加した"
+}
+
+# target_id: A1 | kind: assertion | source_field: object | raw_capture: embeddings/a1.txt
+assertion A1 {
+  subject: R1
+  predicate: reports
+  object: "4月の売上は増加した"
+  label: "埋め込み fixture の assertion 対象"
+  source_segment: S1
+  source_presence: true
+  embedding_presence: true
+}
+
+# target_id: H1 | kind: hypothesis | source_field: summary | raw_capture: embeddings/h1.txt
+hypothesis H1 {
+  about: A1
+  kind: omission-completion
+  summary: "増加の主体は国内売上である可能性が高い"
+  alternative_group: ALT1
+}
+
+# target_id: ALT1A | kind: alternative | source_field: label | raw_capture: embeddings/alt1a.txt
+alternative ALT1A {
+  group: ALT1
+  label: "国内売上が増加した"
+}

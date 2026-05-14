@@ -1,0 +1,4 @@
+wrote_ssd: docs/examples/extract-output.ssd
+wrote_ssm: docs/examples/extract-output.ssm
+embedded: 5
+skipped: 1

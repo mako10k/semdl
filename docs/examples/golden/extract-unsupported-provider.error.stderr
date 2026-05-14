@@ -1,0 +1,5 @@
+ERROR unsupported_extract_provider
+command: ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-large docs/examples/extract-source.ssd
+provider: openai
+reason: extract currently supports only ollama
+hint: see `ssd help reference extract`

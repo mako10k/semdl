@@ -1,6 +1,6 @@
 # String equality-based .ssq example for grammar anchoring
 query {
   select: assertion
-  where: provenance_kind = "extracted"
+  where: rationale = "文中の明示表現をそのまま主張化した"
   return: matches
 }

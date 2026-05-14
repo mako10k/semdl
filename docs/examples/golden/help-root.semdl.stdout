@@ -267,7 +267,7 @@ segment HELP_LINE_51 {
 
 segment HELP_LINE_52 {
   source: HELP_TOPIC
-  text_quote: "- In this initial slice, `search`, `extract`, `similarity`, `add`, and `normalize` are not implemented yet."
+  text_quote: "- In this initial slice, `search` supports `select` with an optional single `where` and `return: matches`; `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `similar`, `subgraph`, `similarity`, `add`, and `normalize` remain unimplemented."
 }
 
 segment HELP_LINE_53 {

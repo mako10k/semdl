@@ -118,6 +118,61 @@
       "notes": "error-routed recipe help should reject unknown help formats consistently"
     },
     {
+      "id": "extract-missing-embed-model",
+      "command": "ssd extract --stdout --embed-provider ollama docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "ollama", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-missing-embed-model.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "explicit Ollama embedding generation requires an explicit model"
+    },
+    {
+      "id": "extract-missing-embed-provider",
+      "command": "ssd extract --stdout --embed-model nomic-embed-text:latest docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-model", "nomic-embed-text:latest", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-missing-embed-provider.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "embedding model alone should not activate extract-time embedding generation"
+    },
+    {
+      "id": "extract-unsupported-provider",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-large docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-large", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-unsupported-provider.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "initial extract embedding generation supports only the local Ollama provider"
+    },
+    {
+      "id": "extract-provider-failed",
+      "command": "ssd extract --stdout --embed-provider ollama --embed-model fail-model docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "ollama", "--embed-model", "fail-model", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OLLAMA_COMMAND": "docs/examples/fixtures/fake-ollama.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-14T12:00:00Z"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-provider-failed.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "provider command failures should surface as extract failures"
+    },
+    {
       "id": "check-help-invalid-format",
       "command": "ssd check --help --format json",
       "argv": ["ssd", "check", "--help", "--format", "json"],
@@ -157,58 +212,6 @@
       "notes": "missing required args should point to explain help"
     },
     {
-      "id": "search-not-implemented-help",
-      "command": "ssd search docs/query/example.ssq docs/examples/minimal.ssd",
-      "argv": ["ssd", "search", "docs/query/example.ssq", "docs/examples/minimal.ssd"],
-      "cwd": ".",
-      "stdin": "",
-      "environment": {},
-      "expected_exit": 2,
-      "expected_stdout": "",
-      "expected_stderr": "docs/examples/golden/search-not-implemented.error.stderr",
-      "expected_output_kind": "exact",
-      "notes": "unimplemented subcommands should still route to reference help"
-    },
-    {
-      "id": "search-valid-quoted-string-filter-not-implemented",
-      "command": "ssd search docs/query/valid-quoted-string-filter.ssq docs/examples/minimal.ssd",
-      "argv": ["ssd", "search", "docs/query/valid-quoted-string-filter.ssq", "docs/examples/minimal.ssd"],
-      "cwd": ".",
-      "stdin": "",
-      "environment": {},
-      "expected_exit": 2,
-      "expected_stdout": "",
-      "expected_stderr": "docs/examples/golden/search-valid-quoted-string-filter-not-implemented.error.stderr",
-      "expected_output_kind": "exact",
-      "notes": "quoted rhs may contain logical or comparison text without leaving the minimal equality profile"
-    },
-    {
-      "id": "search-valid-crlf-filter-not-implemented",
-      "command": "ssd search docs/query/valid-crlf-filter.ssq docs/examples/minimal.ssd",
-      "argv": ["ssd", "search", "docs/query/valid-crlf-filter.ssq", "docs/examples/minimal.ssd"],
-      "cwd": ".",
-      "stdin": "",
-      "environment": {},
-      "expected_exit": 2,
-      "expected_stdout": "",
-      "expected_stderr": "docs/examples/golden/search-valid-crlf-filter-not-implemented.error.stderr",
-      "expected_output_kind": "exact",
-      "notes": "valid equality filters should remain valid when the query file uses CRLF line endings"
-    },
-    {
-      "id": "search-valid-quoted-tab-filter-not-implemented",
-      "command": "ssd search docs/query/valid-quoted-tab-filter.ssq docs/examples/minimal.ssd",
-      "argv": ["ssd", "search", "docs/query/valid-quoted-tab-filter.ssq", "docs/examples/minimal.ssd"],
-      "cwd": ".",
-      "stdin": "",
-      "environment": {},
-      "expected_exit": 2,
-      "expected_stdout": "",
-      "expected_stderr": "docs/examples/golden/search-valid-quoted-tab-filter-not-implemented.error.stderr",
-      "expected_output_kind": "exact",
-      "notes": "tab characters inside a quoted rhs stay within the minimal equality profile"
-    },
-    {
       "id": "search-valid-similar-slot-not-implemented",
       "command": "ssd search docs/query/valid-similar-slot.ssq docs/examples/minimal.ssd",
       "argv": ["ssd", "search", "docs/query/valid-similar-slot.ssq", "docs/examples/minimal.ssd"],
@@ -246,6 +249,19 @@
       "expected_stderr": "docs/examples/golden/search-invalid-quoted-similar-target.error.stderr",
       "expected_output_kind": "exact",
       "notes": "the minimal similar slot is target-based and does not accept free-text input"
+    },
+    {
+      "id": "search-invalid-missing-select",
+      "command": "ssd search docs/query/invalid-missing-select.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/invalid-missing-select.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/search-invalid-missing-select.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "the minimal .ssq profile requires select"
     },
     {
       "id": "search-invalid-range-filter",

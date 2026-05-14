@@ -1,7 +1,11 @@
 #pragma once
 
+#include "semdl/core/document_store.hpp"
+
 #include <filesystem>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace semdl::core {
 
@@ -13,5 +17,28 @@ struct QueryValidationIssue {
 };
 
 [[nodiscard]] QueryValidationIssue validate_initial_ssq_profile(const std::filesystem::path& query_file);
+
+struct SearchQuery {
+    std::string select;
+    std::optional<std::string> where_expression;
+    std::optional<std::string> similar_expression;
+    std::string result_mode = "matches";
+};
+
+struct SearchMatch {
+    std::string file;
+    std::string id;
+    std::string kind;
+};
+
+struct SearchResult {
+    SearchQuery query;
+    std::vector<SearchMatch> matches;
+};
+
+[[nodiscard]] SearchQuery parse_initial_search_query(const std::filesystem::path& query_file);
+[[nodiscard]] SearchResult execute_initial_search_query(const SearchQuery& query,
+                                                        const std::vector<std::filesystem::path>& input_files,
+                                                        const DocumentStore& store);
 
 }  // namespace semdl::core

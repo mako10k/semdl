@@ -1,0 +1,8 @@
+ERROR extract_embedding_provider_failed
+command: ssd extract --stdout --embed-provider ollama --embed-model fail-model docs/examples/extract-source.ssd
+provider: ollama
+model: fail-model
+reason: ollama command failed
+hint: see `ssd help reference extract`
+
+

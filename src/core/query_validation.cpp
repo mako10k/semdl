@@ -1,8 +1,11 @@
 #include "semdl/core/query_validation.hpp"
 
+#include "semdl/core/document_store.hpp"
+
 #include <cctype>
 #include <fstream>
 #include <iterator>
+#include <map>
 #include <sstream>
 #include <string_view>
 
@@ -259,13 +262,89 @@ QueryValidationIssue validate_return_expression(std::string_view expression) {
     return issue;
 }
 
+std::optional<std::string> read_clause_value(const std::filesystem::path& query_file, std::string_view clause) {
+    std::istringstream input(read_text_file(query_file));
+    std::string line;
+    const std::string prefix = std::string(clause) + ":";
+    while (std::getline(input, line)) {
+        const std::string trimmed = ltrim_any_whitespace_copy(line);
+        if (trimmed.starts_with(prefix)) {
+            return trim_space_copy(std::string_view(trimmed).substr(prefix.size()));
+        }
+    }
+    return std::nullopt;
+}
+
+std::map<std::string, std::string> merged_fields_for(const DocumentData& document, const std::string& entity_id) {
+    std::map<std::string, std::string> merged;
+    if (const auto* entity = document.find_entity(entity_id); entity != nullptr) {
+        merged.insert(entity->fields.begin(), entity->fields.end());
+    }
+    if (const auto* metadata = document.find_metadata(entity_id); metadata != nullptr) {
+        merged.insert(metadata->fields.begin(), metadata->fields.end());
+    }
+    return merged;
+}
+
+bool matches_where_expression(const std::map<std::string, std::string>& fields, std::string_view expression) {
+    const auto equal_index = find_unquoted_char(expression, '=');
+    if (equal_index == std::string::npos) {
+        return fields.contains(std::string(trim_space_copy(expression)));
+    }
+
+    const std::string left = trim_space_copy(std::string_view(expression).substr(0, equal_index));
+    const std::string right = trim_space_copy(std::string_view(expression).substr(equal_index + 1));
+    const auto it = fields.find(left);
+    return it != fields.end() && it->second == right;
+}
+
+QueryValidationIssue validate_select_expression(std::string_view expression) {
+    const std::string trimmed = trim_space_copy(expression);
+
+    if (trimmed.empty()) {
+        return QueryValidationIssue{
+            .valid = false,
+            .clause = "select",
+            .expression = "<missing>",
+            .reason = "select is required",
+        };
+    }
+
+    if (!(is_identifier_token(trimmed) || is_quoted_string_token(trimmed))) {
+        return QueryValidationIssue{
+            .valid = false,
+            .clause = "select",
+            .expression = trimmed,
+            .reason = "select must use an identifier or quoted string selector",
+        };
+    }
+
+    return QueryValidationIssue{};
+}
+
+std::string normalize_selector_value(std::string value) {
+    if (value.size() >= 2 && value.front() == '"' && value.back() == '"') {
+        return value.substr(1, value.size() - 2);
+    }
+    return value;
+}
+
 }  // namespace
 
 QueryValidationIssue validate_initial_ssq_profile(const std::filesystem::path& query_file) {
     std::istringstream input(read_text_file(query_file));
     std::string line;
+    bool seen_select = false;
     while (std::getline(input, line)) {
         const std::string trimmed = ltrim_any_whitespace_copy(line);
+        if (trimmed.starts_with("select:")) {
+            seen_select = true;
+            const auto issue = validate_select_expression(std::string_view(trimmed).substr(7));
+            if (!issue.valid) {
+                return issue;
+            }
+            continue;
+        }
         if (trimmed.starts_with("where:")) {
             const auto issue = validate_where_expression(std::string_view(trimmed).substr(6));
             if (!issue.valid) {
@@ -287,7 +366,59 @@ QueryValidationIssue validate_initial_ssq_profile(const std::filesystem::path& q
             }
         }
     }
+
+    if (!seen_select) {
+        return QueryValidationIssue{
+            .valid = false,
+            .clause = "select",
+            .expression = "<missing>",
+            .reason = "select is required",
+        };
+    }
+
     return QueryValidationIssue{};
+}
+
+SearchQuery parse_initial_search_query(const std::filesystem::path& query_file) {
+    SearchQuery query;
+    if (const auto select = read_clause_value(query_file, "select"); select.has_value()) {
+        query.select = normalize_selector_value(*select);
+    }
+    query.where_expression = read_clause_value(query_file, "where");
+    query.similar_expression = read_clause_value(query_file, "similar");
+    if (const auto return_mode = read_clause_value(query_file, "return"); return_mode.has_value()) {
+        query.result_mode = *return_mode;
+    }
+    return query;
+}
+
+SearchResult execute_initial_search_query(const SearchQuery& query,
+                                         const std::vector<std::filesystem::path>& input_files,
+                                         const DocumentStore& store) {
+    SearchResult result;
+    result.query = query;
+
+    for (const auto& input_file : input_files) {
+        const auto document = store.load_document(input_file);
+        for (const auto& [entity_id, entity] : document.entities) {
+            if (entity.kind != query.select) {
+                continue;
+            }
+
+            const auto merged_fields = merged_fields_for(document, entity_id);
+            if (query.where_expression.has_value() && !matches_where_expression(merged_fields, *query.where_expression)) {
+                continue;
+            }
+
+            result.matches.push_back(SearchMatch{
+                .file = input_file.generic_string(),
+                .id = entity_id,
+                .kind = entity.kind,
+            });
+        }
+    }
+
+    return result;
 }
 
 }  // namespace semdl::core

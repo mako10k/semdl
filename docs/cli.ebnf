@@ -13,12 +13,15 @@ recipe-help     = "recipes" , [ ws , identifier ] ;
 
 check-cmd       = "check" , ws , input-file | "check" , ws , help-opt , [ ws , help-render-opt ] ;
 search-cmd      = "search" , ws , query-file , ws , input-file , { ws , input-file } | "search" , ws , help-opt , [ ws , help-render-opt ] ;
-extract-cmd     = "extract" , ws , out-opt , ws , output-file , ws , input-file , { ws , input-file } , [ ws , format-opt ] | "extract" , ws , help-opt , [ ws , help-render-opt ] ;
+extract-cmd     = extract-out-cmd | extract-stdout-cmd | "extract" , ws , help-opt , [ ws , help-render-opt ] ;
 similarity-cmd  = "similarity" , ws , target-ref , ws , target-ref | "similarity" , ws , help-opt , [ ws , help-render-opt ] ;
 explain-cmd     = "explain" , ws , id-ref , ws , input-file | "explain" , ws , help-opt , [ ws , help-render-opt ] ;
 split-cmd       = "split" , ws , input-file , { ws , common-opt } | "split" , ws , help-opt , [ ws , help-render-opt ] ;
 merge-cmd       = "merge" , ws , input-file , { ws , common-opt } | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
 normalize-cmd   = "normalize" , ws , input-file , { ws , common-opt } | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
+
+extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file ;
+extract-stdout-cmd = "extract" , ws , stdout-opt , { ws , extract-opt } , ws , input-file ;
 
 add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , { ws , common-opt } | "add" , ws , help-opt , [ ws , help-render-opt ] ;
 set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;
@@ -34,6 +37,11 @@ type-selector   = "type:" , kind-name ;
 path-selector   = "path:" , identifier , "." , field-path ;
 meta-selector   = "meta:" , identifier , "." , field-path ;
 doc-selector    = "doc:self" ;
+
+extract-opt     = format-opt | embed-provider-opt | embed-model-opt ;
+embed-provider-opt = "--embed-provider" , ws , identifier ;
+embed-model-opt = "--embed-model" , ws , model-token ;
+model-token     = identifier , { ":" , identifier } ;
 
 add-kind        = "resource" | "segment" | "assertion" | "hypothesis"
                 | "alternative" | "provenance" | "annotation" ;

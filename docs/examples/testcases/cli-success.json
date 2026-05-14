@@ -258,7 +258,104 @@
       "expected_stdout": "docs/examples/golden/extract-help.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "extract help should be command-specific even before implementation"
+      "notes": "extract help should document the Ollama-backed embedding generation slice"
+    },
+    {
+      "id": "extract-ollama-stdout",
+      "command": "ssd extract --stdout --embed-provider ollama --embed-model nomic-embed-text:latest docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "ollama", "--embed-model", "nomic-embed-text:latest", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OLLAMA_COMMAND": "docs/examples/fixtures/fake-ollama.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-14T12:00:00Z"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-ollama-stdout.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract should generate sidecar embedding records through an explicit Ollama-backed write path"
+    },
+    {
+      "id": "extract-ollama-out",
+      "command": "ssd extract --out docs/examples/extract-output.ssd --embed-provider ollama --embed-model nomic-embed-text:latest docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--out", "docs/examples/extract-output.ssd", "--embed-provider", "ollama", "--embed-model", "nomic-embed-text:latest", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OLLAMA_COMMAND": "docs/examples/fixtures/fake-ollama.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-14T12:00:00Z"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-ollama-out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract out mode should report paired outputs and embedding counts"
+    },
+    {
+      "id": "search-presence-minimal",
+      "command": "ssd search docs/query/example.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/example.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-presence-minimal.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "search should resolve a presence filter against the merged semantic view"
+    },
+    {
+      "id": "search-string-equality-minimal",
+      "command": "ssd search docs/query/string-equality-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/string-equality-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-string-equality-minimal.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "search should resolve a sidecar-backed string equality against the merged semantic view"
+    },
+    {
+      "id": "search-valid-quoted-string-filter-no-match",
+      "command": "ssd search docs/query/valid-quoted-string-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-quoted-string-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-quoted-string-filter-no-match.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "valid quoted-string filters should execute even when they produce no matches"
+    },
+    {
+      "id": "search-valid-crlf-filter-no-match",
+      "command": "ssd search docs/query/valid-crlf-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-crlf-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-crlf-filter-no-match.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "valid CRLF queries should execute even when they produce no matches"
+    },
+    {
+      "id": "search-valid-quoted-tab-filter-no-match",
+      "command": "ssd search docs/query/valid-quoted-tab-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-quoted-tab-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-quoted-tab-filter-no-match.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "valid quoted-tab filters should execute even when they produce no matches"
     },
     {
       "id": "extract-help-semdl",
@@ -271,7 +368,7 @@
       "expected_stdout": "docs/examples/golden/extract-help.semdl.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "extract help also supports SEMDL rendering"
+      "notes": "extract help also supports SEMDL rendering for the Ollama-backed slice"
     },
     {
       "id": "similarity-help",

@@ -23,12 +23,12 @@ segment HELP_LINE_2 {
 
 segment HELP_LINE_3 {
   source: HELP_TOPIC
-  text_quote: "- `ssd extract --out <output.ssd> <input>...`"
+  text_quote: "- `ssd extract --out <output.ssd> --embed-provider ollama --embed-model <model> <input.ssd>`"
 }
 
 segment HELP_LINE_4 {
   source: HELP_TOPIC
-  text_quote: "- `ssd extract --stdout <input>...`"
+  text_quote: "- `ssd extract --stdout --embed-provider ollama --embed-model <model> <input.ssd>`"
 }
 
 segment HELP_LINE_5 {
@@ -38,20 +38,25 @@ segment HELP_LINE_5 {
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- This subcommand is planned but not implemented in the current slice."
+  text_quote: "- This subcommand currently supports explicit Ollama-backed embedding generation from an existing `.ssd` input."
 }
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "Related help:"
+  text_quote: "- Raw input extraction and non-Ollama providers remain planned but not implemented in the current slice."
 }
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "Related help:"
 }
 
 segment HELP_LINE_9 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help grammar`"
+}
+
+segment HELP_LINE_10 {
   source: HELP_TOPIC
   text_quote: "- `ssd help troubleshooting`"
 }

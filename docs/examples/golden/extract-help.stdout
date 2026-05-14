@@ -1,11 +1,12 @@
 SEMDL Help Topic: reference extract
 
 Usage:
-- `ssd extract --out <output.ssd> <input>...`
-- `ssd extract --stdout <input>...`
+- `ssd extract --out <output.ssd> --embed-provider ollama --embed-model <model> <input.ssd>`
+- `ssd extract --stdout --embed-provider ollama --embed-model <model> <input.ssd>`
 
 Status:
-- This subcommand is planned but not implemented in the current slice.
+- This subcommand currently supports explicit Ollama-backed embedding generation from an existing `.ssd` input.
+- Raw input extraction and non-Ollama providers remain planned but not implemented in the current slice.
 
 Related help:
 - `ssd help grammar`

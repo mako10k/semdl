@@ -1,13 +1,22 @@
 #include "semdl/cli/cli_app.hpp"
 
 #include "semdl/core/document_store.hpp"
+#include "semdl/core/extract_embeddings.hpp"
 #include "semdl/core/query_validation.hpp"
 #include "semdl/core/semantic_model.hpp"
 
+#include <array>
+#include <cerrno>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
+#include <optional>
 #include <sstream>
 #include <string_view>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 namespace semdl::cli {
 
@@ -23,6 +32,21 @@ struct ParsedHelpFormat {
     HelpOutputFormat format = HelpOutputFormat::text;
     std::size_t positional_end = 0;
     std::string_view invalid_value;
+};
+
+struct ProcessResult {
+    int exit_code = 0;
+    std::string stdout_text;
+    std::string stderr_text;
+};
+
+struct ParsedExtractArgs {
+    bool valid = true;
+    bool use_stdout = false;
+    std::optional<std::filesystem::path> output_file;
+    std::optional<std::filesystem::path> input_file;
+    std::string provider;
+    std::string model;
 };
 
 std::string join_args(const std::vector<std::string_view>& args) {
@@ -55,6 +79,175 @@ std::string join_args_with_quoted_index(const std::vector<std::string_view>& arg
 std::string read_text_file(const std::filesystem::path& file_path) {
     std::ifstream input(file_path, std::ios::binary);
     return std::string((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+}
+
+std::string read_from_fd(int fd) {
+    std::array<char, 4096> buffer{};
+    std::string data;
+    while (true) {
+        const ssize_t count = ::read(fd, buffer.data(), buffer.size());
+        if (count == 0) {
+            break;
+        }
+        if (count < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            throw std::runtime_error("failed to read pipe");
+        }
+        data.append(buffer.data(), static_cast<std::size_t>(count));
+    }
+    return data;
+}
+
+std::string trim_copy(std::string value) {
+    const auto first = value.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) {
+        return "";
+    }
+    const auto last = value.find_last_not_of(" \t\r\n");
+    return value.substr(first, last - first + 1);
+}
+
+std::string current_utc_timestamp() {
+    const char* fixed = std::getenv("SEMDL_EXTRACT_GENERATED_AT");
+    if (fixed != nullptr && *fixed != '\0') {
+        return fixed;
+    }
+
+    const auto now = std::chrono::system_clock::now();
+    const std::time_t raw = std::chrono::system_clock::to_time_t(now);
+    std::tm utc{};
+    gmtime_r(&raw, &utc);
+    std::ostringstream output;
+    output << std::put_time(&utc, "%Y-%m-%dT%H:%M:%SZ");
+    return output.str();
+}
+
+int parse_vector_dimensions(std::string_view vector_text) {
+    const std::string trimmed = trim_copy(std::string(vector_text));
+    if (trimmed.size() < 2 || trimmed.front() != '[' || trimmed.back() != ']') {
+        return 0;
+    }
+    const std::string inner = trim_copy(trimmed.substr(1, trimmed.size() - 2));
+    if (inner.empty()) {
+        return 0;
+    }
+    int dimensions = 1;
+    for (const char character : inner) {
+        if (character == ',') {
+            ++dimensions;
+        }
+    }
+    return dimensions;
+}
+
+ProcessResult run_process_capture_output(const std::string& program, const std::vector<std::string>& argv) {
+    int stdout_pipe[2];
+    int stderr_pipe[2];
+    if (::pipe(stdout_pipe) != 0 || ::pipe(stderr_pipe) != 0) {
+        throw std::runtime_error("failed to create pipes");
+    }
+
+    const pid_t pid = ::fork();
+    if (pid < 0) {
+        throw std::runtime_error("failed to fork");
+    }
+
+    if (pid == 0) {
+        ::close(stdout_pipe[0]);
+        ::close(stderr_pipe[0]);
+        ::dup2(stdout_pipe[1], STDOUT_FILENO);
+        ::dup2(stderr_pipe[1], STDERR_FILENO);
+        ::close(stdout_pipe[1]);
+        ::close(stderr_pipe[1]);
+
+        std::vector<std::string> exec_storage;
+        exec_storage.reserve(argv.size() + 1);
+        exec_storage.push_back(program);
+        exec_storage.insert(exec_storage.end(), argv.begin(), argv.end());
+
+        std::vector<char*> exec_argv;
+        exec_argv.reserve(exec_storage.size() + 1);
+        for (auto& arg : exec_storage) {
+            exec_argv.push_back(arg.data());
+        }
+        exec_argv.push_back(nullptr);
+
+        ::execvp(program.c_str(), exec_argv.data());
+        _exit(127);
+    }
+
+    ::close(stdout_pipe[1]);
+    ::close(stderr_pipe[1]);
+
+    ProcessResult result;
+    result.stdout_text = read_from_fd(stdout_pipe[0]);
+    result.stderr_text = read_from_fd(stderr_pipe[0]);
+    ::close(stdout_pipe[0]);
+    ::close(stderr_pipe[0]);
+
+    int status = 0;
+    ::waitpid(pid, &status, 0);
+    result.exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : 128;
+    return result;
+}
+
+ParsedExtractArgs parse_extract_args(const std::vector<std::string_view>& args) {
+    ParsedExtractArgs parsed;
+    if (args.size() < 3) {
+        parsed.valid = false;
+        return parsed;
+    }
+
+    std::size_t index = 1;
+    if (args[index] == "--stdout") {
+        parsed.use_stdout = true;
+        ++index;
+    } else if (args[index] == "--out") {
+        if (index + 1 >= args.size()) {
+            parsed.valid = false;
+            return parsed;
+        }
+        parsed.output_file = std::filesystem::path(args[index + 1]);
+        index += 2;
+    } else {
+        parsed.valid = false;
+        return parsed;
+    }
+
+    while (index + 1 < args.size()) {
+        if (args[index] == "--embed-provider") {
+            if (index + 1 >= args.size() - 1) {
+                parsed.valid = false;
+                return parsed;
+            }
+            parsed.provider = std::string(args[index + 1]);
+            index += 2;
+            continue;
+        }
+        if (args[index] == "--embed-model") {
+            if (index + 1 >= args.size() - 1) {
+                parsed.valid = false;
+                return parsed;
+            }
+            parsed.model = std::string(args[index + 1]);
+            index += 2;
+            continue;
+        }
+        if (args[index].starts_with("--")) {
+            parsed.valid = false;
+            return parsed;
+        }
+        break;
+    }
+
+    if (index != args.size() - 1) {
+        parsed.valid = false;
+        return parsed;
+    }
+    parsed.input_file = std::filesystem::path(args.back());
+    return parsed;
 }
 
 struct UpdatePreview {
@@ -242,7 +435,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search`, `extract`, `similarity`, `add`, and `normalize` are not implemented yet.\n"
+           "- In this initial slice, `search` supports `select` with an optional single `where` and `return: matches`; `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `similar`, `subgraph`, `similarity`, `add`, and `normalize` remain unimplemented.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -328,7 +521,8 @@ std::string reference_help_text(std::string_view target) {
                "Usage:\n"
                "- `ssd search <query.ssq> <file>...`\n\n"
                "Status:\n"
-               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "- This subcommand currently supports `select`, an optional single `where`, and `return: matches`.\n"
+               "- `similar` and `return: subgraph` remain planned but not implemented in the current slice.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -337,10 +531,11 @@ std::string reference_help_text(std::string_view target) {
     if (target == "extract") {
         return "SEMDL Help Topic: reference extract\n\n"
                "Usage:\n"
-               "- `ssd extract --out <output.ssd> <input>...`\n"
-               "- `ssd extract --stdout <input>...`\n\n"
+               "- `ssd extract --out <output.ssd> --embed-provider ollama --embed-model <model> <input.ssd>`\n"
+               "- `ssd extract --stdout --embed-provider ollama --embed-model <model> <input.ssd>`\n\n"
                "Status:\n"
-               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "- This subcommand currently supports explicit Ollama-backed embedding generation from an existing `.ssd` input.\n"
+               "- Raw input extraction and non-Ollama providers remain planned but not implemented in the current slice.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -636,6 +831,69 @@ CommandResult make_invalid_query_filter_error(const std::vector<std::string_view
                        "\nreason: " + issue.reason +
                        "\nallowed:\n  - field\n  - field = \"value\"\n  - field = 1\n  - field = true|false\nhint: see `ssd help reference search`\n",
     };
+}
+
+CommandResult make_missing_extract_embedding_args_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR missing_required_argument\ncommand: " + join_args(args) +
+                       "\nusage: ssd extract --stdout|--out <output.ssd> --embed-provider ollama --embed-model <model> <input.ssd>\nsubcommand: extract\nhint: see `ssd help reference extract`\n",
+    };
+}
+
+CommandResult make_unsupported_extract_provider_error(const std::vector<std::string_view>& args, std::string_view provider) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR unsupported_extract_provider\ncommand: " + join_args(args) +
+                       "\nprovider: " + std::string(provider) +
+                       "\nreason: extract currently supports only ollama\nhint: see `ssd help reference extract`\n",
+    };
+}
+
+CommandResult make_extract_provider_failed_error(const std::vector<std::string_view>& args,
+                                                 std::string_view provider,
+                                                 std::string_view model) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR extract_embedding_provider_failed\ncommand: " + join_args(args) +
+                       "\nprovider: " + std::string(provider) +
+                       "\nmodel: " + std::string(model) +
+                       "\nreason: ollama command failed\nhint: see `ssd help reference extract`\n\n\n",
+    };
+}
+
+CommandResult make_extract_stdout_result(const std::string& sidecar_text) {
+    return CommandResult{.exit_code = 0, .stdout_text = sidecar_text, .stderr_text = ""};
+}
+
+CommandResult make_extract_out_result(std::string_view output_file,
+                                      const std::filesystem::path& sidecar_file,
+                                      int embedded_count,
+                                      int skipped_count) {
+    std::ostringstream output;
+    output << "wrote_ssd: " << output_file << "\n";
+    output << "wrote_ssm: " << sidecar_file.generic_string() << "\n";
+    output << "embedded: " << embedded_count << "\n";
+    output << "skipped: " << skipped_count << "\n";
+    return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
+}
+
+CommandResult make_search_result(const std::vector<std::string_view>& args, const semdl::core::SearchResult& result) {
+    std::ostringstream output;
+    output << "query_file: " << args[1] << "\n";
+    output << "mode: " << result.query.result_mode << "\n";
+    output << "inputs: " << (args.size() - 2) << "\n";
+    output << "matches: " << result.matches.size() << "\n";
+    for (const auto& match : result.matches) {
+        output << "- file: " << match.file << "\n";
+        output << "  id: " << match.id << "\n";
+        output << "  kind: " << match.kind << "\n";
+    }
+
+    return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
 }
 
 CommandResult make_explain_target_not_found_error(const std::vector<std::string_view>& args) {
@@ -1065,11 +1323,89 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             if (!issue.valid) {
                 return make_invalid_query_filter_error(args, std::filesystem::path(args[1]), issue);
             }
+            const auto query = semdl::core::parse_initial_search_query(std::filesystem::path(args[1]));
+            if (query.result_mode == "matches" && !query.similar_expression.has_value()) {
+                std::vector<std::filesystem::path> input_files;
+                input_files.reserve(args.size() - 2);
+                for (std::size_t index = 2; index < args.size(); ++index) {
+                    input_files.emplace_back(args[index]);
+                }
+
+                semdl::core::DocumentStore store;
+                return make_search_result(args, semdl::core::execute_initial_search_query(query, input_files, store));
+            }
         }
         return make_subcommand_not_implemented_error(args);
     }
 
-    if (args[0] == "extract" || args[0] == "similarity" || args[0] == "add" || args[0] == "normalize") {
+    if (args[0] == "extract") {
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", args[0], parsed.format);
+        }
+
+        const auto parsed = parse_extract_args(args);
+        if (!parsed.valid || !parsed.input_file.has_value()) {
+            return make_subcommand_not_implemented_error(args);
+        }
+        if (parsed.provider.empty() != parsed.model.empty()) {
+            return make_missing_extract_embedding_args_error(args);
+        }
+        if (parsed.provider.empty()) {
+            return make_subcommand_not_implemented_error(args);
+        }
+        if (parsed.provider != "ollama") {
+            return make_unsupported_extract_provider_error(args, parsed.provider);
+        }
+
+        semdl::core::DocumentStore store;
+        const auto document = store.load_document(*parsed.input_file);
+        const auto plan = semdl::core::build_extract_embedding_plan(document);
+        const char* command_override = std::getenv("SEMDL_OLLAMA_COMMAND");
+        const std::string ollama_command = (command_override != nullptr && *command_override != '\0') ? std::string(command_override) : std::string("ollama");
+        const std::string generated_at = current_utc_timestamp();
+
+        std::vector<semdl::core::GeneratedEmbeddingRecord> records;
+        records.reserve(plan.targets.size());
+        for (const auto& target : plan.targets) {
+            const auto process = run_process_capture_output(ollama_command, {"run", parsed.model, target.source_text});
+            if (process.exit_code != 0) {
+                return make_extract_provider_failed_error(args, parsed.provider, parsed.model);
+            }
+
+            const std::string vector_text = trim_copy(process.stdout_text);
+            records.push_back(semdl::core::GeneratedEmbeddingRecord{
+                .id = target.id,
+                .model = parsed.model,
+                .dimensions = parse_vector_dimensions(vector_text),
+                .generated_at = generated_at,
+                .provider = parsed.provider,
+                .source_field = target.source_field,
+                .vector = vector_text,
+            });
+        }
+
+        const std::string sidecar_text = semdl::core::render_extract_sidecar(records);
+        if (parsed.use_stdout) {
+            return make_extract_stdout_result(sidecar_text);
+        }
+
+        const auto sidecar_file = derive_sidecar_path(*parsed.output_file);
+        {
+            std::ofstream output(*parsed.output_file, std::ios::binary);
+            output << read_text_file(*parsed.input_file);
+        }
+        {
+            std::ofstream output(sidecar_file, std::ios::binary);
+            output << sidecar_text;
+        }
+        return make_extract_out_result(args[2], sidecar_file, static_cast<int>(records.size()), plan.skipped_count);
+    }
+
+    if (args[0] == "similarity" || args[0] == "add" || args[0] == "normalize") {
         if (args.size() >= 2 && args[1] == "--help") {
             const auto parsed = parse_help_format_tail(args, 2);
             if (!parsed.valid) {

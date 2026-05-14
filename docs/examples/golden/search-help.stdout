@@ -4,7 +4,8 @@ Usage:
 - `ssd search <query.ssq> <file>...`
 
 Status:
-- This subcommand is planned but not implemented in the current slice.
+- This subcommand currently supports `select`, an optional single `where`, and `return: matches`.
+- `similar` and `return: subgraph` remain planned but not implemented in the current slice.
 
 Related help:
 - `ssd help grammar`
