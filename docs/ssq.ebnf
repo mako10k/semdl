@@ -1,0 +1,37 @@
+(* SEMDL .ssq primary grammar artifact, initial read-only query profile *)
+
+ssq-document        = { ws-or-comment }, query-block, { ws-or-comment } ;
+query-block         = "query", ws, block-open,
+                      { ws-or-comment }, select-entry,
+                      [ ws-or-comment, where-entry ],
+                      [ ws-or-comment, similar-entry ],
+                      [ ws-or-comment, return-entry ],
+                      { ws-or-comment }, block-close ;
+
+select-entry        = "select", colon, [ ws ], selector-ref, line-end ;
+where-entry         = "where", colon, [ ws ], filter-expr, line-end ;
+similar-entry       = "similar", colon, [ ws ], selector-ref, line-end ;
+return-entry        = "return", colon, [ ws ], result-mode, line-end ;
+
+selector-ref        = identifier | quoted-string ;
+filter-expr         = quoted-string ;
+result-mode         = "matches" | "subgraph" ;
+
+block-open          = "{" ;
+block-close         = "}" ;
+colon               = ":" ;
+line-end            = newline | eof ;
+ws                  = " ", { " " } ;
+ws-or-comment       = whitespace-line | comment-line ;
+whitespace-line     = { " " | "\t" | newline } ;
+comment-line        = { " " | "\t" }, "#", { character - newline }, line-end ;
+newline             = "\n" | "\r\n" ;
+identifier          = alpha, { alpha | digit | "_" | "-" } ;
+quoted-string       = '"', { character - '"' }, '"' ;
+alpha               = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
+                    | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+                    | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
+                    | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
+digit               = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+character           = ? any unicode code point ? ;
+eof                 = ? end of file ? ;

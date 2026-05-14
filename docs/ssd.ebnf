@@ -1,0 +1,45 @@
+(* SEMDL .ssd / .ssm primary grammar artifact, initial block-oriented profile *)
+
+ssd-document        = { ws-or-comment }, document-block, { ws-or-comment, ssd-block }, { ws-or-comment } ;
+ssd-block           = resource-block | segment-block | assertion-block | hypothesis-block | alternative-block
+                    | document-meta-block | meta-block ;
+
+ document-block     = "document", ws, identifier, ws, block-open, { ws-or-comment, field-line }, { ws-or-comment }, block-close ;
+resource-block      = "resource", ws, identifier, ws, block-open, { ws-or-comment, field-line }, { ws-or-comment }, block-close ;
+segment-block       = "segment", ws, identifier, ws, block-open, { ws-or-comment, field-line }, { ws-or-comment }, block-close ;
+assertion-block     = "assertion", ws, identifier, ws, block-open, { ws-or-comment, assertion-entry }, { ws-or-comment }, block-close ;
+hypothesis-block    = "hypothesis", ws, identifier, ws, block-open, { ws-or-comment, hypothesis-entry }, { ws-or-comment }, block-close ;
+alternative-block   = "alternative", ws, identifier, ws, block-open, { ws-or-comment, field-line }, { ws-or-comment }, block-close ;
+
+document-meta-block = "document_meta", ws, identifier, ws, block-open, { ws-or-comment, field-line }, { ws-or-comment }, block-close ;
+meta-block          = "meta", ws, identifier, ws, block-open, { ws-or-comment, meta-entry }, { ws-or-comment }, block-close ;
+assertion-entry     = field-line | inline-meta-block ;
+hypothesis-entry    = field-line | inline-meta-block ;
+meta-entry          = field-line | embedding-block ;
+inline-meta-block   = "meta", ws, block-open, { ws-or-comment, meta-entry }, { ws-or-comment }, block-close ;
+embedding-block     = "embedding", ws, block-open, { ws-or-comment, field-line }, { ws-or-comment }, block-close ;
+
+field-line          = field-name, colon, [ ws ], scalar-value, line-end ;
+field-name          = identifier ;
+scalar-value        = quoted-string | number | boolean | identifier ;
+
+block-open          = "{" ;
+block-close         = "}" ;
+colon               = ":" ;
+line-end            = newline | eof ;
+ws                  = " ", { " " } ;
+ws-or-comment       = whitespace-line | comment-line ;
+whitespace-line     = { " " | "\t" | newline } ;
+comment-line        = { " " | "\t" }, "#", { character - newline }, line-end ;
+newline             = "\n" | "\r\n" ;
+identifier          = alpha, { alpha | digit | "_" | "-" } ;
+quoted-string       = '"', { character - '"' }, '"' ;
+number              = [ "-" ], digit, { digit }, [ ".", digit, { digit } ] ;
+boolean             = "true" | "false" ;
+alpha               = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
+                    | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+                    | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
+                    | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
+digit               = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+character           = ? any unicode code point ? ;
+eof                 = ? end of file ? ;
