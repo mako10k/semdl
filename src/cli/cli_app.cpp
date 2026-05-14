@@ -5,6 +5,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string_view>
 #include <sstream>
 
 namespace semdl::cli {
@@ -43,6 +44,15 @@ std::string read_text_file(const std::filesystem::path& file_path) {
     return std::string((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
 }
 
+struct UpdatePreview {
+    std::string command_line;
+    std::string target_profile;
+    std::string target_file;
+    std::vector<std::string> detail_lines;
+    int changes = 1;
+    bool include_target_header = true;
+};
+
 std::filesystem::path derive_sidecar_path(const std::filesystem::path& input_file) {
     const std::string input = input_file.generic_string();
     constexpr std::string_view inline_suffix = ".inline.ssd";
@@ -55,14 +65,308 @@ std::filesystem::path derive_sidecar_path(const std::filesystem::path& input_fil
     return sidecar;
 }
 
+std::string quote_value(std::string_view value) {
+    return "\"" + std::string(value) + "\"";
+}
+
+bool has_flag(const std::vector<std::string_view>& args, std::string_view flag) {
+    for (const auto arg : args) {
+        if (arg == flag) {
+            return true;
+        }
+    }
+    return false;
+}
+
+CommandResult make_dry_run_result(const UpdatePreview& preview) {
+    std::ostringstream output;
+    output << "DRY-RUN\n";
+    output << "command: " << preview.command_line << "\n";
+    if (preview.include_target_header) {
+        output << "target_profile: " << preview.target_profile << "\n";
+        output << "target_file: " << preview.target_file << "\n";
+    }
+    for (const auto& line : preview.detail_lines) {
+        output << line << "\n";
+    }
+    output << "changes: " << preview.changes << "\n";
+    return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
+}
+
+CommandResult make_apply_not_implemented_error(const std::vector<std::string_view>& args, std::string_view operation) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR update_apply_not_implemented\ncommand: " + join_args(args) +
+                       "\noperation: " + std::string(operation) +
+                       "\nhint: use `--dry-run` for preview in the current slice\n",
+    };
+}
+
+std::string root_help_text() {
+    return "SEMDL CLI Help\n\n"
+           "1. Overview\n"
+           "- `ssd` validates, explains, transforms, and updates `.ssd` and `.ssm` assets.\n"
+           "- This help output is the canonical entrypoint for CLI guidance.\n"
+            "- Formal grammar lives in `docs/cli.ebnf`.\n"
+            "- Acceptance manifests live in `docs/examples/testcases/`.\n"
+            "- Requirements live in `docs/requirements.md`.\n\n"
+           "2. Table of Contents\n"
+           "- `ssd help overview`\n"
+           "- `ssd help toc`\n"
+           "- `ssd help grammar`\n"
+           "- `ssd help reference [subcommand]`\n"
+           "- `ssd help recipes [topic]`\n"
+           "- `ssd help samples`\n"
+           "- `ssd help troubleshooting`\n\n"
+           "3. Grammar\n"
+           "- Root: `ssd <subcommand> ...`\n"
+           "- Root help: `ssd help [topic] [target]`\n"
+           "- Global help: `ssd --help`\n"
+           "- Subcommand help: `ssd <subcommand> --help`\n"
+           "- See `docs/cli.ebnf` for the formal grammar.\n\n"
+           "4. Reference\n"
+           "- `check`: validate syntax and references for a document set\n"
+           "- `explain`: show the merged semantic view for an entity id\n"
+           "- `set`: update one inline or sidecar field\n"
+           "- `remove`: remove one target or fail on unsafe removal\n"
+           "- `annotate`: add rationale/caveat/todo-like notes\n"
+           "- `split`: move sidecar-eligible metadata out of inline form\n"
+           "- `merge`: produce a merged inline view\n"
+           "- `help`: navigate this help system\n\n"
+           "5. Reverse Lookup\n"
+           "- Validate a document: `ssd check <file>`\n"
+           "- Explain an assertion: `ssd explain <id> <file>`\n"
+           "- Preview an inline edit: `ssd set path:<id>.<field> <value> --dry-run <file>`\n"
+           "- Preview a sidecar annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`\n"
+           "- Understand an option error: `ssd help grammar`\n"
+           "- Understand a selector-layer error: `ssd help recipes wrong-layer`\n\n"
+           "6. Samples\n"
+           "- `ssd check docs/examples/minimal.ssd`\n"
+           "- `ssd explain A1 docs/examples/minimal.ssd`\n"
+           "- `ssd help reference check`\n"
+           "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
+           "7. Cautions, Known Bugs, Reporting\n"
+           "- In this initial slice, `search`, `extract`, `similarity`, `add`, and `normalize` are not implemented yet.\n"
+           "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
+           "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
+           "- Preferred reporting path: repository issue or change request with a reproducing CLI case.\n";
+}
+
+std::string grammar_help_text() {
+    return "SEMDL Help Topic: grammar\n\n"
+           "- Root form: `ssd <subcommand> ...`\n"
+           "- Help form: `ssd help [topic] [target]`\n"
+           "- Global help alias: `ssd --help`\n"
+           "- Subcommand help alias: `ssd <subcommand> --help`\n\n"
+           "Key syntax forms:\n"
+           "- `ssd check <file>`\n"
+           "- `ssd explain <id> <file>`\n"
+           "- `ssd set <selector> <value-or-field> ... <file>`\n"
+           "- `ssd annotate <selector> <kind> <text> ... <file>`\n\n"
+           "Selectors:\n"
+           "- `id:<id>`\n"
+           "- `type:<kind>`\n"
+           "- `path:<id>.<field>`\n"
+           "- `meta:<id>.<field>`\n"
+           "- `doc:self`\n\n"
+           "For the formal grammar, see `docs/cli.ebnf`.\n"
+           "For command-specific help, see `ssd help reference <subcommand>`.\n";
+}
+
+std::string reference_help_text(std::string_view target) {
+    if (target == "check") {
+        return "SEMDL Help Topic: reference check\n\n"
+               "Usage:\n"
+               "- `ssd check <file>`\n\n"
+               "Purpose:\n"
+               "- Validate syntax, reference integrity, and sidecar discovery for a document input.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help samples`\n\n"
+               "Sample:\n"
+               "- `ssd check docs/examples/minimal.ssd`\n";
+    }
+
+    if (target == "explain") {
+        return "SEMDL Help Topic: reference explain\n\n"
+               "Usage:\n"
+               "- `ssd explain <id> <file>`\n\n"
+               "Purpose:\n"
+               "- Show the merged semantic view for one entity id.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help recipes explain-not-found`\n\n"
+               "Sample:\n"
+               "- `ssd explain A1 docs/examples/minimal.ssd`\n";
+    }
+
+    if (target == "search") {
+        return "SEMDL Help Topic: reference search\n\n"
+               "Usage:\n"
+               "- `ssd search <query.ssq> <file>...`\n\n"
+               "Status:\n"
+               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help troubleshooting`\n";
+    }
+
+    if (target == "set") {
+        return "SEMDL Help Topic: reference set\n\n"
+               "Usage:\n"
+               "- `ssd set path:<id>.<field> <value> --dry-run <file>`\n"
+               "- `ssd set meta:<id>.<field> <value> --dry-run <file>`\n"
+               "- `ssd set id:<id> <field> <value> <file>`\n\n"
+               "Purpose:\n"
+               "- Update one target field in inline structure or sidecar metadata.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help recipes wrong-layer`\n\n"
+               "Sample:\n"
+               "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n";
+    }
+
+    if (target == "annotate") {
+        return "SEMDL Help Topic: reference annotate\n\n"
+               "Usage:\n"
+               "- `ssd annotate <selector> <kind> <text> --target sidecar --dry-run <file>`\n\n"
+               "Purpose:\n"
+               "- Append rationale, caveat, todo, status, or explanation metadata.\n\n"
+               "Related help:\n"
+               "- `ssd help grammar`\n"
+               "- `ssd help samples`\n\n"
+               "Sample:\n"
+               "- `ssd annotate id:H1 rationale 原文に主語がないため補完 --target sidecar --dry-run docs/examples/minimal.ssd`\n";
+    }
+
+    return "SEMDL Help Topic: reference\n\n"
+           "Known subcommands:\n"
+           "- check\n"
+           "- explain\n"
+           "- search\n"
+           "- set\n"
+           "- remove\n"
+           "- annotate\n"
+           "- split\n"
+           "- merge\n"
+           "- help\n\n"
+           "Try `ssd help reference <subcommand>`.\n";
+}
+
+std::string recipes_help_text(std::string_view target) {
+    if (target == "wrong-layer") {
+        return "SEMDL Help Topic: recipes wrong-layer\n\n"
+               "If `path:` points to sidecar-only metadata, use `meta:` instead.\n"
+               "If `meta:` points to inline-only structure, use `path:` instead.\n\n"
+               "Examples:\n"
+               "- `ssd set path:A1.label \"売上報告書\" --dry-run docs/examples/minimal.ssd`\n"
+               "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n";
+    }
+
+    if (target == "explain-not-found") {
+        return "SEMDL Help Topic: recipes explain-not-found\n\n"
+               "Check that the id exists in the current `.ssd` or paired `.ssm`.\n"
+               "Try `ssd check <file>` first, then retry `ssd explain <id> <file>`.\n";
+    }
+
+    return "SEMDL Help Topic: recipes\n\n"
+           "Known recipe topics:\n"
+           "- wrong-layer\n"
+           "- explain-not-found\n\n"
+           "Try `ssd help recipes <topic>`.\n";
+}
+
+std::string samples_help_text() {
+    return "SEMDL Help Topic: samples\n\n"
+           "- `ssd check docs/examples/minimal.ssd`\n"
+           "- `ssd explain A1 docs/examples/minimal.ssd`\n"
+           "- `ssd set path:A1.label 売上報告書 --dry-run docs/examples/minimal.ssd`\n"
+           "- `ssd annotate id:H1 rationale 原文に主語がないため補完 --target sidecar --dry-run docs/examples/minimal.ssd`\n";
+}
+
+std::string troubleshooting_help_text() {
+    return "SEMDL Help Topic: troubleshooting\n\n"
+           "- Use `ssd help grammar` for option order and selector syntax.\n"
+           "- Use `ssd help reference <subcommand>` for command-specific usage.\n"
+           "- Use `ssd help recipes wrong-layer` for path/meta layer mistakes.\n"
+           "- Inspect `docs/examples/testcases/` for acceptance manifests and `docs/requirements.md` for the broader contract.\n"
+           "- Report problems with command, argv, inputs, expected output, actual output, and golden file path.\n";
+}
+
+CommandResult make_help_result(std::string_view topic = {}, std::string_view target = {}) {
+    if (topic.empty()) {
+        return CommandResult{.exit_code = 0, .stdout_text = root_help_text(), .stderr_text = ""};
+    }
+    if (topic == "overview") {
+        return CommandResult{.exit_code = 0, .stdout_text = root_help_text(), .stderr_text = ""};
+    }
+    if (topic == "toc") {
+        return CommandResult{.exit_code = 0, .stdout_text = root_help_text(), .stderr_text = ""};
+    }
+    if (topic == "grammar") {
+        return CommandResult{.exit_code = 0, .stdout_text = grammar_help_text(), .stderr_text = ""};
+    }
+    if (topic == "reference") {
+        return CommandResult{.exit_code = 0, .stdout_text = reference_help_text(target), .stderr_text = ""};
+    }
+    if (topic == "recipes") {
+        return CommandResult{.exit_code = 0, .stdout_text = recipes_help_text(target), .stderr_text = ""};
+    }
+    if (topic == "samples") {
+        return CommandResult{.exit_code = 0, .stdout_text = samples_help_text(), .stderr_text = ""};
+    }
+    if (topic == "troubleshooting") {
+        return CommandResult{.exit_code = 0, .stdout_text = troubleshooting_help_text(), .stderr_text = ""};
+    }
+
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR unknown_help_topic\ncommand: ssd help " + std::string(topic) +
+                       "\ntopic: " + std::string(topic) +
+                       "\nhint: see `ssd help toc` for available help topics\n",
+    };
+}
+
 CommandResult make_unknown_option_error(const std::vector<std::string_view>& args, std::string_view option, bool trailing_form) {
     return CommandResult{
         .exit_code = 2,
         .stdout_text = "",
         .stderr_text = "ERROR unknown_option\ncommand: " + join_args(args) +
                        "\noption: " + std::string(option) +
-                       "\nsubcommand: check\nhint: remove the unknown option or add it to the formal CLI grammar before use" +
+                       "\nsubcommand: check\nhint: see `ssd help grammar` for option order and supported forms" +
                        std::string(trailing_form ? "" : "\n"),
+    };
+}
+
+CommandResult make_missing_required_argument_error(const std::vector<std::string_view>& args, std::string_view usage, std::string_view help_ref) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR missing_required_argument\ncommand: " + join_args(args) +
+                       "\nusage: " + std::string(usage) +
+                       "\nhint: see `ssd help reference " + std::string(help_ref) + "`\n",
+    };
+}
+
+CommandResult make_subcommand_not_implemented_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR subcommand_not_implemented\ncommand: " + join_args(args) +
+                       "\nsubcommand: " + std::string(args[0]) +
+                       "\nhint: see `ssd help reference " + std::string(args[0]) + "`\n",
+    };
+}
+
+CommandResult make_explain_target_not_found_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR explain_target_not_found\ncommand: " + join_args(args) +
+                       "\nid: " + std::string(args[1]) +
+                       "\nhint: see `ssd help recipes explain-not-found`\n",
     };
 }
 
@@ -148,19 +452,84 @@ CommandResult make_remove_break_reference_error(const std::vector<std::string_vi
     };
 }
 
+std::string require_field_from_entity(const semdl::core::DocumentData& document, std::string_view entity_id, const std::string& field_name, bool metadata);
+
+UpdatePreview build_set_preview(const semdl::core::DocumentData& document, const semdl::core::Selector& selector, const std::vector<std::string_view>& args) {
+    const auto input_file = std::filesystem::path(args.back());
+    const auto sidecar_path = derive_sidecar_path(input_file);
+
+    UpdatePreview preview;
+    preview.command_line = selector.kind == semdl::core::SelectorKind::path
+                               ? "ssd set " + std::string(args[1]) + " " + quote_value(args[2]) + " " + input_file.generic_string()
+                               : "ssd set " + std::string(args[1]) + " " + std::string(args[2]) + " " + input_file.generic_string();
+    preview.target_profile = selector.kind == semdl::core::SelectorKind::path ? "inline" : "sidecar";
+    preview.target_file = selector.kind == semdl::core::SelectorKind::path ? input_file.generic_string() : sidecar_path.generic_string();
+    preview.detail_lines.push_back("selector: " + std::string(args[1]));
+    preview.detail_lines.push_back("old: " + require_field_from_entity(document, selector.entity_id, selector.field_path, selector.kind == semdl::core::SelectorKind::meta));
+    preview.detail_lines.push_back(std::string("new: ") + (selector.kind == semdl::core::SelectorKind::path ? quote_value(args[2]) : std::string(args[2])));
+    return preview;
+}
+
+UpdatePreview build_annotate_preview(const std::vector<std::string_view>& args) {
+    const auto input_file = std::filesystem::path(args.back());
+    const auto sidecar_path = derive_sidecar_path(input_file);
+
+    UpdatePreview preview;
+    preview.command_line = "ssd annotate " + std::string(args[1]) + " " + std::string(args[2]) + " " + quote_value(args[3]) + " --target sidecar " + input_file.generic_string();
+    preview.target_profile = "sidecar";
+    preview.target_file = sidecar_path.generic_string();
+    preview.detail_lines.push_back("selector: " + std::string(args[1]));
+    preview.detail_lines.push_back("annotation_kind: " + std::string(args[2]));
+    preview.detail_lines.push_back("append: " + quote_value(args[3]));
+    return preview;
+}
+
+UpdatePreview build_split_preview(const std::vector<std::string_view>& args) {
+    const auto input_file = std::filesystem::path(args[1]);
+    const auto sidecar_path = derive_sidecar_path(input_file);
+
+    UpdatePreview preview;
+    preview.command_line = "ssd split " + input_file.generic_string();
+    preview.target_profile = "sidecar";
+    preview.target_file = sidecar_path.generic_string();
+    preview.include_target_header = false;
+    preview.detail_lines = {
+        "source_profile: inline",
+        "result_profile: sidecar",
+        "create: " + sidecar_path.generic_string(),
+        "keep_in_ssd:",
+        "  - document D1.title",
+        "  - document D1.source_ref",
+        "  - resource R1",
+        "  - segment S1",
+        "  - assertion A1.label",
+        "  - assertion A1.source_segment",
+        "  - assertion A1.source_presence",
+        "  - assertion A1.embedding_presence",
+        "  - hypothesis H1.kind",
+        "  - hypothesis H1.summary",
+        "  - hypothesis H1.alternative_group",
+        "move_to_ssm:",
+        "  - document_meta D1.version",
+        "  - document_meta D1.generator",
+        "  - meta A1.confidence",
+        "  - meta A1.provenance_kind",
+        "  - meta A1.rationale",
+        "  - meta A1.embedding",
+        "  - meta H1.confidence",
+        "  - meta H1.rationale",
+        "  - meta H1.caveat",
+    };
+    preview.changes = 9;
+    return preview;
+}
+
 bool is_allowed_annotation_kind(std::string_view kind) {
     return kind == "rationale" || kind == "caveat" || kind == "todo" || kind == "status" || kind == "explanation";
 }
 
 bool looks_unterminated_quoted_string(std::string_view value) {
     return !value.empty() && value.front() == '"' && value.back() != '"';
-}
-
-std::string unquote_or_keep(std::string_view value) {
-    if (value.size() >= 2 && value.front() == '"' && value.back() == '"') {
-        return std::string(value.substr(1, value.size() - 2));
-    }
-    return std::string(value);
 }
 
 std::string require_field_from_entity(const semdl::core::DocumentData& document, std::string_view entity_id, const std::string& field_name, bool metadata) {
@@ -176,12 +545,30 @@ std::string require_field_from_entity(const semdl::core::DocumentData& document,
 
 CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     if (args.empty()) {
-        return CommandResult{.exit_code = 2, .stdout_text = "", .stderr_text = "usage: ssd <subcommand> ...\n"};
+        return CommandResult{.exit_code = 2, .stdout_text = "", .stderr_text = "usage: ssd <subcommand> ...\nhint: see `ssd help overview`\n"};
+    }
+
+    if (args[0] == "--help") {
+        return make_help_result();
+    }
+
+    if (args[0] == "help") {
+        if (args.size() == 1) {
+            return make_help_result();
+        }
+        if (args.size() == 2) {
+            return make_help_result(args[1]);
+        }
+        return make_help_result(args[1], args[2]);
     }
 
     if (args[0] == "check") {
         if (args.size() < 2) {
-            return CommandResult{.exit_code = 2, .stdout_text = "", .stderr_text = "usage: ssd <subcommand> ...\n"};
+            return make_missing_required_argument_error(args, "ssd check <file>", "check");
+        }
+
+        if (args.size() == 2 && args[1] == "--help") {
+            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("check"), .stderr_text = ""};
         }
 
         if (args[1].starts_with("--")) {
@@ -224,7 +611,10 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
 
     if (args[0] == "explain") {
         if (args.size() < 3) {
-            return CommandResult{.exit_code = 2, .stdout_text = "", .stderr_text = "usage: ssd <subcommand> ...\n"};
+            if (args.size() == 2 && args[1] == "--help") {
+                return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("explain"), .stderr_text = ""};
+            }
+            return make_missing_required_argument_error(args, "ssd explain <id> <file>", "explain");
         }
 
         if (args.size() != 3) {
@@ -235,7 +625,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         const auto document = store.load_document(std::filesystem::path(args[2]));
         const auto explain_view = semdl::core::build_explain_view(document, args[1]);
         if (explain_view.kind.empty()) {
-            return CommandResult{.exit_code = 3, .stdout_text = "", .stderr_text = "ERROR explain_target_not_found\n"};
+            return make_explain_target_not_found_error(args);
         }
 
         std::ostringstream output;
@@ -253,6 +643,9 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "set") {
+        if (args.size() == 2 && args[1] == "--help") {
+            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("set"), .stderr_text = ""};
+        }
         if (args.size() >= 4) {
             semdl::core::DocumentStore store;
             const auto document = store.load_document(std::filesystem::path(args.back()));
@@ -268,29 +661,20 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 return make_missing_target_error(args);
             }
 
-            if (args.size() >= 5 && args[3] == "--dry-run") {
-                const auto sidecar_path = derive_sidecar_path(std::filesystem::path(args.back()));
-                return CommandResult{
-                    .exit_code = 0,
-                    .stdout_text = selector.kind == semdl::core::SelectorKind::path
-                               ? "DRY-RUN\ncommand: ssd set " + std::string(args[1]) + " \"" + std::string(args[2]) + "\" " + std::string(args.back()) +
-                                   "\ntarget_profile: inline\ntarget_file: " + std::string(args.back()) +
-                                             "\nselector: " + std::string(args[1]) +
-                                             "\nold: " + require_field_from_entity(document, selector.entity_id, selector.field_path, false) +
-                                             "\nnew: \"" + std::string(args[2]) + "\"\nchanges: 1\n"
-                               : "DRY-RUN\ncommand: ssd set " + std::string(args[1]) + " " + std::string(args[2]) + " " + std::string(args.back()) +
-                                             "\ntarget_profile: sidecar\ntarget_file: " + sidecar_path.generic_string() + "\nselector: " + std::string(args[1]) +
-                                             "\nold: " + require_field_from_entity(document, selector.entity_id, selector.field_path, true) +
-                                             "\nnew: " + std::string(args[2]) + "\nchanges: 1\n",
-                    .stderr_text = "",
-                };
+            if (has_flag(args, "--dry-run")) {
+                return make_dry_run_result(build_set_preview(document, selector, args));
             }
+
+            return make_apply_not_implemented_error(args, "set");
         }
     }
 
     if (args[0] == "annotate") {
+        if (args.size() == 2 && args[1] == "--help") {
+            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("annotate"), .stderr_text = ""};
+        }
         if (args.size() < 4) {
-            return CommandResult{.exit_code = 2, .stdout_text = "", .stderr_text = "usage: ssd <subcommand> ...\n"};
+            return make_missing_required_argument_error(args, "ssd annotate <selector> <kind> <text> <file>", "annotate");
         }
         if (looks_unterminated_quoted_string(args[3])) {
             return make_unterminated_quoted_string_error(args);
@@ -298,23 +682,19 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (!is_allowed_annotation_kind(args[2])) {
             return make_invalid_annotation_kind_error(args);
         }
-        if (args.size() >= 8 && args[4] == "--target" && args[5] == "sidecar" && args[6] == "--dry-run") {
-            const auto sidecar_path = derive_sidecar_path(std::filesystem::path(args[7]));
-            return CommandResult{
-                .exit_code = 0,
-                .stdout_text = "DRY-RUN\ncommand: ssd annotate " + std::string(args[1]) + " " + std::string(args[2]) + " \"" + std::string(args[3]) +
-                               "\" --target sidecar " + std::string(args[7]) +
-                               "\ntarget_profile: sidecar\ntarget_file: " + sidecar_path.generic_string() + "\nselector: " + std::string(args[1]) +
-                               "\nannotation_kind: " + std::string(args[2]) +
-                               "\nappend: \"" + std::string(args[3]) + "\"\nchanges: 1\n",
-                .stderr_text = "",
-            };
+        if (args.size() >= 8 && args[4] == "--target" && args[5] == "sidecar" && has_flag(args, "--dry-run")) {
+            return make_dry_run_result(build_annotate_preview(args));
         }
+
+        return make_apply_not_implemented_error(args, "annotate");
     }
 
     if (args[0] == "remove") {
+        if (args.size() == 2 && args[1] == "--help") {
+            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("remove"), .stderr_text = ""};
+        }
         if (args.size() < 3) {
-            return CommandResult{.exit_code = 2, .stdout_text = "", .stderr_text = "usage: ssd <subcommand> ...\n"};
+            return make_missing_required_argument_error(args, "ssd remove <selector> <file>", "remove");
         }
         semdl::core::DocumentStore store;
         const auto document = store.load_document(std::filesystem::path(args[2]));
@@ -329,18 +709,21 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
     }
 
     if (args[0] == "split") {
+        if (args.size() == 2 && args[1] == "--help") {
+            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("split"), .stderr_text = ""};
+        }
         if (args.size() >= 3 && args[2] == "--dry-run") {
-            const auto sidecar_path = derive_sidecar_path(std::filesystem::path(args[1]));
-            return CommandResult{
-                .exit_code = 0,
-                .stdout_text = "DRY-RUN\ncommand: ssd split " + std::string(args[1]) +
-                               "\nsource_profile: inline\nresult_profile: sidecar\ncreate: " + sidecar_path.generic_string() + "\nkeep_in_ssd:\n  - document D1.title\n  - document D1.source_ref\n  - resource R1\n  - segment S1\n  - assertion A1.label\n  - assertion A1.source_segment\n  - assertion A1.source_presence\n  - assertion A1.embedding_presence\n  - hypothesis H1.kind\n  - hypothesis H1.summary\n  - hypothesis H1.alternative_group\nmove_to_ssm:\n  - document_meta D1.version\n  - document_meta D1.generator\n  - meta A1.confidence\n  - meta A1.provenance_kind\n  - meta A1.rationale\n  - meta A1.embedding\n  - meta H1.confidence\n  - meta H1.rationale\n  - meta H1.caveat\nchanges: 9\n",
-                .stderr_text = "",
-            };
+            return make_dry_run_result(build_split_preview(args));
+        }
+        if (args.size() >= 2) {
+            return make_apply_not_implemented_error(args, "split");
         }
     }
 
     if (args[0] == "merge") {
+        if (args.size() == 2 && args[1] == "--help") {
+            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text("merge"), .stderr_text = ""};
+        }
         if (args.size() >= 3 && args[2] == "--stdout") {
             return CommandResult{
                 .exit_code = 0,
@@ -350,10 +733,17 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
     }
 
+    if (args[0] == "search" || args[0] == "extract" || args[0] == "similarity" || args[0] == "add" || args[0] == "normalize") {
+        if (args.size() == 2 && args[1] == "--help") {
+            return CommandResult{.exit_code = 0, .stdout_text = reference_help_text(args[0]), .stderr_text = ""};
+        }
+        return make_subcommand_not_implemented_error(args);
+    }
+
     return CommandResult{
         .exit_code = 2,
         .stdout_text = "",
-        .stderr_text = "subcommand skeleton: not implemented\n",
+        .stderr_text = "ERROR unknown_subcommand\ncommand: " + join_args(args) + "\nhint: see `ssd help toc`\n",
     };
 }
 

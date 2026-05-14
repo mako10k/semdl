@@ -1,0 +1,54 @@
+SEMDL CLI Help
+
+1. Overview
+- `ssd` validates, explains, transforms, and updates `.ssd` and `.ssm` assets.
+- This help output is the canonical entrypoint for CLI guidance.
+- Formal grammar lives in `docs/cli.ebnf`.
+- Acceptance manifests live in `docs/examples/testcases/`.
+- Requirements live in `docs/requirements.md`.
+
+2. Table of Contents
+- `ssd help overview`
+- `ssd help toc`
+- `ssd help grammar`
+- `ssd help reference [subcommand]`
+- `ssd help recipes [topic]`
+- `ssd help samples`
+- `ssd help troubleshooting`
+
+3. Grammar
+- Root: `ssd <subcommand> ...`
+- Root help: `ssd help [topic] [target]`
+- Global help: `ssd --help`
+- Subcommand help: `ssd <subcommand> --help`
+- See `docs/cli.ebnf` for the formal grammar.
+
+4. Reference
+- `check`: validate syntax and references for a document set
+- `explain`: show the merged semantic view for an entity id
+- `set`: update one inline or sidecar field
+- `remove`: remove one target or fail on unsafe removal
+- `annotate`: add rationale/caveat/todo-like notes
+- `split`: move sidecar-eligible metadata out of inline form
+- `merge`: produce a merged inline view
+- `help`: navigate this help system
+
+5. Reverse Lookup
+- Validate a document: `ssd check <file>`
+- Explain an assertion: `ssd explain <id> <file>`
+- Preview an inline edit: `ssd set path:<id>.<field> <value> --dry-run <file>`
+- Preview a sidecar annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`
+- Understand an option error: `ssd help grammar`
+- Understand a selector-layer error: `ssd help recipes wrong-layer`
+
+6. Samples
+- `ssd check docs/examples/minimal.ssd`
+- `ssd explain A1 docs/examples/minimal.ssd`
+- `ssd help reference check`
+- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`
+
+7. Cautions, Known Bugs, Reporting
+- In this initial slice, `search`, `extract`, `similarity`, `add`, and `normalize` are not implemented yet.
+- Update flows are acceptance-driven and still incomplete for full file rewriting.
+- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.
+- Preferred reporting path: repository issue or change request with a reproducing CLI case.

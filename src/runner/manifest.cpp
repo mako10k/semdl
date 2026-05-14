@@ -14,6 +14,7 @@ public:
 
     TestManifest parse_manifest(const TestCaseManifest& manifest, const std::filesystem::path& repo_root) {
         TestManifest loaded{.name = manifest.name, .manifest_path = manifest.manifest_path};
+        bool has_cases = false;
         skip_ws();
         expect('{');
         skip_ws();
@@ -26,6 +27,7 @@ public:
 
             if (key == "cases") {
                 loaded.cases = parse_cases(repo_root);
+                has_cases = true;
             } else {
                 skip_value();
             }
@@ -38,6 +40,9 @@ public:
         }
 
         expect('}');
+        if (!has_cases) {
+            throw std::runtime_error("manifest missing top-level cases array");
+        }
         return loaded;
     }
 

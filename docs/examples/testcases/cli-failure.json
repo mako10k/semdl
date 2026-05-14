@@ -1,6 +1,58 @@
 {
   "cases": [
     {
+      "id": "explain-target-not-found-help",
+      "command": "ssd explain Z9 docs/examples/minimal.ssd",
+      "argv": ["ssd", "explain", "Z9", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/explain-target-not-found.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "not-found explain should route to the recipe help"
+    },
+    {
+      "id": "help-unknown-topic",
+      "command": "ssd help unknown-topic",
+      "argv": ["ssd", "help", "unknown-topic"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/help-unknown-topic.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "help reports known topics and next entrypoint"
+    },
+    {
+      "id": "explain-missing-args-help",
+      "command": "ssd explain",
+      "argv": ["ssd", "explain"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/explain-missing-args.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "missing required args should point to explain help"
+    },
+    {
+      "id": "search-not-implemented-help",
+      "command": "ssd search docs/query/example.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/example.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/search-not-implemented.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "unimplemented subcommands should still route to reference help"
+    },
+    {
       "id": "remove-type-alternative-without-allow-multi",
       "command": "ssd remove type:alternative docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "type:alternative", "docs/examples/minimal.ssd"],

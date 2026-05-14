@@ -1,0 +1,16 @@
+SEMDL Help Topic: reference set
+
+Usage:
+- `ssd set path:<id>.<field> <value> --dry-run <file>`
+- `ssd set meta:<id>.<field> <value> --dry-run <file>`
+- `ssd set id:<id> <field> <value> <file>`
+
+Purpose:
+- Update one target field in inline structure or sidecar metadata.
+
+Related help:
+- `ssd help grammar`
+- `ssd help recipes wrong-layer`
+
+Sample:
+- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`

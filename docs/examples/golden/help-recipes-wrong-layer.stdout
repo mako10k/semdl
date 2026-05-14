@@ -1,0 +1,8 @@
+SEMDL Help Topic: recipes wrong-layer
+
+If `path:` points to sidecar-only metadata, use `meta:` instead.
+If `meta:` points to inline-only structure, use `path:` instead.
+
+Examples:
+- `ssd set path:A1.label "売上報告書" --dry-run docs/examples/minimal.ssd`
+- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`

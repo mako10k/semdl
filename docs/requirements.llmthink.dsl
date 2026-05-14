@@ -194,3 +194,34 @@ step S19:
       runner 自体の実装は後続 slice とする。
     annotation rationale:
       "最小の read-only 経路から入ると、golden success cases と requirements への適合を狭い範囲で検証しやすい"
+
+problem P6:
+  "SEMDL の利用者が CLI から仕様、文法、例、注意点へ一貫した導線で到達するには、help をどう構造化するか"
+  annotation rationale:
+    "usage 断片と docs 参照だけでは、unknown option や missing argument から適切な次アクションへ辿りにくい"
+
+step S20:
+  decision D20 based_on P6, D13:
+    |
+      SEMDL の help 正本は CLI とする。
+      `ssd help` と `ssd --help` は root help を表示し、
+      overview、toc、grammar、reference、recipes、samples、troubleshooting の topic 導線を持つ。
+    annotation rationale:
+      "CLI を正本にすると、利用者の最初の入口と error からの導線を同じ public contract に載せられる"
+
+step S21:
+  decision D21 based_on D20:
+    |
+      root help は少なくとも 概要、目次、文法、リファレンス、逆引き、サンプル、注意点・既知バグ・報告先 の 7 節を持つ。
+      `ssd help reference <subcommand>` と `ssd help recipes <topic>` のような topic 細分化も許容する。
+    annotation rationale:
+      "長い root help を topic help で分割できると、構造を保ったまま入口ごとに短く案内できる"
+
+step S22:
+  decision D22 based_on D20, D12:
+    |
+      unknown option、missing required argument、unknown help topic、unimplemented subcommand、explain target not found は、
+      対応する help topic または subcommand help への案内を含む。
+      help 自体も success/failure golden と manifest で受け入れ面を固定する。
+    annotation rationale:
+      "error を単独文字列で終わらせず、次の学習・修正経路へ接続すると CLI 全体の理解コストを下げられる"

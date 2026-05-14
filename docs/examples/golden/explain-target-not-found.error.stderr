@@ -1,0 +1,4 @@
+ERROR explain_target_not_found
+command: ssd explain Z9 docs/examples/minimal.ssd
+id: Z9
+hint: see `ssd help recipes explain-not-found`

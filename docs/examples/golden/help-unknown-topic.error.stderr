@@ -1,0 +1,4 @@
+ERROR unknown_help_topic
+command: ssd help unknown-topic
+topic: unknown-topic
+hint: see `ssd help toc` for available help topics

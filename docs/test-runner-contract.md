@@ -53,6 +53,7 @@ stdout と stderr はバイト列完全一致を基本とする。
 ## Failure Handling
 
 - manifest 必須キーが欠けている case は runner 自体のエラーとする
+- top-level `cases` キーが欠けている manifest は runner 自体のエラーとする
 - `expected_exit` と実 exit code が異なる場合、その時点で case は失敗とする
 - `expected_stdout` または `expected_stderr` が空文字列なら、そのストリームは空であることを要求する
 

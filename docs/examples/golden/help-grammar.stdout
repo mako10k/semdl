@@ -1,0 +1,22 @@
+SEMDL Help Topic: grammar
+
+- Root form: `ssd <subcommand> ...`
+- Help form: `ssd help [topic] [target]`
+- Global help alias: `ssd --help`
+- Subcommand help alias: `ssd <subcommand> --help`
+
+Key syntax forms:
+- `ssd check <file>`
+- `ssd explain <id> <file>`
+- `ssd set <selector> <value-or-field> ... <file>`
+- `ssd annotate <selector> <kind> <text> ... <file>`
+
+Selectors:
+- `id:<id>`
+- `type:<kind>`
+- `path:<id>.<field>`
+- `meta:<id>.<field>`
+- `doc:self`
+
+For the formal grammar, see `docs/cli.ebnf`.
+For command-specific help, see `ssd help reference <subcommand>`.

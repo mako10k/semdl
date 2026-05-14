@@ -2,4 +2,4 @@ ERROR unknown_option
 command: ssd check --strict docs/examples/minimal.ssd
 option: --strict
 subcommand: check
-hint: remove the unknown option or add it to the formal CLI grammar before use
+hint: see `ssd help grammar` for option order and supported forms

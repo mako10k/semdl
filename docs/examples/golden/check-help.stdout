@@ -1,0 +1,14 @@
+SEMDL Help Topic: reference check
+
+Usage:
+- `ssd check <file>`
+
+Purpose:
+- Validate syntax, reference integrity, and sidecar discovery for a document input.
+
+Related help:
+- `ssd help grammar`
+- `ssd help samples`
+
+Sample:
+- `ssd check docs/examples/minimal.ssd`

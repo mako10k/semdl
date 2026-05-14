@@ -1,0 +1,4 @@
+ERROR subcommand_not_implemented
+command: ssd search docs/query/example.ssq docs/examples/minimal.ssd
+subcommand: search
+hint: see `ssd help reference search`
