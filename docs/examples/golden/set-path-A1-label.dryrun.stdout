@@ -1,0 +1,8 @@
+DRY-RUN
+command: ssd set path:A1.label "売上報告書" docs/examples/minimal.ssd
+target_profile: inline
+target_file: docs/examples/minimal.ssd
+selector: path:A1.label
+old: "売上増加"
+new: "売上報告書"
+changes: 1

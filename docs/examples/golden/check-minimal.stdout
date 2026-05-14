@@ -1,0 +1,10 @@
+OK docs/examples/minimal.ssd
+profile: sidecar
+loaded_sidecar: docs/examples/minimal.ssm
+documents: 1
+resources: 1
+segments: 1
+assertions: 1
+hypotheses: 1
+alternatives: 2
+issues: 0

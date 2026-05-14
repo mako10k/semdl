@@ -1,0 +1,14 @@
+id: A1
+kind: assertion
+subject: R1
+predicate: reports
+object: "4月の売上は増加した"
+label: "売上増加"
+source_segment: S1
+source_presence: true
+confidence: 0.82
+provenance_kind: extracted
+rationale: "文中の明示表現をそのまま主張化した"
+embedding.model: "text-embedding-3-large"
+embedding.dimensions: 3072
+embedding.generated_at: "2026-05-14T00:00:00Z"

@@ -1,0 +1,28 @@
+DRY-RUN
+command: ssd split docs/examples/minimal.inline.ssd
+source_profile: inline
+result_profile: sidecar
+create: docs/examples/minimal.ssm
+keep_in_ssd:
+  - document D1.title
+  - document D1.source_ref
+  - resource R1
+  - segment S1
+  - assertion A1.label
+  - assertion A1.source_segment
+  - assertion A1.source_presence
+  - assertion A1.embedding_presence
+  - hypothesis H1.kind
+  - hypothesis H1.summary
+  - hypothesis H1.alternative_group
+move_to_ssm:
+  - document_meta D1.version
+  - document_meta D1.generator
+  - meta A1.confidence
+  - meta A1.provenance_kind
+  - meta A1.rationale
+  - meta A1.embedding
+  - meta H1.confidence
+  - meta H1.rationale
+  - meta H1.caveat
+changes: 9

@@ -1,0 +1,92 @@
+{
+  "engine_version": "0.1.0",
+  "document_id": "docs-requirements-llmthink",
+  "generated_at": "2026-05-14T03:20:20.971Z",
+  "summary": {
+    "fatal_count": 0,
+    "error_count": 0,
+    "warning_count": 0,
+    "info_count": 0,
+    "hint_count": 3
+  },
+  "results": [
+    {
+      "issue_id": "ISSUE-001",
+      "category": "contradiction_candidate",
+      "severity": "hint",
+      "target_refs": [
+        {
+          "ref_id": "D1",
+          "role": "decision",
+          "step_id": "S1"
+        },
+        {
+          "ref_id": "D2",
+          "role": "decision",
+          "step_id": "S2"
+        }
+      ],
+      "message": "D1 と D2 は同一根拠 P1 を共有しており、緊張関係にある可能性がある。",
+      "rationale": "複数の decision が同じ based_on 参照を共有しているため、観点と結論の整合性を再確認するべきである。",
+      "metadata": {
+        "shared_refs": [
+          "P1"
+        ],
+        "line": 13,
+        "column": 12,
+        "end_column": 14
+      }
+    },
+    {
+      "issue_id": "ISSUE-002",
+      "category": "semantic_hint",
+      "severity": "hint",
+      "target_refs": [
+        {
+          "ref_id": "D1",
+          "role": "decision",
+          "step_id": "S1"
+        }
+      ],
+      "message": "decision D1 は 1 行の quoted text が長いため、block text に変えると読みやすい。",
+      "rationale": "長い本文は block text に寄せると、折り返し位置を意図的に表現でき、複数行本文との読み分けも安定する。",
+      "suggestion": "長い 1 行本文を block text へ分割し、意味の切れ目で改行する。",
+      "metadata": {
+        "line": 14,
+        "column": 5,
+        "text": "初期仕様では .ssq を参照専用に維持し、将来 semql を導入する場合は query と mutation を分離し、split・merge・normalize は admin または transform レイヤとして分ける",
+        "threshold": 85,
+        "syntax_help": "llmthink dsl help syntax detail",
+        "syntax_guidance": "長い本文は block text を使い、意味の切れ目で改行する。\n例:\nproblem P1:\n  |\n    1 行目の説明\n    2 行目の説明"
+      }
+    },
+    {
+      "issue_id": "ISSUE-003",
+      "category": "semantic_hint",
+      "severity": "hint",
+      "target_refs": [
+        {
+          "ref_id": "D1",
+          "role": "decision",
+          "step_id": "S1"
+        },
+        {
+          "ref_id": "D2",
+          "role": "decision",
+          "step_id": "S2"
+        }
+      ],
+      "message": "D1 と D2 は意味的に近接している可能性がある。",
+      "metadata": {
+        "line": 13,
+        "column": 12,
+        "end_column": 14,
+        "similarity": 0.507,
+        "semantic_distance": 0.493,
+        "embedding_provider": "ollama",
+        "embedding_model": "nomic-embed-text"
+      }
+    }
+  ],
+  "query_results": []
+}

@@ -1,0 +1,65 @@
+(* SEMDL CLI grammar, initial revision *)
+
+command         = "ssd" , ws , subcommand , [ ws , arguments ] ;
+subcommand      = check-cmd | search-cmd | extract-cmd | similarity-cmd
+                | explain-cmd | split-cmd | merge-cmd | normalize-cmd
+                | add-cmd | set-cmd | remove-cmd | annotate-cmd ;
+
+check-cmd       = "check" , ws , input-file ;
+search-cmd      = "search" , ws , query-file , ws , input-file , { ws , input-file } ;
+extract-cmd     = "extract" , ws , out-opt , ws , output-file , ws , input-file , { ws , input-file } , [ ws , format-opt ] ;
+similarity-cmd  = "similarity" , ws , target-ref , ws , target-ref ;
+explain-cmd     = "explain" , ws , id-ref , ws , input-file ;
+split-cmd       = "split" , ws , input-file , { ws , common-opt } ;
+merge-cmd       = "merge" , ws , input-file , { ws , common-opt } ;
+normalize-cmd   = "normalize" , ws , input-file , { ws , common-opt } ;
+
+add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , { ws , common-opt } ;
+set-cmd         = "set" , ws , selector , ws , field-name , ws , scalar-value , ws , input-file , { ws , common-opt } ;
+remove-cmd      = "remove" , ws , selector , ws , input-file , { ws , remove-opt } , { ws , common-opt } ;
+annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , input-file , { ws , common-opt } ;
+
+selector        = id-selector | type-selector | path-selector | meta-selector | doc-selector ;
+id-selector     = "id:" , identifier ;
+type-selector   = "type:" , kind-name ;
+path-selector   = "path:" , identifier , "." , field-path ;
+meta-selector   = "meta:" , identifier , "." , field-path ;
+doc-selector    = "doc:self" ;
+
+add-kind        = "resource" | "segment" | "assertion" | "hypothesis"
+                | "alternative" | "provenance" | "annotation" ;
+annotation-kind = "rationale" | "caveat" | "todo" | "status" | "explanation" ;
+
+common-opt      = dry-run-opt | out-opt , ws , output-file | stdout-opt | target-opt | format-opt | fail-on-conflict-opt ;
+remove-opt      = cascade-opt ;
+out-opt         = "--out" ;
+stdout-opt      = "--stdout" ;
+dry-run-opt     = "--dry-run" ;
+target-opt      = "--target" , ws , ( "inline" | "sidecar" | "auto" ) ;
+format-opt      = "--format" , ws , ( "inline" | "sidecar" ) ;
+fail-on-conflict-opt = "--fail-on-conflict" ;
+cascade-opt     = "--cascade" ;
+
+add-field       = field-name , "=" , scalar-value ;
+field-path      = field-name , { "." , field-name } ;
+field-name      = identifier ;
+kind-name       = identifier ;
+id-ref          = identifier ;
+target-ref      = identifier | input-file ;
+query-file      = path ;
+input-file      = path ;
+output-file     = path ;
+text-value      = quoted-string ;
+scalar-value    = quoted-string | number | boolean | identifier ;
+identifier      = alpha , { alpha | digit | "_" | "-" } ;
+number          = [ "-" ] , digit , { digit } , [ "." , digit , { digit } ] ;
+boolean         = "true" | "false" ;
+quoted-string   = '"' , { character - '"' } , '"' ;
+path            = ? non-empty filesystem path token ? ;
+ws              = " " , { " " } ;
+alpha           = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
+                | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+                | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
+                | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" ;
+digit           = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+character       = ? any unicode code point ? ;
