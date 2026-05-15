@@ -111,6 +111,8 @@ semantic extraction の判断軸と provider / persistence の判断軸が混ざ
 - docs/cli.ebnf の extract surface を更新する
 - extract help と acceptance case に Ollama option surface を追加する
 - success / failure E2E を fixture Ollama command で固定する
+- fixture overview mirror の drift は `sh docs/examples/fixtures/verify-overview-mapping.sh` で確認できるようにする
+- repository CI は `.github/workflows/fixture-overview.yml` で上記 mapping check を継続実行する
 
 ## Related Artifacts
 
