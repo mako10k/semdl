@@ -41,7 +41,7 @@
 
 ## Fallback When Pitfall Tools Are Unavailable
 
-この workspace では 2026-05-15 時点で pitfall ツールが `Unknown domain: global-default` で失敗した。したがって、ツール未使用時は次を最低限の代替とする。
+pitfall ツールが domain 解決に失敗する環境では、次を最低限の代替とする。
 
 1. この文書の Local Pitfall Catalog に事例を追加する
 2. AGENTS の起動条件に照らして、次回の事前確認へ組み込む
@@ -82,7 +82,7 @@ pitfall は新しい正本を作るためではなく、既存正本への更新
 - Status: active
 - Date: 2026-05-15
 - Tags: `semdl`, `spec-first`, `cli-help`, `golden-tests`, `acceptance-drift`
-- External tool status: `create_pitfall_case` failed with `Unknown domain: global-default`
+- External tool status: backfilled to pitfallcounter case `id-39bdd1a1-19e2af05d9f` after domain recovery was verified on 2026-05-15
 - Primary text: CLI help 文言や search 機能を更新したが、root help 系 golden の同期を忘れて runner が失敗した。command-specific help だけ直しても、root help と alias help が別 surface として残る。
 - Impact: 実装本体は正しくても acceptance が落ち、修正完了判定が遅れる。
 - Detection signal: full runner で root help または help alias の stdout mismatch が出る。
