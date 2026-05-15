@@ -267,7 +267,7 @@ segment HELP_LINE_51 {
 
 segment HELP_LINE_52 {
   source: HELP_TOPIC
-  text_quote: "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, and `return: matches`; `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` and `normalize` remain unimplemented."
+  text_quote: "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`; `similar` with `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` and `normalize` remain unimplemented."
 }
 
 segment HELP_LINE_53 {

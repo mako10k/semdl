@@ -1,0 +1,3 @@
+ERROR search_subgraph_similarity_not_supported
+command: ssd search docs/query/valid-similar-subgraph-return.ssq docs/examples/search-similar-anchor.ssd docs/examples/search-similar-candidate.ssd
+hint: `return: subgraph` currently supports structural select/where queries only

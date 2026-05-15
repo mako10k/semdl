@@ -1,0 +1,6 @@
+# Valid .ssq example: unsupported initial combination of similar with subgraph
+query {
+  select: assertion
+  similar: A1
+  return: subgraph
+}

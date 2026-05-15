@@ -10,6 +10,7 @@
 #include <map>
 #include <sstream>
 #include <string_view>
+#include <unordered_set>
 
 namespace semdl::core {
 
@@ -288,6 +289,47 @@ std::map<std::string, std::string> merged_fields_for(const DocumentData& documen
     return merged;
 }
 
+std::vector<SearchMatch> build_structural_context_nodes(const DocumentData& document,
+                                                        const std::filesystem::path& input_file,
+                                                        const std::string& entity_id,
+                                                        std::string_view entity_kind) {
+    std::vector<std::string> references;
+    if (const auto* entity = document.find_entity(entity_id); entity != nullptr) {
+        const auto push_if_present = [&](std::string_view field_name) {
+            const auto it = entity->fields.find(std::string(field_name));
+            if (it != entity->fields.end()) {
+                references.push_back(it->second);
+            }
+        };
+
+        if (entity_kind == "segment") {
+            push_if_present("source");
+        } else if (entity_kind == "assertion") {
+            push_if_present("subject");
+            push_if_present("source_segment");
+        } else if (entity_kind == "hypothesis") {
+            push_if_present("about");
+        }
+    }
+
+    std::vector<SearchMatch> context_nodes;
+    std::unordered_set<std::string> seen_ids;
+    for (const auto& reference_id : references) {
+        if (!seen_ids.insert(reference_id).second) {
+            continue;
+        }
+        if (const auto* target = document.find_entity(reference_id); target != nullptr) {
+            context_nodes.push_back(SearchMatch{
+                .file = input_file.generic_string(),
+                .id = reference_id,
+                .kind = target->kind,
+            });
+        }
+    }
+
+    return context_nodes;
+}
+
 bool matches_where_expression(const std::map<std::string, std::string>& fields, std::string_view expression) {
     const auto equal_index = find_unquoted_char(expression, '=');
     if (equal_index == std::string::npos) {
@@ -469,6 +511,18 @@ SearchResult execute_initial_search_query(const SearchQuery& query,
                     .id = entity_id,
                     .kind = entity.kind,
                     .score = similarity.score,
+                });
+                continue;
+            }
+
+            if (query.result_mode == "subgraph") {
+                result.subgraphs.push_back(SearchSubgraph{
+                    .match = SearchMatch{
+                        .file = loaded.input_file.generic_string(),
+                        .id = entity_id,
+                        .kind = entity.kind,
+                    },
+                    .context_nodes = build_structural_context_nodes(loaded.document, loaded.input_file, entity_id, entity.kind),
                 });
                 continue;
             }

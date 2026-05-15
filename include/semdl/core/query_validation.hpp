@@ -34,9 +34,15 @@ struct SearchMatch {
     std::optional<double> score;
 };
 
+struct SearchSubgraph {
+    SearchMatch match;
+    std::vector<SearchMatch> context_nodes;
+};
+
 struct SearchResult {
     SearchQuery query;
     std::vector<SearchMatch> matches;
+    std::vector<SearchSubgraph> subgraphs;
     std::string anchor_id;
     std::string metric;
     std::string model;

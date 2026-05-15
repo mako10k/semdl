@@ -261,6 +261,19 @@
       "notes": "target-based similar should search across the integrated input view and rank matches by score"
     },
     {
+      "id": "search-valid-subgraph-return",
+      "command": "ssd search docs/query/valid-subgraph-return.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-subgraph-return.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-subgraph-return.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "structural subgraph search should return one grouped result per match with one-hop context"
+    },
+    {
       "id": "extract-help",
       "command": "ssd extract --help",
       "argv": ["ssd", "extract", "--help"],

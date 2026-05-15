@@ -436,7 +436,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, and `return: matches`; `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` and `normalize` remain unimplemented.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`; `similar` with `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` and `normalize` remain unimplemented.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -522,9 +522,9 @@ std::string reference_help_text(std::string_view target) {
                "Usage:\n"
                "- `ssd search <query.ssq> <file>...`\n\n"
                "Status:\n"
-               "- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, and `return: matches`.\n"
+               "- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`.\n"
                "- `similar` uses precomputed embeddings from the integrated input view and excludes the anchor target from results.\n"
-               "- `return: subgraph` remains planned but not implemented in the current slice.\n\n"
+               "- `similar` with `return: subgraph` remains planned but not implemented in the current slice.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -890,6 +890,23 @@ CommandResult make_search_result(const std::vector<std::string_view>& args, cons
     output << "query_file: " << args[1] << "\n";
     output << "mode: " << result.query.result_mode << "\n";
     output << "inputs: " << (args.size() - 2) << "\n";
+    if (result.query.result_mode == "subgraph") {
+        output << "subgraphs: " << result.subgraphs.size() << "\n";
+        for (const auto& subgraph : result.subgraphs) {
+            output << "- match_file: " << subgraph.match.file << "\n";
+            output << "  match_id: " << subgraph.match.id << "\n";
+            output << "  match_kind: " << subgraph.match.kind << "\n";
+            output << "  context_nodes: " << subgraph.context_nodes.size() << "\n";
+            for (const auto& node : subgraph.context_nodes) {
+                output << "  - file: " << node.file << "\n";
+                output << "    id: " << node.id << "\n";
+                output << "    kind: " << node.kind << "\n";
+            }
+        }
+
+        return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
+    }
+
     if (result.query.similar_expression.has_value()) {
         output << "anchor: " << result.anchor_id << "\n";
         output << "metric: " << result.metric << "\n";
@@ -967,6 +984,15 @@ CommandResult make_similarity_dimensions_mismatch_error(const std::vector<std::s
                        "\nleft_dimensions: " + std::to_string(left_dimensions) +
                        "\nright_dimensions: " + std::to_string(right_dimensions) +
                        "\nhint: both embeddings must have matching dimensions\n",
+    };
+}
+
+CommandResult make_search_subgraph_similarity_not_supported_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR search_subgraph_similarity_not_supported\ncommand: " + join_args(args) +
+                       "\nhint: `return: subgraph` currently supports structural select/where queries only\n",
     };
 }
 
@@ -1437,7 +1463,10 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 return make_invalid_query_filter_error(args, std::filesystem::path(args[1]), issue);
             }
             const auto query = semdl::core::parse_initial_search_query(std::filesystem::path(args[1]));
-            if (query.result_mode == "matches") {
+            if (query.result_mode == "subgraph" && query.similar_expression.has_value()) {
+                return make_search_subgraph_similarity_not_supported_error(args);
+            }
+            if (query.result_mode == "matches" || query.result_mode == "subgraph") {
                 std::vector<std::filesystem::path> input_files;
                 input_files.reserve(args.size() - 2);
                 for (std::size_t index = 2; index < args.size(); ++index) {

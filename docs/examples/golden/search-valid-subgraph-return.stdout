@@ -1,0 +1,14 @@
+query_file: docs/query/valid-subgraph-return.ssq
+mode: subgraph
+inputs: 1
+subgraphs: 1
+- match_file: docs/examples/minimal.ssd
+  match_id: A1
+  match_kind: assertion
+  context_nodes: 2
+  - file: docs/examples/minimal.ssd
+    id: R1
+    kind: resource
+  - file: docs/examples/minimal.ssd
+    id: S1
+    kind: segment
