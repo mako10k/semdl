@@ -592,6 +592,19 @@
       "notes": "sidecar auto-discovery succeeds"
     },
     {
+      "id": "check-ollama-embeddings-overview",
+      "command": "ssd check docs/examples/fixtures/ollama-embeddings-overview.ssd",
+      "argv": ["ssd", "check", "docs/examples/fixtures/ollama-embeddings-overview.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/check-ollama-embeddings-overview.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "fixture overview semantic mirror should remain structurally valid"
+    },
+    {
       "id": "explain-A1",
       "command": "ssd explain A1 docs/examples/minimal.ssd",
       "argv": ["ssd", "explain", "A1", "docs/examples/minimal.ssd"],
@@ -603,6 +616,19 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "merged assertion view"
+    },
+    {
+      "id": "explain-H1-ollama-embeddings-overview",
+      "command": "ssd explain H1 docs/examples/fixtures/ollama-embeddings-overview.ssd",
+      "argv": ["ssd", "explain", "H1", "docs/examples/fixtures/ollama-embeddings-overview.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/explain-H1-ollama-embeddings-overview.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "fixture overview semantic mirror should remain explainable as a documented example"
     },
     {
       "id": "set-path-A1-label-dryrun",

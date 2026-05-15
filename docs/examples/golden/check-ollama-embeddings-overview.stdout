@@ -1,0 +1,9 @@
+OK docs/examples/fixtures/ollama-embeddings-overview.ssd
+profile: inline
+documents: 1
+resources: 1
+segments: 1
+assertions: 1
+hypotheses: 1
+alternatives: 1
+issues: 0

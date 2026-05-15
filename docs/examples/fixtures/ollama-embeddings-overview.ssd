@@ -6,19 +6,19 @@ document D1 {
   source_ref: "docs/examples/fixtures/ollama-embeddings.psv"
 }
 
-# target_id: R1 | kind: resource | source_field: label | raw_capture: embeddings/r1.txt
+# target_id: R1 | kind: resource | source_field: label | raw_capture: embeddings/r1.txt | provider: ollama | model: nomic-embed-text:latest | dimensions: 768
 resource R1 {
   type: document
   label: "抽出元文書"
 }
 
-# target_id: S1 | kind: segment | source_field: text_quote | raw_capture: embeddings/s1.txt
+# target_id: S1 | kind: segment | source_field: text_quote | raw_capture: embeddings/s1.txt | provider: ollama | model: nomic-embed-text:latest | dimensions: 768
 segment S1 {
   source: R1
   text_quote: "4月の売上は前年同月比で増加した"
 }
 
-# target_id: A1 | kind: assertion | source_field: object | raw_capture: embeddings/a1.txt
+# target_id: A1 | kind: assertion | source_field: object | raw_capture: embeddings/a1.txt | provider: ollama | model: nomic-embed-text:latest | dimensions: 768
 assertion A1 {
   subject: R1
   predicate: reports
@@ -29,7 +29,7 @@ assertion A1 {
   embedding_presence: true
 }
 
-# target_id: H1 | kind: hypothesis | source_field: summary | raw_capture: embeddings/h1.txt
+# target_id: H1 | kind: hypothesis | source_field: summary | raw_capture: embeddings/h1.txt | provider: ollama | model: nomic-embed-text:latest | dimensions: 768
 hypothesis H1 {
   about: A1
   kind: omission-completion
@@ -37,7 +37,7 @@ hypothesis H1 {
   alternative_group: ALT1
 }
 
-# target_id: ALT1A | kind: alternative | source_field: label | raw_capture: embeddings/alt1a.txt
+# target_id: ALT1A | kind: alternative | source_field: label | raw_capture: embeddings/alt1a.txt | provider: ollama | model: nomic-embed-text:latest | dimensions: 768
 alternative ALT1A {
   group: ALT1
   label: "国内売上が増加した"

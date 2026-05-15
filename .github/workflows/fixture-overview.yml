@@ -1,0 +1,24 @@
+name: Fixture Overview
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  verify-overview-mapping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Verify README and overview mapping
+        run: sh docs/examples/fixtures/verify-overview-mapping.sh

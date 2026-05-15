@@ -19,21 +19,27 @@
 
 ## Prompt Mapping
 
-| target_id | kind | source_field | prompt | raw_capture | model | dimensions |
-| --- | --- | --- | --- | --- | --- | --- |
-| `R1` | `resource` | `label` | `抽出元文書` | `embeddings/r1.txt` | `nomic-embed-text:latest` | `768` |
-| `S1` | `segment` | `text_quote` | `4月の売上は前年同月比で増加した` | `embeddings/s1.txt` | `nomic-embed-text:latest` | `768` |
-| `A1` | `assertion` | `object` | `4月の売上は増加した` | `embeddings/a1.txt` | `nomic-embed-text:latest` | `768` |
-| `H1` | `hypothesis` | `summary` | `増加の主体は国内売上である可能性が高い` | `embeddings/h1.txt` | `nomic-embed-text:latest` | `768` |
-| `ALT1A` | `alternative` | `label` | `国内売上が増加した` | `embeddings/alt1a.txt` | `nomic-embed-text:latest` | `768` |
+| target_id | kind | source_field | prompt | raw_capture | provider | model | dimensions |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `R1` | `resource` | `label` | `抽出元文書` | `embeddings/r1.txt` | `ollama` | `nomic-embed-text:latest` | `768` |
+| `S1` | `segment` | `text_quote` | `4月の売上は前年同月比で増加した` | `embeddings/s1.txt` | `ollama` | `nomic-embed-text:latest` | `768` |
+| `A1` | `assertion` | `object` | `4月の売上は増加した` | `embeddings/a1.txt` | `ollama` | `nomic-embed-text:latest` | `768` |
+| `H1` | `hypothesis` | `summary` | `増加の主体は国内売上である可能性が高い` | `embeddings/h1.txt` | `ollama` | `nomic-embed-text:latest` | `768` |
+| `ALT1A` | `alternative` | `label` | `国内売上が増加した` | `embeddings/alt1a.txt` | `ollama` | `nomic-embed-text:latest` | `768` |
 
 ## Semantic Mirror
 
 `ollama-embeddings-overview.ssd` は、README の表と 1 対 1 に近い対応になるように、5 個の embeddable target をそのまま SEMDL で並べたファイルである。
 
 - `D1.source_ref` は `ollama-embeddings.psv` を指す
-- 各 block の直前コメントに `target_id`、`source_field`、raw capture path を書く
+- 各 block の直前コメントに `target_id`、`source_field`、raw capture path、provider、model、dimensions を書く
 - `R1 / S1 / A1 / H1 / ALT1A` の id と本文は authoritative PSV の prompt mapping に合わせる
+
+README と `ollama-embeddings-overview.ssd` の mapping がずれていないかは次で機械確認できる。
+
+```sh
+sh docs/examples/fixtures/verify-overview-mapping.sh
+```
 
 ## Quick Validation
 
