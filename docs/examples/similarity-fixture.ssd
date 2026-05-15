@@ -1,0 +1,58 @@
+document D1 {
+  title: "Similarity fixture"
+  source_ref: "docs/examples/similarity-fixture.ssm"
+}
+
+assertion A1 {
+  subject: D1
+  predicate: compares
+  object: "inline vector"
+  embedding_presence: true
+}
+
+alternative ALT1A {
+  group: ALT1
+  label: "vector ref target"
+  embedding_presence: true
+}
+
+hypothesis H1 {
+  about: A1
+  kind: omission-completion
+  summary: "missing embedding"
+}
+
+assertion M1 {
+  subject: D1
+  predicate: compares
+  object: "model mismatch"
+  embedding_presence: true
+}
+
+assertion DIM1 {
+  subject: D1
+  predicate: compares
+  object: "dimensions mismatch"
+  embedding_presence: true
+}
+
+assertion B1 {
+  subject: D1
+  predicate: compares
+  object: "malformed vector"
+  embedding_presence: true
+}
+
+assertion Z1 {
+  subject: D1
+  predicate: compares
+  object: "zero norm vector"
+  embedding_presence: true
+}
+
+assertion U1 {
+  subject: D1
+  predicate: compares
+  object: "unreadable vector ref"
+  embedding_presence: true
+}

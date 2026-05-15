@@ -56,7 +56,7 @@ SEMDL CLI Help
 - `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`
 
 7. Cautions, Known Bugs, Reporting
-- In this initial slice, `search` supports `select` with an optional single `where` and `return: matches`; `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `similar`, `subgraph`, `similarity`, `add`, and `normalize` remain unimplemented.
+- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, and `return: matches`; `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` and `normalize` remain unimplemented.
 - Use `--format semdl` when another tool needs structured help output.
 - Update flows are acceptance-driven and still incomplete for full file rewriting.
 - Report problems with the command, argv, input paths, expected output, actual output, and related golden file.

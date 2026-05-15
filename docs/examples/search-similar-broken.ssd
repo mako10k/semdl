@@ -1,0 +1,10 @@
+document D3 {
+  title: "Search similarity broken candidate"
+}
+
+assertion A3 {
+  subject: D3
+  predicate: reports
+  object: "broken assertion"
+  embedding_presence: true
+}

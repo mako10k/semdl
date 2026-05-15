@@ -4,8 +4,9 @@ Usage:
 - `ssd search <query.ssq> <file>...`
 
 Status:
-- This subcommand currently supports `select`, an optional single `where`, and `return: matches`.
-- `similar` and `return: subgraph` remain planned but not implemented in the current slice.
+- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, and `return: matches`.
+- `similar` uses precomputed embeddings from the integrated input view and excludes the anchor target from results.
+- `return: subgraph` remains planned but not implemented in the current slice.
 
 Related help:
 - `ssd help grammar`

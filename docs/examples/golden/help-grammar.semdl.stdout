@@ -87,7 +87,7 @@ segment HELP_LINE_15 {
 
 segment HELP_LINE_16 {
   source: HELP_TOPIC
-  text_quote: "- `ssd similarity <target-ref> <target-ref>`"
+  text_quote: "- `ssd similarity <id> <id> <file>`"
 }
 
 segment HELP_LINE_17 {

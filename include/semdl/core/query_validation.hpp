@@ -1,5 +1,7 @@
 #pragma once
 
+#include "semdl/core/similarity.hpp"
+
 #include "semdl/core/document_store.hpp"
 
 #include <filesystem>
@@ -29,11 +31,17 @@ struct SearchMatch {
     std::string file;
     std::string id;
     std::string kind;
+    std::optional<double> score;
 };
 
 struct SearchResult {
     SearchQuery query;
     std::vector<SearchMatch> matches;
+    std::string anchor_id;
+    std::string metric;
+    std::string model;
+    int dimensions = 0;
+    SimilarityResult similarity_failure;
 };
 
 [[nodiscard]] SearchQuery parse_initial_search_query(const std::filesystem::path& query_file);

@@ -1,0 +1,5 @@
+ERROR unreadable_vector_ref
+command: ssd search docs/query/valid-similar-slot.ssq docs/examples/search-similar-anchor.ssd docs/examples/search-similar-broken.ssd
+target: A3
+vector_ref: vectors/missing.vec
+hint: vector_ref must point to a readable file containing one vector

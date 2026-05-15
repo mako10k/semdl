@@ -1,0 +1,4 @@
+ERROR similarity_target_not_found
+command: ssd similarity Z9 ALT1A docs/examples/similarity-fixture.ssd
+target: Z9
+hint: the target id did not resolve in the current document set

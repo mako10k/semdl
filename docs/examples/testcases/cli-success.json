@@ -248,6 +248,19 @@
       "notes": "search help also supports SEMDL rendering"
     },
     {
+      "id": "search-valid-similar-slot",
+      "command": "ssd search docs/query/valid-similar-slot.ssq docs/examples/search-similar-anchor.ssd docs/examples/search-similar-candidate.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-similar-slot.ssq", "docs/examples/search-similar-anchor.ssd", "docs/examples/search-similar-candidate.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-similar-slot.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "target-based similar should search across the integrated input view and rank matches by score"
+    },
+    {
       "id": "extract-help",
       "command": "ssd extract --help",
       "argv": ["ssd", "extract", "--help"],
@@ -381,7 +394,33 @@
       "expected_stdout": "docs/examples/golden/similarity-help.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "similarity help should be command-specific even before implementation"
+      "notes": "similarity help should describe the pairwise read-only similarity slice"
+    },
+    {
+      "id": "similarity-A1-ALT1A",
+      "command": "ssd similarity A1 ALT1A docs/examples/similarity-fixture.ssd",
+      "argv": ["ssd", "similarity", "A1", "ALT1A", "docs/examples/similarity-fixture.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/similarity-A1-ALT1A.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "pairwise similarity resolves inline vector and vector_ref embeddings from one input file"
+    },
+    {
+      "id": "similarity-ALT1A-A1",
+      "command": "ssd similarity ALT1A A1 docs/examples/similarity-fixture.ssd",
+      "argv": ["ssd", "similarity", "ALT1A", "A1", "docs/examples/similarity-fixture.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/similarity-ALT1A-A1.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "score is symmetric while stdout preserves argv operand order"
     },
     {
       "id": "similarity-help-semdl",

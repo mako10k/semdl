@@ -1,0 +1,6 @@
+left: ALT1A
+right: A1
+metric: cosine
+model: toy-embed-v1
+dimensions: 3
+score: 0.707107

@@ -16,7 +16,7 @@ Key syntax forms:
 - `ssd check <file>`
 - `ssd search <query.ssq> <file>...`
 - `ssd extract --out <output.ssd> <input>...`
-- `ssd similarity <target-ref> <target-ref>`
+- `ssd similarity <id> <id> <file>`
 - `ssd explain <id> <file>`
 - `ssd add <kind> <file> [field=value ...]`
 - `ssd set <selector> <value-or-field> ... <file>`

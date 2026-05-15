@@ -1,7 +1,9 @@
 #include "semdl/core/query_validation.hpp"
 
 #include "semdl/core/document_store.hpp"
+#include "semdl/core/similarity.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <iterator>
@@ -397,25 +399,100 @@ SearchResult execute_initial_search_query(const SearchQuery& query,
                                          const DocumentStore& store) {
     SearchResult result;
     result.query = query;
+    if (query.similar_expression.has_value()) {
+        result.anchor_id = *query.similar_expression;
+        result.metric = "cosine";
+    }
 
+    struct LoadedDocument {
+        std::filesystem::path input_file;
+        DocumentData document;
+    };
+
+    std::vector<LoadedDocument> loaded_documents;
+    loaded_documents.reserve(input_files.size());
     for (const auto& input_file : input_files) {
-        const auto document = store.load_document(input_file);
-        for (const auto& [entity_id, entity] : document.entities) {
+        loaded_documents.push_back(LoadedDocument{
+            .input_file = input_file,
+            .document = store.load_document(input_file),
+        });
+    }
+
+    const LoadedDocument* anchor_document = nullptr;
+    if (query.similar_expression.has_value()) {
+        for (const auto& loaded : loaded_documents) {
+            if (loaded.document.find_entity(*query.similar_expression) != nullptr) {
+                anchor_document = &loaded;
+                break;
+            }
+        }
+        if (anchor_document == nullptr) {
+            result.similarity_failure.error = SimilarityError::target_not_found;
+            result.similarity_failure.target = *query.similar_expression;
+            return result;
+        }
+    }
+
+    for (const auto& loaded : loaded_documents) {
+        for (const auto& [entity_id, entity] : loaded.document.entities) {
             if (entity.kind != query.select) {
                 continue;
             }
 
-            const auto merged_fields = merged_fields_for(document, entity_id);
+            const auto merged_fields = merged_fields_for(loaded.document, entity_id);
             if (query.where_expression.has_value() && !matches_where_expression(merged_fields, *query.where_expression)) {
                 continue;
             }
 
+            if (query.similar_expression.has_value()) {
+                if (entity_id == *query.similar_expression) {
+                    continue;
+                }
+
+                const auto similarity = compare_pairwise_similarity(anchor_document->document,
+                                                                    anchor_document->input_file,
+                                                                    *query.similar_expression,
+                                                                    loaded.document,
+                                                                    loaded.input_file,
+                                                                    entity_id);
+                if (similarity.error != SimilarityError::none) {
+                    result.similarity_failure = similarity;
+                    return result;
+                }
+                if (result.model.empty()) {
+                    result.model = similarity.model;
+                    result.dimensions = similarity.dimensions;
+                }
+
+                result.matches.push_back(SearchMatch{
+                    .file = loaded.input_file.generic_string(),
+                    .id = entity_id,
+                    .kind = entity.kind,
+                    .score = similarity.score,
+                });
+                continue;
+            }
+
             result.matches.push_back(SearchMatch{
-                .file = input_file.generic_string(),
+                .file = loaded.input_file.generic_string(),
                 .id = entity_id,
                 .kind = entity.kind,
             });
         }
+    }
+
+    if (query.similar_expression.has_value()) {
+        std::sort(result.matches.begin(), result.matches.end(), [](const SearchMatch& left, const SearchMatch& right) {
+            const double left_score = left.score.value_or(0.0);
+            const double right_score = right.score.value_or(0.0);
+            if (left_score != right_score) {
+                return left_score > right_score;
+            }
+            if (left.file != right.file) {
+                return left.file < right.file;
+            }
+            return left.id < right.id;
+        });
     }
 
     return result;

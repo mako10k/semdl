@@ -1,0 +1,4 @@
+ERROR similarity_embedding_missing
+command: ssd similarity H1 ALT1A docs/examples/similarity-fixture.ssd
+target: H1
+hint: precomputed embedding metadata is required for both targets

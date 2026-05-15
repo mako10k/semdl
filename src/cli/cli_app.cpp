@@ -4,6 +4,7 @@
 #include "semdl/core/extract_embeddings.hpp"
 #include "semdl/core/query_validation.hpp"
 #include "semdl/core/semantic_model.hpp"
+#include "semdl/core/similarity.hpp"
 
 #include <array>
 #include <cerrno>
@@ -435,7 +436,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select` with an optional single `where` and `return: matches`; `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `similar`, `subgraph`, `similarity`, `add`, and `normalize` remain unimplemented.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, and `return: matches`; `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` and `normalize` remain unimplemented.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -458,7 +459,7 @@ std::string grammar_help_text() {
            "- `ssd check <file>`\n"
            "- `ssd search <query.ssq> <file>...`\n"
            "- `ssd extract --out <output.ssd> <input>...`\n"
-           "- `ssd similarity <target-ref> <target-ref>`\n"
+           "- `ssd similarity <id> <id> <file>`\n"
            "- `ssd explain <id> <file>`\n"
            "- `ssd add <kind> <file> [field=value ...]`\n"
            "- `ssd set <selector> <value-or-field> ... <file>`\n"
@@ -521,8 +522,9 @@ std::string reference_help_text(std::string_view target) {
                "Usage:\n"
                "- `ssd search <query.ssq> <file>...`\n\n"
                "Status:\n"
-               "- This subcommand currently supports `select`, an optional single `where`, and `return: matches`.\n"
-               "- `similar` and `return: subgraph` remain planned but not implemented in the current slice.\n\n"
+               "- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, and `return: matches`.\n"
+               "- `similar` uses precomputed embeddings from the integrated input view and excludes the anchor target from results.\n"
+               "- `return: subgraph` remains planned but not implemented in the current slice.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -544,9 +546,11 @@ std::string reference_help_text(std::string_view target) {
     if (target == "similarity") {
         return "SEMDL Help Topic: reference similarity\n\n"
                "Usage:\n"
-               "- `ssd similarity <target-ref> <target-ref>`\n\n"
-               "Status:\n"
-               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "- `ssd similarity <id> <id> <file>`\n\n"
+               "Behavior:\n"
+               "- Compare two existing semantic targets in one input document using precomputed embeddings only.\n"
+               "- The current slice uses cosine similarity and requires matching model and dimensions.\n"
+               "- Both inline `vector` and external `vector_ref` embedding records are supported.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -886,11 +890,25 @@ CommandResult make_search_result(const std::vector<std::string_view>& args, cons
     output << "query_file: " << args[1] << "\n";
     output << "mode: " << result.query.result_mode << "\n";
     output << "inputs: " << (args.size() - 2) << "\n";
+    if (result.query.similar_expression.has_value()) {
+        output << "anchor: " << result.anchor_id << "\n";
+        output << "metric: " << result.metric << "\n";
+        if (!result.model.empty()) {
+            output << "model: " << result.model << "\n";
+        }
+        if (result.dimensions > 0) {
+            output << "dimensions: " << result.dimensions << "\n";
+        }
+    }
     output << "matches: " << result.matches.size() << "\n";
+    output << std::fixed << std::setprecision(6);
     for (const auto& match : result.matches) {
         output << "- file: " << match.file << "\n";
         output << "  id: " << match.id << "\n";
         output << "  kind: " << match.kind << "\n";
+        if (match.score.has_value()) {
+            output << "  score: " << *match.score << "\n";
+        }
     }
 
     return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
@@ -904,6 +922,101 @@ CommandResult make_explain_target_not_found_error(const std::vector<std::string_
                        "\nid: " + std::string(args[1]) +
                        "\nhint: see `ssd help recipes explain-not-found`\n",
     };
+}
+
+CommandResult make_similarity_target_not_found_error(const std::vector<std::string_view>& args, std::string_view target) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR similarity_target_not_found\ncommand: " + join_args(args) +
+                       "\ntarget: " + std::string(target) +
+                       "\nhint: the target id did not resolve in the current document set\n",
+    };
+}
+
+CommandResult make_similarity_embedding_missing_error(const std::vector<std::string_view>& args, std::string_view target) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR similarity_embedding_missing\ncommand: " + join_args(args) +
+                       "\ntarget: " + std::string(target) +
+                       "\nhint: precomputed embedding metadata is required for both targets\n",
+    };
+}
+
+CommandResult make_similarity_model_mismatch_error(const std::vector<std::string_view>& args,
+                                                   std::string_view left_model,
+                                                   std::string_view right_model) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR similarity_model_mismatch\ncommand: " + join_args(args) +
+                       "\nleft_model: " + std::string(left_model) +
+                       "\nright_model: " + std::string(right_model) +
+                       "\nhint: cross-model comparison is not supported in the current slice\n",
+    };
+}
+
+CommandResult make_similarity_dimensions_mismatch_error(const std::vector<std::string_view>& args,
+                                                        int left_dimensions,
+                                                        int right_dimensions) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR similarity_dimensions_mismatch\ncommand: " + join_args(args) +
+                       "\nleft_dimensions: " + std::to_string(left_dimensions) +
+                       "\nright_dimensions: " + std::to_string(right_dimensions) +
+                       "\nhint: both embeddings must have matching dimensions\n",
+    };
+}
+
+CommandResult make_malformed_embedding_vector_error(const std::vector<std::string_view>& args,
+                                                    std::string_view target,
+                                                    std::string_view source) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR malformed_embedding_vector\ncommand: " + join_args(args) +
+                       "\ntarget: " + std::string(target) +
+                       "\nsource: " + std::string(source) +
+                       "\nhint: embedding vectors must be bracketed numeric lists\n",
+    };
+}
+
+CommandResult make_unreadable_vector_ref_error(const std::vector<std::string_view>& args,
+                                               std::string_view target,
+                                               std::string_view vector_ref) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR unreadable_vector_ref\ncommand: " + join_args(args) +
+                       "\ntarget: " + std::string(target) +
+                       "\nvector_ref: " + std::string(vector_ref) +
+                       "\nhint: vector_ref must point to a readable file containing one vector\n",
+    };
+}
+
+CommandResult make_undefined_cosine_similarity_error(const std::vector<std::string_view>& args, std::string_view target) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR undefined_cosine_similarity\ncommand: " + join_args(args) +
+                       "\ntarget: " + std::string(target) +
+                       "\nreason: zero-norm vector\n"
+                       "hint: cosine similarity requires non-zero vectors on both sides\n",
+    };
+}
+
+CommandResult make_similarity_result(const semdl::core::SimilarityResult& result) {
+    std::ostringstream output;
+    output << "left: " << result.left_id << "\n";
+    output << "right: " << result.right_id << "\n";
+    output << "metric: cosine\n";
+    output << "model: " << result.model << "\n";
+    output << "dimensions: " << result.dimensions << "\n";
+    output << std::fixed << std::setprecision(6);
+    output << "score: " << result.score << "\n";
+    return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
 }
 
 CommandResult make_invalid_selector_error(const std::vector<std::string_view>& args) {
@@ -1324,7 +1437,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 return make_invalid_query_filter_error(args, std::filesystem::path(args[1]), issue);
             }
             const auto query = semdl::core::parse_initial_search_query(std::filesystem::path(args[1]));
-            if (query.result_mode == "matches" && !query.similar_expression.has_value()) {
+            if (query.result_mode == "matches") {
                 std::vector<std::filesystem::path> input_files;
                 input_files.reserve(args.size() - 2);
                 for (std::size_t index = 2; index < args.size(); ++index) {
@@ -1332,7 +1445,25 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 }
 
                 semdl::core::DocumentStore store;
-                return make_search_result(args, semdl::core::execute_initial_search_query(query, input_files, store));
+                const auto result = semdl::core::execute_initial_search_query(query, input_files, store);
+                switch (result.similarity_failure.error) {
+                    case semdl::core::SimilarityError::none:
+                        return make_search_result(args, result);
+                    case semdl::core::SimilarityError::target_not_found:
+                        return make_similarity_target_not_found_error(args, result.similarity_failure.target);
+                    case semdl::core::SimilarityError::embedding_missing:
+                        return make_similarity_embedding_missing_error(args, result.similarity_failure.target);
+                    case semdl::core::SimilarityError::model_mismatch:
+                        return make_similarity_model_mismatch_error(args, result.similarity_failure.left_model, result.similarity_failure.right_model);
+                    case semdl::core::SimilarityError::dimensions_mismatch:
+                        return make_similarity_dimensions_mismatch_error(args, result.similarity_failure.left_dimensions, result.similarity_failure.right_dimensions);
+                    case semdl::core::SimilarityError::malformed_vector:
+                        return make_malformed_embedding_vector_error(args, result.similarity_failure.target, result.similarity_failure.source);
+                    case semdl::core::SimilarityError::unreadable_vector_ref:
+                        return make_unreadable_vector_ref_error(args, result.similarity_failure.target, result.similarity_failure.vector_ref);
+                    case semdl::core::SimilarityError::undefined_cosine_similarity:
+                        return make_undefined_cosine_similarity_error(args, result.similarity_failure.target);
+                }
             }
         }
         return make_subcommand_not_implemented_error(args);
@@ -1405,7 +1536,45 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         return make_extract_out_result(args[2], sidecar_file, static_cast<int>(records.size()), plan.skipped_count);
     }
 
-    if (args[0] == "similarity" || args[0] == "add" || args[0] == "normalize") {
+    if (args[0] == "similarity") {
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", args[0], parsed.format);
+        }
+        if (args.size() < 4) {
+            return make_missing_required_argument_error(args, "ssd similarity <id> <id> <file>", "similarity");
+        }
+        if (args.size() != 4) {
+            return CommandResult{.exit_code = 2, .stdout_text = "", .stderr_text = "usage: ssd <subcommand> ...\n"};
+        }
+
+        semdl::core::DocumentStore store;
+        const auto document = store.load_document(std::filesystem::path(args[3]));
+        const auto similarity = semdl::core::compare_pairwise_similarity(document, std::filesystem::path(args[3]), args[1], args[2]);
+        switch (similarity.error) {
+            case semdl::core::SimilarityError::none:
+                return make_similarity_result(similarity);
+            case semdl::core::SimilarityError::target_not_found:
+                return make_similarity_target_not_found_error(args, similarity.target);
+            case semdl::core::SimilarityError::embedding_missing:
+                return make_similarity_embedding_missing_error(args, similarity.target);
+            case semdl::core::SimilarityError::model_mismatch:
+                return make_similarity_model_mismatch_error(args, similarity.left_model, similarity.right_model);
+            case semdl::core::SimilarityError::dimensions_mismatch:
+                return make_similarity_dimensions_mismatch_error(args, similarity.left_dimensions, similarity.right_dimensions);
+            case semdl::core::SimilarityError::malformed_vector:
+                return make_malformed_embedding_vector_error(args, similarity.target, similarity.source);
+            case semdl::core::SimilarityError::unreadable_vector_ref:
+                return make_unreadable_vector_ref_error(args, similarity.target, similarity.vector_ref);
+            case semdl::core::SimilarityError::undefined_cosine_similarity:
+                return make_undefined_cosine_similarity_error(args, similarity.target);
+        }
+    }
+
+    if (args[0] == "add" || args[0] == "normalize") {
         if (args.size() >= 2 && args[1] == "--help") {
             const auto parsed = parse_help_format_tail(args, 2);
             if (!parsed.valid) {

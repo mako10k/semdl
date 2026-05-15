@@ -154,7 +154,10 @@ step S8F:
     |
       初期 similarity resolution は precomputed embedding 前提とし、`.ssq` の `similar` は既存 target 基準、`ssd similarity` は既存 2 target の pairwise 比較とする。
       同一 model と dimensions の組だけを既定で比較対象にし、similarity metric は execution policy 側の source of truth とする。
-      初期既定値は cosine としてよいが、結果には使用 metric を明示し、free-text query や cross-model alignment は後続 slice に分離する。
+      初期既定値は cosine としてよいが、結果には left/right operand、使用 metric、model、dimensions、score を明示し、free-text query や cross-model alignment は後続 slice に分離する。
+      first slice の CLI operand は `ssd similarity <target1> <target2> <file>` とし、embedding の `vector` と `vector_ref` の両方を解決できるようにする。
+      `.ssq` の `similar` は統合ビュー全体で anchor/candidate を解決し、anchor 自身を除外した上で、`return: matches` では score 降順と安定 tie-break で返す。
+      search-time similarity で anchor/candidate の embedding が欠落または不正な場合は skip に劣化させず failure とし、relative `vector_ref` は embedding record を宣言したファイル基準で解決する。
     annotation rationale:
       "similarity slot と pairwise command の責務を明確にし、未承認の text-to-vector や cross-model 変換を同時に持ち込まないため"
 

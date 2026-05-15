@@ -1,10 +1,12 @@
 SEMDL Help Topic: reference similarity
 
 Usage:
-- `ssd similarity <target-ref> <target-ref>`
+- `ssd similarity <id> <id> <file>`
 
-Status:
-- This subcommand is planned but not implemented in the current slice.
+Behavior:
+- Compare two existing semantic targets in one input document using precomputed embeddings only.
+- The current slice uses cosine similarity and requires matching model and dimensions.
+- Both inline `vector` and external `vector_ref` embedding records are supported.
 
 Related help:
 - `ssd help grammar`

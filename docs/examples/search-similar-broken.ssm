@@ -1,0 +1,10 @@
+meta A3 {
+  embedding {
+    model: "toy-embed-v1"
+    dimensions: 3
+    generated_at: "2026-05-15T00:00:00Z"
+    provider: "fixture"
+    source_field: "object"
+    vector_ref: "vectors/missing.vec"
+  }
+}

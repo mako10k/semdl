@@ -1,0 +1,12 @@
+query_file: docs/query/valid-similar-slot.ssq
+mode: matches
+inputs: 2
+anchor: A1
+metric: cosine
+model: toy-embed-v1
+dimensions: 3
+matches: 1
+- file: docs/examples/search-similar-candidate.ssd
+  id: A2
+  kind: assertion
+  score: 0.800000

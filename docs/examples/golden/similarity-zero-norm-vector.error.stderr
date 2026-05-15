@@ -1,0 +1,5 @@
+ERROR undefined_cosine_similarity
+command: ssd similarity A1 Z1 docs/examples/similarity-fixture.ssd
+target: Z1
+reason: zero-norm vector
+hint: cosine similarity requires non-zero vectors on both sides

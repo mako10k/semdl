@@ -1,0 +1,5 @@
+ERROR malformed_embedding_vector
+command: ssd similarity A1 B1 docs/examples/similarity-fixture.ssd
+target: B1
+source: inline vector
+hint: embedding vectors must be bracketed numeric lists

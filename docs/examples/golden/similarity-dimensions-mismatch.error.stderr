@@ -1,0 +1,5 @@
+ERROR similarity_dimensions_mismatch
+command: ssd similarity A1 DIM1 docs/examples/similarity-fixture.ssd
+left_dimensions: 3
+right_dimensions: 2
+hint: both embeddings must have matching dimensions

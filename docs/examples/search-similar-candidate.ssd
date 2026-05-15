@@ -1,0 +1,10 @@
+document D2 {
+  title: "Search similarity candidate"
+}
+
+assertion A2 {
+  subject: D2
+  predicate: reports
+  object: "candidate assertion"
+  embedding_presence: true
+}

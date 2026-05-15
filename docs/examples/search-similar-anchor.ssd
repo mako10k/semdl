@@ -1,0 +1,10 @@
+document D1 {
+  title: "Search similarity anchor"
+}
+
+assertion A1 {
+  subject: D1
+  predicate: reports
+  object: "anchor assertion"
+  embedding_presence: true
+}

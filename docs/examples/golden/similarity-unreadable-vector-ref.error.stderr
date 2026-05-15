@@ -1,0 +1,5 @@
+ERROR unreadable_vector_ref
+command: ssd similarity A1 U1 docs/examples/similarity-fixture.ssd
+target: U1
+vector_ref: docs/examples/fixtures/similarity/missing.vec
+hint: vector_ref must point to a readable file containing one vector

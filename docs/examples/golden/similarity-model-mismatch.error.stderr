@@ -1,0 +1,5 @@
+ERROR similarity_model_mismatch
+command: ssd similarity A1 M1 docs/examples/similarity-fixture.ssd
+left_model: toy-embed-v1
+right_model: toy-embed-v2
+hint: cross-model comparison is not supported in the current slice
