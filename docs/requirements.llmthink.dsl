@@ -262,6 +262,15 @@ step S17:
 
 step S18:
 
+step S18A:
+  decision D18A based_on D18:
+    |
+      初期 `ssd normalize` は `--stdout` 成功面に限定し、canonical inline view を返す。
+      paired `.ssm` があれば統合し、なければ standalone `.ssd` を block / field の canonical order へ整形する。
+      `--out`、`--inline`、`--sidecar`、`--dry-run` は後続 slice に分離する。
+    annotation rationale:
+      "normalize の固有責務を canonicalization に絞り、write path と profile selection を同時に持ち込まないため"
+
 step S27A:
   decision D27A based_on D27, D8A:
     |

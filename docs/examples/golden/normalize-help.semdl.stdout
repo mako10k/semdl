@@ -33,7 +33,7 @@ segment HELP_LINE_4 {
 
 segment HELP_LINE_5 {
   source: HELP_TOPIC
-  text_quote: "- This subcommand is planned but not implemented in the current slice."
+  text_quote: "- This subcommand currently supports `--stdout` for canonical inline output from `.ssd` with an optional paired `.ssm`."
 }
 
 segment HELP_LINE_6 {

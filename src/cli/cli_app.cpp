@@ -3,6 +3,7 @@
 #include "semdl/core/document_store.hpp"
 #include "semdl/core/extract_embeddings.hpp"
 #include "semdl/core/query_validation.hpp"
+#include "semdl/core/render.hpp"
 #include "semdl/core/semantic_model.hpp"
 #include "semdl/core/similarity.hpp"
 
@@ -436,7 +437,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`; `similar` with `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` and `normalize` remain unimplemented.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`; `similar` with `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` remains unimplemented.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -631,7 +632,7 @@ std::string reference_help_text(std::string_view target) {
                "Usage:\n"
                "- `ssd normalize <input.ssd> [--stdout]`\n\n"
                "Status:\n"
-               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "- This subcommand currently supports `--stdout` for canonical inline output from `.ssd` with an optional paired `.ssm`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -1610,6 +1611,15 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 return make_invalid_help_format_error(args, parsed.invalid_value);
             }
             return make_help_result(args, "reference", args[0], parsed.format);
+        }
+        if (args[0] == "normalize" && args.size() >= 3 && args[2] == "--stdout") {
+            semdl::core::DocumentStore store;
+            const auto document = store.load_document(std::filesystem::path(args[1]));
+            return CommandResult{
+                .exit_code = 0,
+                .stdout_text = semdl::core::render_canonical_inline_document(document),
+                .stderr_text = "",
+            };
         }
         return make_subcommand_not_implemented_error(args);
     }

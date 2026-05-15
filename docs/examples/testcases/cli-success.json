@@ -631,6 +631,19 @@
       "notes": "normalize help also supports SEMDL rendering"
     },
     {
+      "id": "normalize-source-stdout",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --stdout",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/normalize-source.inline.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "normalize should return a canonical inline view from non-canonical input and paired sidecar"
+    },
+    {
       "id": "check-minimal",
       "command": "ssd check docs/examples/minimal.ssd",
       "argv": ["ssd", "check", "docs/examples/minimal.ssd"],
