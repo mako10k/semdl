@@ -1,0 +1,32 @@
+meta R1 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T10:00:00Z"
+    provider: "openai"
+    source_field: "label"
+    vector: "[0.1,0.1,0.1]"
+  }
+}
+
+meta S1 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T10:00:00Z"
+    provider: "openai"
+    source_field: "text_quote"
+    vector: "[0.5,0.0,0.5]"
+  }
+}
+
+meta S2 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T10:00:00Z"
+    provider: "openai"
+    source_field: "text_quote"
+    vector: "[0.0,0.5,0.5]"
+  }
+}

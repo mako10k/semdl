@@ -1,0 +1,10 @@
+meta A1 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T10:00:00Z"
+    provider: "openai"
+    source_field: "object"
+    vector: "[0.2,0.3,0.4]"
+  }
+}

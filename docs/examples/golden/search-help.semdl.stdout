@@ -33,7 +33,7 @@ segment HELP_LINE_4 {
 
 segment HELP_LINE_5 {
   source: HELP_TOPIC
-  text_quote: "- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`."
+  text_quote: "- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`."
 }
 
 segment HELP_LINE_6 {
@@ -43,7 +43,7 @@ segment HELP_LINE_6 {
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "- `similar` with `return: subgraph` remains planned but not implemented in the current slice."
+  text_quote: "- `similar` with `return: subgraph` reuses the grouped subgraph shape and includes top-level similarity metadata plus per-group scores."
 }
 
 segment HELP_LINE_8 {

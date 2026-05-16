@@ -4,5 +4,3 @@ provider: ollama
 model: fail-model
 reason: ollama command failed
 hint: see `ssd help reference extract`
-
-

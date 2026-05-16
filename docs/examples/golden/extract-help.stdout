@@ -1,12 +1,14 @@
 SEMDL Help Topic: reference extract
 
 Usage:
-- `ssd extract --out <output.ssd> --embed-provider ollama --embed-model <model> <input.ssd>`
-- `ssd extract --stdout --embed-provider ollama --embed-model <model> <input.ssd>`
+- `ssd extract --stdout <input.txt>`
+- `ssd extract --out <output.ssd> <input.txt>`
+- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> <input.ssd>`
+- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt>`
 
 Status:
-- This subcommand currently supports explicit Ollama-backed embedding generation from an existing `.ssd` input.
-- Raw input extraction and non-Ollama providers remain planned but not implemented in the current slice.
+- This subcommand currently supports skeletal raw `.txt` to `.ssd` extraction and explicit embedding generation through `ollama` or `openai` adapters.
+- Raw `.txt` with `--stdout` emits only generated `.ssd`; embedding generation for raw inputs requires `--out <output.ssd>`.
 
 Related help:
 - `ssd help grammar`

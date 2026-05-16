@@ -506,12 +506,20 @@ SearchResult execute_initial_search_query(const SearchQuery& query,
                     result.dimensions = similarity.dimensions;
                 }
 
-                result.matches.push_back(SearchMatch{
+                SearchMatch match{
                     .file = loaded.input_file.generic_string(),
                     .id = entity_id,
                     .kind = entity.kind,
                     .score = similarity.score,
-                });
+                };
+                if (query.result_mode == "subgraph") {
+                    result.subgraphs.push_back(SearchSubgraph{
+                        .match = std::move(match),
+                        .context_nodes = build_structural_context_nodes(loaded.document, loaded.input_file, entity_id, entity.kind),
+                    });
+                } else {
+                    result.matches.push_back(std::move(match));
+                }
                 continue;
             }
 
@@ -546,6 +554,17 @@ SearchResult execute_initial_search_query(const SearchQuery& query,
                 return left.file < right.file;
             }
             return left.id < right.id;
+        });
+        std::sort(result.subgraphs.begin(), result.subgraphs.end(), [](const SearchSubgraph& left, const SearchSubgraph& right) {
+            const double left_score = left.match.score.value_or(0.0);
+            const double right_score = right.match.score.value_or(0.0);
+            if (left_score != right_score) {
+                return left_score > right_score;
+            }
+            if (left.match.file != right.match.file) {
+                return left.match.file < right.match.file;
+            }
+            return left.match.id < right.match.id;
         });
     }
 

@@ -1,0 +1,16 @@
+query_file: docs/query/valid-similar-subgraph-return.ssq
+mode: subgraph
+inputs: 2
+anchor: A1
+metric: cosine
+model: toy-embed-v1
+dimensions: 3
+subgraphs: 1
+- match_file: docs/examples/search-similar-candidate.ssd
+  match_id: A2
+  match_kind: assertion
+  score: 0.800000
+  context_nodes: 1
+  - file: docs/examples/search-similar-candidate.ssd
+    id: D2
+    kind: document

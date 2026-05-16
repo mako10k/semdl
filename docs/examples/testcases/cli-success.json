@@ -274,6 +274,19 @@
       "notes": "structural subgraph search should return one grouped result per match with one-hop context"
     },
     {
+      "id": "search-valid-similar-subgraph-return",
+      "command": "ssd search docs/query/valid-similar-subgraph-return.ssq docs/examples/search-similar-anchor.ssd docs/examples/search-similar-candidate.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-similar-subgraph-return.ssq", "docs/examples/search-similar-anchor.ssd", "docs/examples/search-similar-candidate.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-similar-subgraph-return.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "similar subgraph search should preserve grouped context and expose similarity metadata"
+    },
+    {
       "id": "extract-help",
       "command": "ssd extract --help",
       "argv": ["ssd", "extract", "--help"],
@@ -284,7 +297,7 @@
       "expected_stdout": "docs/examples/golden/extract-help.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "extract help should document the Ollama-backed embedding generation slice"
+      "notes": "extract help should document raw text intake plus explicit provider adapters"
     },
     {
       "id": "extract-ollama-stdout",
@@ -303,6 +316,22 @@
       "notes": "extract should generate sidecar embedding records through an explicit Ollama-backed write path"
     },
     {
+      "id": "extract-openai-stdout",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small docs/examples/search-similar-anchor.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "docs/examples/search-similar-anchor.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T10:00:00Z"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-openai-stdout.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract should support a non-Ollama provider through the explicit adapter boundary"
+    },
+    {
       "id": "extract-ollama-out",
       "command": "ssd extract --out docs/examples/extract-output.ssd --embed-provider ollama --embed-model nomic-embed-text:latest docs/examples/extract-source.ssd",
       "argv": ["ssd", "extract", "--out", "docs/examples/extract-output.ssd", "--embed-provider", "ollama", "--embed-model", "nomic-embed-text:latest", "docs/examples/extract-source.ssd"],
@@ -317,6 +346,43 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "extract out mode should report paired outputs and embedding counts"
+    },
+    {
+      "id": "extract-raw-stdout",
+      "command": "ssd extract --stdout docs/examples/extract-raw-source.txt",
+      "argv": ["ssd", "extract", "--stdout", "docs/examples/extract-raw-source.txt"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-raw-stdout.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "raw extract stdout should emit a skeletal semantic document with one segment per non-empty line"
+    },
+    {
+      "id": "extract-raw-openai-out",
+      "command": "ssd extract --out docs/examples/extract-raw-output.ssd --embed-provider openai --embed-model text-embedding-3-small docs/examples/extract-raw-source.txt",
+      "argv": ["ssd", "extract", "--out", "docs/examples/extract-raw-output.ssd", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "docs/examples/extract-raw-source.txt"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T10:00:00Z"
+      },
+      "setup_files": ["docs/examples/extract-raw-source.txt", "docs/examples/fixtures/fake-openai.sh", "docs/examples/fixtures/openai-embeddings.psv"],
+      "expected_files": {
+        "docs/examples/extract-raw-source.txt": "docs/examples/extract-raw-source.txt",
+        "docs/examples/fixtures/fake-openai.sh": "docs/examples/fixtures/fake-openai.sh",
+        "docs/examples/fixtures/openai-embeddings.psv": "docs/examples/fixtures/openai-embeddings.psv",
+        "docs/examples/extract-raw-output.ssd": "docs/examples/fixtures/extract-raw-output.expected.ssd",
+        "docs/examples/extract-raw-output.ssm": "docs/examples/fixtures/extract-raw-output.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-raw-openai-out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "raw extract out mode should write skeletal `.ssd` plus paired embeddings when explicit provider options are present"
     },
     {
       "id": "search-presence-minimal",
@@ -394,7 +460,7 @@
       "expected_stdout": "docs/examples/golden/extract-help.semdl.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "extract help also supports SEMDL rendering for the Ollama-backed slice"
+      "notes": "extract help also supports SEMDL rendering for the expanded extract surface"
     },
     {
       "id": "similarity-help",

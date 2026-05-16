@@ -1,0 +1,4 @@
+ERROR invalid_extract_output_mode
+command: ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small docs/examples/extract-raw-source.txt
+reason: raw text input with --stdout cannot be combined with embedding generation
+hint: use `ssd extract --out <output.ssd> --embed-provider <provider> --embed-model <model> <input.txt>`

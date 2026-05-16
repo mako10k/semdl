@@ -282,6 +282,91 @@ std::string quote_value(std::string_view value) {
     return "\"" + std::string(value) + "\"";
 }
 
+bool is_raw_text_extract_input(const std::filesystem::path& input_file) {
+    return input_file.extension() == ".txt";
+}
+
+std::string trim_trailing_cr(std::string value) {
+    if (!value.empty() && value.back() == '\r') {
+        value.pop_back();
+    }
+    return value;
+}
+
+semdl::core::DocumentData build_raw_text_extract_document(const std::filesystem::path& input_file) {
+    semdl::core::DocumentData document;
+    document.input_file = input_file;
+    document.document_count = 1;
+    document.resource_count = 1;
+
+    const std::string stem = input_file.stem().string();
+    document.entities["D1"] = semdl::core::EntityData{
+        .kind = "document",
+        .fields = {
+            {"title", quote_value(stem)},
+            {"source_ref", quote_value(input_file.generic_string())},
+        },
+    };
+    document.entities["R1"] = semdl::core::EntityData{
+        .kind = "resource",
+        .fields = {
+            {"type", "text_file"},
+            {"label", quote_value(stem)},
+        },
+    };
+
+    std::istringstream input(read_text_file(input_file));
+    std::string line;
+    int segment_index = 0;
+    while (std::getline(input, line)) {
+        line = trim_trailing_cr(std::move(line));
+        if (trim_copy(line).empty()) {
+            continue;
+        }
+
+        ++segment_index;
+        document.entities["S" + std::to_string(segment_index)] = semdl::core::EntityData{
+            .kind = "segment",
+            .fields = {
+                {"source", "R1"},
+                {"text_quote", quote_value(line)},
+            },
+        };
+    }
+    document.segment_count = segment_index;
+    return document;
+}
+
+bool is_supported_extract_provider(std::string_view provider) {
+    return provider == "ollama" || provider == "openai";
+}
+
+std::string resolve_extract_provider_command(std::string_view provider) {
+    const char* command_override = nullptr;
+    if (provider == "ollama") {
+        command_override = std::getenv("SEMDL_OLLAMA_COMMAND");
+    } else if (provider == "openai") {
+        command_override = std::getenv("SEMDL_OPENAI_COMMAND");
+    }
+
+    if (command_override != nullptr && *command_override != '\0') {
+        return command_override;
+    }
+    return std::string(provider);
+}
+
+std::vector<std::string> build_extract_provider_argv(std::string_view provider,
+                                                     std::string_view model,
+                                                     std::string_view prompt) {
+    if (provider == "ollama") {
+        return {"run", std::string(model), std::string(prompt)};
+    }
+    if (provider == "openai") {
+        return {"embeddings", std::string(model), std::string(prompt)};
+    }
+    return {std::string(model), std::string(prompt)};
+}
+
 bool has_flag(const std::vector<std::string_view>& args, std::string_view flag) {
     for (const auto arg : args) {
         if (arg == flag) {
@@ -561,7 +646,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`; `similar` with `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` currently supports inline structural kinds only.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` currently supports inline structural kinds only.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -647,9 +732,9 @@ std::string reference_help_text(std::string_view target) {
                "Usage:\n"
                "- `ssd search <query.ssq> <file>...`\n\n"
                "Status:\n"
-               "- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`.\n"
+               "- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`.\n"
                "- `similar` uses precomputed embeddings from the integrated input view and excludes the anchor target from results.\n"
-               "- `similar` with `return: subgraph` remains planned but not implemented in the current slice.\n\n"
+               "- `similar` with `return: subgraph` reuses the grouped subgraph shape and includes top-level similarity metadata plus per-group scores.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -658,11 +743,13 @@ std::string reference_help_text(std::string_view target) {
     if (target == "extract") {
         return "SEMDL Help Topic: reference extract\n\n"
                "Usage:\n"
-               "- `ssd extract --out <output.ssd> --embed-provider ollama --embed-model <model> <input.ssd>`\n"
-               "- `ssd extract --stdout --embed-provider ollama --embed-model <model> <input.ssd>`\n\n"
+               "- `ssd extract --stdout <input.txt>`\n"
+               "- `ssd extract --out <output.ssd> <input.txt>`\n"
+               "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> <input.ssd>`\n"
+               "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt>`\n\n"
                "Status:\n"
-               "- This subcommand currently supports explicit Ollama-backed embedding generation from an existing `.ssd` input.\n"
-               "- Raw input extraction and non-Ollama providers remain planned but not implemented in the current slice.\n\n"
+               "- This subcommand currently supports skeletal raw `.txt` to `.ssd` extraction and explicit embedding generation through `ollama` or `openai` adapters.\n"
+               "- Raw `.txt` with `--stdout` emits only generated `.ssd`; embedding generation for raw inputs requires `--out <output.ssd>`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -975,7 +1062,7 @@ CommandResult make_missing_extract_embedding_args_error(const std::vector<std::s
         .exit_code = 2,
         .stdout_text = "",
         .stderr_text = "ERROR missing_required_argument\ncommand: " + join_args(args) +
-                       "\nusage: ssd extract --stdout|--out <output.ssd> --embed-provider ollama --embed-model <model> <input.ssd>\nsubcommand: extract\nhint: see `ssd help reference extract`\n",
+                       "\nusage: ssd extract --stdout <input.txt> | ssd extract --stdout|--out <output.ssd> --embed-provider <provider> --embed-model <model> <input.ssd|input.txt>\nsubcommand: extract\nhint: see `ssd help reference extract`\n",
     };
 }
 
@@ -985,7 +1072,16 @@ CommandResult make_unsupported_extract_provider_error(const std::vector<std::str
         .stdout_text = "",
         .stderr_text = "ERROR unsupported_extract_provider\ncommand: " + join_args(args) +
                        "\nprovider: " + std::string(provider) +
-                       "\nreason: extract currently supports only ollama\nhint: see `ssd help reference extract`\n",
+                       "\nreason: extract currently supports only ollama and openai\nhint: see `ssd help reference extract`\n",
+    };
+}
+
+CommandResult make_invalid_extract_output_mode_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_extract_output_mode\ncommand: " + join_args(args) +
+                       "\nreason: raw text input with --stdout cannot be combined with embedding generation\nhint: use `ssd extract --out <output.ssd> --embed-provider <provider> --embed-model <model> <input.txt>`\n",
     };
 }
 
@@ -998,7 +1094,7 @@ CommandResult make_extract_provider_failed_error(const std::vector<std::string_v
         .stderr_text = "ERROR extract_embedding_provider_failed\ncommand: " + join_args(args) +
                        "\nprovider: " + std::string(provider) +
                        "\nmodel: " + std::string(model) +
-                       "\nreason: ollama command failed\nhint: see `ssd help reference extract`\n\n\n",
+                       "\nreason: " + std::string(provider) + " command failed\nhint: see `ssd help reference extract`\n",
     };
 }
 
@@ -1007,14 +1103,20 @@ CommandResult make_extract_stdout_result(const std::string& sidecar_text) {
 }
 
 CommandResult make_extract_out_result(std::string_view output_file,
-                                      const std::filesystem::path& sidecar_file,
-                                      int embedded_count,
-                                      int skipped_count) {
+                                      const std::optional<std::filesystem::path>& sidecar_file,
+                                      const std::optional<int>& embedded_count,
+                                      const std::optional<int>& skipped_count) {
     std::ostringstream output;
     output << "wrote_ssd: " << output_file << "\n";
-    output << "wrote_ssm: " << sidecar_file.generic_string() << "\n";
-    output << "embedded: " << embedded_count << "\n";
-    output << "skipped: " << skipped_count << "\n";
+    if (sidecar_file.has_value()) {
+        output << "wrote_ssm: " << sidecar_file->generic_string() << "\n";
+    }
+    if (embedded_count.has_value()) {
+        output << "embedded: " << *embedded_count << "\n";
+    }
+    if (skipped_count.has_value()) {
+        output << "skipped: " << *skipped_count << "\n";
+    }
     return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
 }
 
@@ -1024,11 +1126,21 @@ CommandResult make_search_result(const std::vector<std::string_view>& args, cons
     output << "mode: " << result.query.result_mode << "\n";
     output << "inputs: " << (args.size() - 2) << "\n";
     if (result.query.result_mode == "subgraph") {
+        if (result.query.similar_expression.has_value()) {
+            output << "anchor: " << result.anchor_id << "\n";
+            output << "metric: " << result.metric << "\n";
+            output << "model: " << result.model << "\n";
+            output << "dimensions: " << result.dimensions << "\n";
+        }
         output << "subgraphs: " << result.subgraphs.size() << "\n";
+        output << std::fixed << std::setprecision(6);
         for (const auto& subgraph : result.subgraphs) {
             output << "- match_file: " << subgraph.match.file << "\n";
             output << "  match_id: " << subgraph.match.id << "\n";
             output << "  match_kind: " << subgraph.match.kind << "\n";
+            if (subgraph.match.score.has_value()) {
+                output << "  score: " << *subgraph.match.score << "\n";
+            }
             output << "  context_nodes: " << subgraph.context_nodes.size() << "\n";
             for (const auto& node : subgraph.context_nodes) {
                 output << "  - file: " << node.file << "\n";
@@ -1117,15 +1229,6 @@ CommandResult make_similarity_dimensions_mismatch_error(const std::vector<std::s
                        "\nleft_dimensions: " + std::to_string(left_dimensions) +
                        "\nright_dimensions: " + std::to_string(right_dimensions) +
                        "\nhint: both embeddings must have matching dimensions\n",
-    };
-}
-
-CommandResult make_search_subgraph_similarity_not_supported_error(const std::vector<std::string_view>& args) {
-    return CommandResult{
-        .exit_code = 2,
-        .stdout_text = "",
-        .stderr_text = "ERROR search_subgraph_similarity_not_supported\ncommand: " + join_args(args) +
-                       "\nhint: `return: subgraph` currently supports structural select/where queries only\n",
     };
 }
 
@@ -1847,9 +1950,6 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 return make_invalid_query_filter_error(args, std::filesystem::path(args[1]), issue);
             }
             const auto query = semdl::core::parse_initial_search_query(std::filesystem::path(args[1]));
-            if (query.result_mode == "subgraph" && query.similar_expression.has_value()) {
-                return make_search_subgraph_similarity_not_supported_error(args);
-            }
             if (query.result_mode == "matches" || query.result_mode == "subgraph") {
                 std::vector<std::filesystem::path> input_files;
                 input_files.reserve(args.size() - 2);
@@ -1898,24 +1998,47 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (parsed.provider.empty() != parsed.model.empty()) {
             return make_missing_extract_embedding_args_error(args);
         }
-        if (parsed.provider.empty()) {
-            return make_subcommand_not_implemented_error(args);
+        const bool raw_text_input = is_raw_text_extract_input(*parsed.input_file);
+        if (raw_text_input && parsed.use_stdout && !parsed.provider.empty()) {
+            return make_invalid_extract_output_mode_error(args);
         }
-        if (parsed.provider != "ollama") {
+        if (!parsed.provider.empty() && !is_supported_extract_provider(parsed.provider)) {
             return make_unsupported_extract_provider_error(args, parsed.provider);
         }
 
-        semdl::core::DocumentStore store;
-        const auto document = store.load_document(*parsed.input_file);
+        semdl::core::DocumentData document;
+        if (raw_text_input) {
+            document = build_raw_text_extract_document(*parsed.input_file);
+        } else {
+            if (parsed.provider.empty()) {
+                return make_missing_extract_embedding_args_error(args);
+            }
+            semdl::core::DocumentStore store;
+            document = store.load_document(*parsed.input_file);
+        }
+
+        if (parsed.provider.empty()) {
+            const std::string inline_text = semdl::core::render_canonical_inline_document(document);
+            if (parsed.use_stdout) {
+                return make_extract_stdout_result(inline_text);
+            }
+
+            {
+                std::ofstream output(*parsed.output_file, std::ios::binary);
+                output << inline_text;
+            }
+            return make_extract_out_result(args[2], std::nullopt, std::nullopt, std::nullopt);
+        }
+
         const auto plan = semdl::core::build_extract_embedding_plan(document);
-        const char* command_override = std::getenv("SEMDL_OLLAMA_COMMAND");
-        const std::string ollama_command = (command_override != nullptr && *command_override != '\0') ? std::string(command_override) : std::string("ollama");
+        const std::string provider_command = resolve_extract_provider_command(parsed.provider);
         const std::string generated_at = current_utc_timestamp();
 
         std::vector<semdl::core::GeneratedEmbeddingRecord> records;
         records.reserve(plan.targets.size());
         for (const auto& target : plan.targets) {
-            const auto process = run_process_capture_output(ollama_command, {"run", parsed.model, target.source_text});
+            const auto process = run_process_capture_output(provider_command,
+                                                            build_extract_provider_argv(parsed.provider, parsed.model, target.source_text));
             if (process.exit_code != 0) {
                 return make_extract_provider_failed_error(args, parsed.provider, parsed.model);
             }
@@ -1940,7 +2063,11 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         const auto sidecar_file = derive_sidecar_path(*parsed.output_file);
         {
             std::ofstream output(*parsed.output_file, std::ios::binary);
-            output << read_text_file(*parsed.input_file);
+            if (raw_text_input) {
+                output << semdl::core::render_canonical_inline_document(document);
+            } else {
+                output << read_text_file(*parsed.input_file);
+            }
         }
         {
             std::ofstream output(sidecar_file, std::ios::binary);

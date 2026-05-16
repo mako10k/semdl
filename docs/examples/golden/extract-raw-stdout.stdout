@@ -1,0 +1,19 @@
+document D1 {
+  title: "extract-raw-source"
+  source_ref: "docs/examples/extract-raw-source.txt"
+}
+
+resource R1 {
+  type: text_file
+  label: "extract-raw-source"
+}
+
+segment S1 {
+  source: R1
+  text_quote: "SEMDL keeps semantic links."
+}
+
+segment S2 {
+  source: R1
+  text_quote: "Provider adapters stay explicit."
+}

@@ -275,8 +275,8 @@
     },
     {
       "id": "extract-unsupported-provider",
-      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-large docs/examples/extract-source.ssd",
-      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-large", "docs/examples/extract-source.ssd"],
+      "command": "ssd extract --stdout --embed-provider anthropic --embed-model text-embedding-3-large docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "anthropic", "--embed-model", "text-embedding-3-large", "docs/examples/extract-source.ssd"],
       "cwd": ".",
       "stdin": "",
       "environment": {},
@@ -284,7 +284,7 @@
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/extract-unsupported-provider.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "initial extract embedding generation supports only the local Ollama provider"
+      "notes": "extract should still reject providers outside the explicit adapter list"
     },
     {
       "id": "extract-provider-failed",
@@ -355,17 +355,17 @@
       "notes": "similar search should hard-fail when a candidate vector_ref is unreadable"
     },
     {
-      "id": "search-valid-similar-subgraph-return-not-implemented",
-      "command": "ssd search docs/query/valid-similar-subgraph-return.ssq docs/examples/search-similar-anchor.ssd docs/examples/search-similar-candidate.ssd",
-      "argv": ["ssd", "search", "docs/query/valid-similar-subgraph-return.ssq", "docs/examples/search-similar-anchor.ssd", "docs/examples/search-similar-candidate.ssd"],
+      "id": "extract-raw-stdout-embed-conflict",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small docs/examples/extract-raw-source.txt",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "docs/examples/extract-raw-source.txt"],
       "cwd": ".",
       "stdin": "",
       "environment": {},
       "expected_exit": 2,
       "expected_stdout": "",
-      "expected_stderr": "docs/examples/golden/search-valid-similar-subgraph-return-not-implemented.error.stderr",
+      "expected_stderr": "docs/examples/golden/extract-raw-stdout-embed-conflict.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "the initial subgraph slice is structural-only and does not yet support similar queries"
+      "notes": "raw extract stdout should reject embedding options because stdout is reserved for generated `.ssd`"
     },
     {
       "id": "search-invalid-quoted-similar-target",

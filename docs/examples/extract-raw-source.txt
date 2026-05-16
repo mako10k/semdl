@@ -1,0 +1,3 @@
+SEMDL keeps semantic links.
+
+Provider adapters stay explicit.

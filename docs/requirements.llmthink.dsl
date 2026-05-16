@@ -174,11 +174,32 @@ step S8G:
   decision D8G based_on D8D, D8E:
     |
       最初の埋め込み生成 command owner は `ssd extract` とし、初期 slice では既存 `.ssd` を semantic source として受け取り、
-      `--embed-provider ollama --embed-model <model>` を明示した場合だけ paired `.ssm` に embedding record を生成する。
+      `--embed-provider <provider> --embed-model <model>` を明示した場合だけ paired `.ssm` に embedding record を生成する。
+      初期 supported provider は `ollama` と `openai` に限定し、互換 SDK 前提ではなく explicit adapter 境界で分離する。
       `--embed-provider` と `--embed-model` は両方そろったときだけ有効とし、片側だけなら failure とする。
       embeddable text は kind ごとの canonical field を 1 つだけ持ち、record は model、dimensions、generated_at、provider、source_field、vector を保持する。
     annotation rationale:
-      "dedicated command の増設や raw extraction 全体の固定を先送りしつつ、ADR 0008 の explicit write-path 境界に沿った最初の実装面を確保するため"
+      "dedicated command の増設を避けつつ provider surface を explicit adapter で広げ、ADR 0008 の explicit write-path 境界を保つため"
+
+step S8H:
+  decision D8H based_on D8F:
+    |
+      `ssd search` の `return: subgraph` は structural query だけでなく `similar` を伴う query でも受け付けてよい。
+      similarity-backed subgraph result でも grouped result を維持し、top-level には anchor、metric、model、dimensions を常に出す。
+      各 group には match_file、match_id、match_kind、score、context_nodes を持たせ、context expansion は既存 outbound one-hop 規則を再利用する。
+      result 順序は score 降順と既存 stable tie-break に従い、anchor 自身は結果から除外する。
+    annotation rationale:
+      "ADR 0010 の grouped structural contract を保ったまま similarity search へ拡張し、matches/subgraph 間の result symmetry を保つため"
+
+step S8I:
+  decision D8I based_on D8G:
+    |
+      `ssd extract` は plain `.txt` input を受け付け、初期 raw extraction では document D1、resource R1、non-empty line ごとの segment S<n> を生成して skeletal `.ssd` を返してよい。
+      document.title と resource.label は input stem を使い、document.source_ref には command line で指定した input path を保持する。
+      raw `.txt` input に対する `--stdout` は generated `.ssd` だけを返し、embedding option との併用は failure とする。
+      raw `.txt` input の embedding generation は `--out <output.ssd>` 成功時だけ許可し、embeddable target は generated resource.label と segment.text_quote に限定し、document D1 は対象に含めない。
+    annotation rationale:
+      "raw intake を最小 shape で実装しつつ、single stdout に `.ssd` と `.ssm` を同時 multiplex する新契約を避けるため"
 
 step S9:
   decision D9 based_on D7:

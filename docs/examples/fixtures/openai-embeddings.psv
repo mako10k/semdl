@@ -1,0 +1,5 @@
+provider|model|prompt|vector
+openai|text-embedding-3-small|anchor assertion|[0.2,0.3,0.4]
+openai|text-embedding-3-small|extract-raw-source|[0.1,0.1,0.1]
+openai|text-embedding-3-small|SEMDL keeps semantic links.|[0.5,0.0,0.5]
+openai|text-embedding-3-small|Provider adapters stay explicit.|[0.0,0.5,0.5]
