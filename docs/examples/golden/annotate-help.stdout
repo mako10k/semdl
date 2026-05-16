@@ -1,14 +1,15 @@
 SEMDL Help Topic: reference annotate
 
 Usage:
+- `ssd annotate <selector> <kind> <text> --target sidecar <file>`
 - `ssd annotate <selector> <kind> <text> --target sidecar --dry-run <file>`
 
 Purpose:
-- Append rationale, caveat, todo, status, or explanation metadata.
+- Append or preview rationale, caveat, todo, status, or explanation metadata.
 
 Related help:
 - `ssd help grammar`
 - `ssd help samples`
 
 Sample:
-- `ssd annotate id:H1 rationale 原文に主語がないため補完 --target sidecar --dry-run docs/examples/minimal.ssd`
+- `ssd annotate id:H1 todo 追加入力で主体を確認する --target sidecar docs/examples/minimal.ssd`

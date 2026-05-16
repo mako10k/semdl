@@ -38,12 +38,12 @@ segment HELP_LINE_5 {
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- Check selector resolution and removal safety for one target."
+  text_quote: "- Remove one sidecar metadata field or subtree when the selector resolves safely."
 }
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "- In the current slice, failure diagnostics are fixed before apply behavior."
+  text_quote: "- Structural multi-target and reference-breaking removals still fail."
 }
 
 segment HELP_LINE_8 {
@@ -68,5 +68,5 @@ segment HELP_LINE_11 {
 
 segment HELP_LINE_12 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove type:alternative docs/examples/minimal.ssd`"
+  text_quote: "- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`"
 }

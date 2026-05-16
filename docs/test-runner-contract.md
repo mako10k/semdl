@@ -28,6 +28,12 @@ manifest の追加は許容するが、初期 runner は上記 2 ファイルで
 5. shell 展開、文字列再分割、追加 quoting を行わない
 6. exit code、stdout、stderr を収集する
 
+case が `setup_files` または `expected_files` を持つ場合、runner は実行前に一時 sandbox を作る。
+
+- `setup_files` は repo root から sandbox へ relative path を保ってコピーする
+- `cwd` は同じ relative path を使って sandbox 内へ再解決する
+- `argv` はそのまま使い、CLI を sandbox 内で外部プロセスとして実行する
+
 `command` は表示用であり、実行入力としては使わない。
 
 ## Comparison
@@ -37,6 +43,7 @@ manifest の追加は許容するが、初期 runner は上記 2 ファイルで
 1. exit code
 2. stdout
 3. stderr
+4. declared file outputs
 
 `expected_output_kind` の意味は次のとおりとする。
 
@@ -46,6 +53,9 @@ manifest の追加は許容するが、初期 runner は上記 2 ファイルで
   - 出力が空文字列である
 - `fixture-file`
   - 既存 fixture ファイルを期待値として読む
+
+declared file outputs は `expected_files` に列挙された path だけを比較対象とする。
+この slice では undeclared additional output は failure 条件にしない。
 
 stdout と stderr はバイト列完全一致を基本とする。
 改行正規化や空白のトリムは既定では行わない。

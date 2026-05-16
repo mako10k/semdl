@@ -94,7 +94,7 @@ step S7:
   decision D7 based_on D6:
     |
       minimal 系サンプルには、入力ファイルだけでなく expected stdout も用意する。
-      check、explain、set path dry-run、set meta dry-run、annotate dry-run、split dry-run、split apply stdout の golden 出力を固定し、
+      check、explain、set path dry-run/apply、set meta dry-run/apply、annotate dry-run/apply、split dry-run/apply、remove apply stdout の golden 出力を固定し、
       merge --stdout の期待値は minimal.inline.ssd として保持する。
     annotation rationale:
       "入力だけでなく出力も固定すると、CLI 表示仕様の回帰を早い段階で検出できる"
@@ -193,7 +193,8 @@ step S11:
   decision D11 based_on D9:
     |
       test runner manifest の正規入力は command 文字列だけでなく argv 配列としても保持する。
-      stdin、environment、expected_output_kind も case 単位で固定し、runner 実装差を減らす。
+      stdin、environment、expected_output_kind も case 単位で固定し、
+      file-writing case では setup_files と expected_files により sandboxed file output も固定して、runner 実装差を減らす。
     annotation rationale:
       "parser や lexer の失敗系は shell の再解釈に左右されやすく、argv を正にした方が再現性が高い"
 
@@ -225,6 +226,7 @@ step S14:
       test runner には manifest 形式とは別に実行契約文書を持たせる。
       runner は argv を正規入力とし、shell を介さずにプロセスを起動し、
       expected_output_kind に従って stdout / stderr を比較する。
+      write case では setup_files を sandbox へ複製し、declared expected_files を fixture と比較する。
     annotation rationale:
       "manifest だけでは discovery と比較順序が曖昧になりやすく、実行契約を別文書で固定した方が実装差を減らせる"
 

@@ -5,12 +5,12 @@ Usage:
 - `ssd remove type:<kind> --allow-multi <file>`
 
 Purpose:
-- Check selector resolution and removal safety for one target.
-- In the current slice, failure diagnostics are fixed before apply behavior.
+- Remove one sidecar metadata field or subtree when the selector resolves safely.
+- Structural multi-target and reference-breaking removals still fail.
 
 Related help:
 - `ssd help grammar`
 - `ssd help recipes wrong-layer`
 
 Sample:
-- `ssd remove type:alternative docs/examples/minimal.ssd`
+- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`

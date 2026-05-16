@@ -105,6 +105,11 @@ private:
             } else if (key == "environment") {
                 test_case.environment = parse_string_map();
                 has_environment = true;
+            } else if (key == "setup_files") {
+                const auto values = parse_string_array();
+                for (const auto& value : values) {
+                    test_case.setup_files.emplace_back(value);
+                }
             } else if (key == "expected_exit") {
                 test_case.expected_exit = parse_number();
                 has_expected_exit = true;
@@ -119,6 +124,11 @@ private:
             } else if (key == "expected_output_kind") {
                 test_case.expected_output_kind = parse_string();
                 has_expected_output_kind = true;
+            } else if (key == "expected_files") {
+                const auto values = parse_string_map();
+                for (const auto& [runtime_path, fixture_path] : values) {
+                    test_case.expected_files.emplace(std::filesystem::path(runtime_path), repo_root / fixture_path);
+                }
             } else if (key == "notes") {
                 test_case.notes = parse_string();
                 has_notes = true;

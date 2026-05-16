@@ -748,6 +748,96 @@
       "notes": "inline-to-sidecar split preview"
     },
     {
+      "id": "split-minimal-apply",
+      "command": "ssd split docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "split", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.inline.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.inline.ssd": "docs/examples/fixtures/split-minimal.expected.ssd",
+        "docs/examples/minimal.inline.ssm": "docs/examples/fixtures/split-minimal.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/split-minimal.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "inline-to-sidecar split apply should rewrite the input file and write a paired sidecar"
+    },
+    {
+      "id": "set-path-A1-label-apply",
+      "command": "ssd set path:A1.label 売上報告書 docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:A1.label", "売上報告書", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/set-path-A1-label.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-path-A1-label.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "set path apply should rewrite only the inline file"
+    },
+    {
+      "id": "set-meta-A1-confidence-apply",
+      "command": "ssd set meta:A1.confidence 0.91 docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "meta:A1.confidence", "0.91", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/set-meta-A1-confidence.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-meta-A1-confidence.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "set meta apply should rewrite only the sidecar file"
+    },
+    {
+      "id": "annotate-H1-todo-apply",
+      "command": "ssd annotate id:H1 todo 追加入力で主体を確認する --target sidecar docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "todo", "追加入力で主体を確認する", "--target", "sidecar", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/annotate-H1-todo.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-H1-todo.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate apply should append sidecar metadata through the common update path"
+    },
+    {
+      "id": "remove-A1-embedding-apply",
+      "command": "ssd remove meta:A1.embedding docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "meta:A1.embedding", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/remove-A1-embedding.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-A1-embedding.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "remove meta apply should remove a sidecar metadata subtree when structural integrity remains intact"
+    },
+    {
       "id": "merge-minimal-stdout",
       "command": "ssd merge docs/examples/minimal.ssd --stdout",
       "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--stdout"],

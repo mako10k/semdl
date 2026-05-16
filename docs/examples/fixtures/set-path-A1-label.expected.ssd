@@ -1,0 +1,41 @@
+document D1 {
+  title: "月次売上サンプル"
+  source_ref: "docs/source/monthly-sales.txt"
+}
+
+resource R1 {
+  type: document
+  label: "月次売上報告"
+}
+
+segment S1 {
+  source: R1
+  text_quote: "4月の売上は前年同月比で増加した"
+}
+
+assertion A1 {
+  subject: R1
+  predicate: reports
+  object: "4月の売上は増加した"
+  label: "売上報告書"
+  source_segment: S1
+  source_presence: true
+  embedding_presence: true
+}
+
+hypothesis H1 {
+  about: A1
+  kind: omission-completion
+  summary: "増加の主体は国内売上である可能性が高い"
+  alternative_group: ALT1
+}
+
+alternative ALT1A {
+  group: ALT1
+  label: "国内売上が増加した"
+}
+
+alternative ALT1B {
+  group: ALT1
+  label: "全売上が増加した"
+}

@@ -8,6 +8,7 @@
 #include "semdl/core/similarity.hpp"
 
 #include <array>
+#include <cctype>
 #include <cerrno>
 #include <chrono>
 #include <filesystem>
@@ -389,6 +390,20 @@ CommandResult make_split_apply_result(const std::filesystem::path& input_file,
     return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
 }
 
+CommandResult make_update_apply_result(const std::optional<std::filesystem::path>& ssd_file,
+                                       const std::optional<std::filesystem::path>& ssm_file,
+                                       int changes) {
+    std::ostringstream output;
+    if (ssd_file.has_value()) {
+        output << "wrote_ssd: " << ssd_file->generic_string() << "\n";
+    }
+    if (ssm_file.has_value()) {
+        output << "wrote_ssm: " << ssm_file->generic_string() << "\n";
+    }
+    output << "changes: " << changes << "\n";
+    return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
+}
+
 std::string root_help_text() {
     return "SEMDL CLI Help\n\n"
            "1. Overview\n"
@@ -564,16 +579,18 @@ std::string reference_help_text(std::string_view target) {
     if (target == "set") {
         return "SEMDL Help Topic: reference set\n\n"
                "Usage:\n"
+               "- `ssd set path:<id>.<field> <value> <file>`\n"
                "- `ssd set path:<id>.<field> <value> --dry-run <file>`\n"
+               "- `ssd set meta:<id>.<field> <value> <file>`\n"
                "- `ssd set meta:<id>.<field> <value> --dry-run <file>`\n"
                "- `ssd set id:<id> <field> <value> <file>`\n\n"
                "Purpose:\n"
-               "- Update one target field in inline structure or sidecar metadata.\n\n"
+               "- Apply or preview one target field update in inline structure or sidecar metadata.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help recipes wrong-layer`\n\n"
                "Sample:\n"
-               "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n";
+               "- `ssd set meta:A1.confidence 0.91 docs/examples/minimal.ssd`\n";
     }
 
     if (target == "remove") {
@@ -582,26 +599,27 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd remove <selector> <file>`\n"
                "- `ssd remove type:<kind> --allow-multi <file>`\n\n"
                "Purpose:\n"
-               "- Check selector resolution and removal safety for one target.\n"
-               "- In the current slice, failure diagnostics are fixed before apply behavior.\n\n"
+               "- Remove one sidecar metadata field or subtree when the selector resolves safely.\n"
+               "- Structural multi-target and reference-breaking removals still fail.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help recipes wrong-layer`\n\n"
                "Sample:\n"
-               "- `ssd remove type:alternative docs/examples/minimal.ssd`\n";
+               "- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`\n";
     }
 
     if (target == "annotate") {
         return "SEMDL Help Topic: reference annotate\n\n"
                "Usage:\n"
+               "- `ssd annotate <selector> <kind> <text> --target sidecar <file>`\n"
                "- `ssd annotate <selector> <kind> <text> --target sidecar --dry-run <file>`\n\n"
                "Purpose:\n"
-               "- Append rationale, caveat, todo, status, or explanation metadata.\n\n"
+               "- Append or preview rationale, caveat, todo, status, or explanation metadata.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help samples`\n\n"
                "Sample:\n"
-               "- `ssd annotate id:H1 rationale 原文に主語がないため補完 --target sidecar --dry-run docs/examples/minimal.ssd`\n";
+               "- `ssd annotate id:H1 todo 追加入力で主体を確認する --target sidecar docs/examples/minimal.ssd`\n";
     }
 
     if (target == "split") {
@@ -1135,6 +1153,121 @@ CommandResult make_remove_break_reference_error(const std::vector<std::string_vi
 
 std::string require_field_from_entity(const semdl::core::DocumentData& document, std::string_view entity_id, const std::string& field_name, bool metadata);
 
+bool looks_number_literal(std::string_view value) {
+    if (value.empty()) {
+        return false;
+    }
+    std::size_t index = 0;
+    if (value.front() == '-' || value.front() == '+') {
+        index = 1;
+    }
+    bool saw_digit = false;
+    bool saw_dot = false;
+    for (; index < value.size(); ++index) {
+        const unsigned char ch = static_cast<unsigned char>(value[index]);
+        if (std::isdigit(ch)) {
+            saw_digit = true;
+            continue;
+        }
+        if (ch == '.' && !saw_dot) {
+            saw_dot = true;
+            continue;
+        }
+        return false;
+    }
+    return saw_digit;
+}
+
+bool looks_identifier_literal(std::string_view value) {
+    if (value.empty()) {
+        return false;
+    }
+    for (const unsigned char ch : value) {
+        if (!(std::isalnum(ch) || ch == '_' || ch == '-')) {
+            return false;
+        }
+    }
+    return true;
+}
+
+std::string render_scalar_argument(std::string_view value) {
+    if (value == "true" || value == "false" || looks_number_literal(value) || looks_identifier_literal(value)) {
+        return std::string(value);
+    }
+    return quote_value(value);
+}
+
+std::string metadata_kind_for_entity(const semdl::core::DocumentData& document, std::string_view entity_id) {
+    if (const auto* metadata = document.find_metadata(entity_id); metadata != nullptr) {
+        return metadata->kind;
+    }
+    if (const auto* entity = document.find_entity(entity_id); entity != nullptr) {
+        return entity->kind == "document" ? "document_meta" : "meta";
+    }
+    return "meta";
+}
+
+bool apply_set_change(semdl::core::DocumentData& document, const semdl::core::Selector& selector, std::string_view raw_value) {
+    if (selector.kind == semdl::core::SelectorKind::path) {
+        auto& fields = document.entities[selector.entity_id].fields;
+        fields[selector.field_path] = render_scalar_argument(raw_value);
+        return true;
+    }
+    if (selector.kind == semdl::core::SelectorKind::meta) {
+        auto& metadata = document.metadata_entities[selector.entity_id];
+        metadata.kind = metadata_kind_for_entity(document, selector.entity_id);
+        metadata.fields[selector.field_path] = render_scalar_argument(raw_value);
+        return true;
+    }
+    return false;
+}
+
+bool apply_annotation_change(semdl::core::DocumentData& document,
+                             std::string_view selector,
+                             std::string_view annotation_kind,
+                             std::string_view text_value) {
+    const auto parsed = semdl::core::parse_selector(selector);
+    if ((parsed.kind != semdl::core::SelectorKind::id && parsed.kind != semdl::core::SelectorKind::doc_self) || parsed.entity_id.empty()) {
+        return false;
+    }
+    if (!document.contains_entity_id(parsed.entity_id)) {
+        return false;
+    }
+
+    auto& metadata = document.metadata_entities[parsed.entity_id];
+    metadata.kind = metadata_kind_for_entity(document, parsed.entity_id);
+    metadata.fields[std::string(annotation_kind)] = quote_value(text_value);
+    return true;
+}
+
+bool apply_remove_meta_change(semdl::core::DocumentData& document, const semdl::core::Selector& selector) {
+    if (selector.kind != semdl::core::SelectorKind::meta) {
+        return false;
+    }
+
+    auto metadata_it = document.metadata_entities.find(selector.entity_id);
+    if (metadata_it == document.metadata_entities.end()) {
+        return false;
+    }
+
+    const std::string prefix = selector.field_path + ".";
+    bool removed = false;
+    for (auto it = metadata_it->second.fields.begin(); it != metadata_it->second.fields.end();) {
+        if (it->first == selector.field_path || it->first.rfind(prefix, 0) == 0) {
+            it = metadata_it->second.fields.erase(it);
+            removed = true;
+            continue;
+        }
+        ++it;
+    }
+    return removed;
+}
+
+void write_text_file(const std::filesystem::path& file_path, const std::string& content) {
+    std::ofstream output(file_path, std::ios::binary);
+    output << content;
+}
+
 UpdatePreview build_set_preview(const semdl::core::DocumentData& document, const semdl::core::Selector& selector, const std::vector<std::string_view>& args) {
     const auto input_file = std::filesystem::path(args.back());
     const auto sidecar_path = derive_sidecar_path(input_file);
@@ -1147,7 +1280,7 @@ UpdatePreview build_set_preview(const semdl::core::DocumentData& document, const
     preview.target_file = selector.kind == semdl::core::SelectorKind::path ? input_file.generic_string() : sidecar_path.generic_string();
     preview.detail_lines.push_back("selector: " + std::string(args[1]));
     preview.detail_lines.push_back("old: " + require_field_from_entity(document, selector.entity_id, selector.field_path, selector.kind == semdl::core::SelectorKind::meta));
-    preview.detail_lines.push_back(std::string("new: ") + (selector.kind == semdl::core::SelectorKind::path ? quote_value(args[2]) : std::string(args[2])));
+    preview.detail_lines.push_back("new: " + render_scalar_argument(args[2]));
     return preview;
 }
 
@@ -1309,7 +1442,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
 
         semdl::core::DocumentStore store;
-        const auto document = store.load_document(std::filesystem::path(args[2]));
+        auto document = store.load_document(std::filesystem::path(args[2]));
         const auto explain_view = semdl::core::build_explain_view(document, args[1]);
         if (explain_view.kind.empty()) {
             return make_explain_target_not_found_error(args);
@@ -1339,7 +1472,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
         if (args.size() >= 4) {
             semdl::core::DocumentStore store;
-            const auto document = store.load_document(std::filesystem::path(args.back()));
+            auto document = store.load_document(std::filesystem::path(args.back()));
             const auto selector = semdl::core::parse_selector(args[1]);
             const auto resolution = semdl::core::resolve_selector(document, selector);
             if (resolution.error == semdl::core::ResolveError::invalid_selector_syntax) {
@@ -1356,7 +1489,24 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 return make_dry_run_result(build_set_preview(document, selector, args));
             }
 
-            return make_apply_not_implemented_error(args, "set");
+            if (!apply_set_change(document, selector, args[2])) {
+                return make_apply_not_implemented_error(args, "set");
+            }
+
+            if (selector.kind == semdl::core::SelectorKind::path) {
+                if (document.has_sidecar) {
+                    const auto rendered = semdl::core::render_split_document(document);
+                    write_text_file(std::filesystem::path(args.back()), rendered.inline_document);
+                } else {
+                    write_text_file(std::filesystem::path(args.back()), semdl::core::render_canonical_inline_document(document));
+                }
+                return make_update_apply_result(std::filesystem::path(args.back()), std::nullopt, 1);
+            }
+
+            const auto sidecar_file = derive_sidecar_path(std::filesystem::path(args.back()));
+            const auto rendered = semdl::core::render_split_document(document);
+            write_text_file(sidecar_file, rendered.sidecar_document);
+            return make_update_apply_result(std::nullopt, sidecar_file, 1);
         }
     }
 
@@ -1377,8 +1527,21 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (!is_allowed_annotation_kind(args[2])) {
             return make_invalid_annotation_kind_error(args);
         }
-        if (args.size() >= 8 && args[4] == "--target" && args[5] == "sidecar" && has_flag(args, "--dry-run")) {
+        if (args.size() >= 7 && args[4] == "--target" && args[5] == "sidecar" && has_flag(args, "--dry-run")) {
             return make_dry_run_result(build_annotate_preview(args));
+        }
+
+        if (args.size() >= 7 && args[4] == "--target" && args[5] == "sidecar") {
+            semdl::core::DocumentStore store;
+            auto document = store.load_document(std::filesystem::path(args.back()));
+            if (!apply_annotation_change(document, args[1], args[2], args[3])) {
+                return make_apply_not_implemented_error(args, "annotate");
+            }
+
+            const auto sidecar_file = derive_sidecar_path(std::filesystem::path(args.back()));
+            const auto rendered = semdl::core::render_split_document(document);
+            write_text_file(sidecar_file, rendered.sidecar_document);
+            return make_update_apply_result(std::nullopt, sidecar_file, 1);
         }
 
         return make_apply_not_implemented_error(args, "annotate");
@@ -1396,7 +1559,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             return make_missing_required_argument_error(args, "ssd remove <selector> <file>", "remove");
         }
         semdl::core::DocumentStore store;
-        const auto document = store.load_document(std::filesystem::path(args[2]));
+        auto document = store.load_document(std::filesystem::path(args[2]));
         const auto selector = semdl::core::parse_selector(args[1]);
         const auto resolution = semdl::core::resolve_selector(document, selector);
         if (resolution.error == semdl::core::ResolveError::multiple_targets) {
@@ -1405,6 +1568,13 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (args[1] == "id:A1") {
             return make_remove_break_reference_error(args);
         }
+        if (selector.kind == semdl::core::SelectorKind::meta && apply_remove_meta_change(document, selector)) {
+            const auto sidecar_file = derive_sidecar_path(std::filesystem::path(args[2]));
+            const auto rendered = semdl::core::render_split_document(document);
+            write_text_file(sidecar_file, rendered.sidecar_document);
+            return make_update_apply_result(std::nullopt, sidecar_file, 1);
+        }
+        return make_apply_not_implemented_error(args, "remove");
     }
 
     if (args[0] == "split") {
