@@ -159,8 +159,10 @@ step S8J:
       後続 filter slice では `.ssq` の `where` に numeric range comparison と boolean expression を追加してよい。
       range operator は `>`, `>=`, `<`, `<=` に限定し、右辺は number に限る。
       logical composition は `and` / `or` の mixed expression と parenthesized grouping を受け付けてよく、precedence は `and` を `or` より高く扱ってよい。
-      unmatched parenthesis、empty grouping、group adjacency の欠落は validation failure とする。
-      `not`、関数呼び出し、新 predicate は引き続き deferred とする。
+      unary `not` は filter term または parenthesized group の前に置いてよく、`and` より高い precedence で repeated unary `not` も許可してよい。
+      unmatched parenthesis、empty grouping、group adjacency の欠落、operand のない dangling `not` は validation failure とする。
+      current `where` profile では operand position の `not` は reserved keyword とし、field name `not` は受け付けない。
+      関数呼び出しと新 predicate は引き続き deferred とする。
       `=` は既存互換の token equality を維持し、range comparison で左辺 field が欠損または非数値の candidate は failure ではなく no-match とする。
     annotation rationale:
       "full expression language へは踏み込まず、sample-backed な precedence と grouping だけを先に formalize するため"

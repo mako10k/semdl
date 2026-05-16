@@ -233,6 +233,7 @@ struct FilterClause {
 struct WhereExpressionNode {
     enum class Kind {
         clause,
+        negation,
         conjunction,
         disjunction,
     };
@@ -401,7 +402,7 @@ ParsedWhereExpression parse_where_expression(std::string_view expression) {
             if (value.substr(index, keyword.size()) != keyword) {
                 return false;
             }
-            return index + keyword.size() < value.size() && value[index + keyword.size()] == ' ';
+            return index + keyword.size() == value.size() || value[index + keyword.size()] == ' ';
         }
 
         std::size_t find_filter_term_end() const {
@@ -493,8 +494,38 @@ ParsedWhereExpression parse_where_expression(std::string_view expression) {
             };
         }
 
+        std::optional<WhereExpressionNode> parse_unary_expression() {
+            skip_spaces();
+            if (!is_logical_keyword_at(text, position, "not")) {
+                return parse_primary();
+            }
+
+            position += 3;
+            skip_spaces();
+            if (position >= text.size() || text[position] == ')') {
+                issue.valid = false;
+                issue.reason = "unary `not` must be followed by a filter term or parenthesized group";
+                return std::nullopt;
+            }
+            if (text[position] == '=' || text[position] == '>' || text[position] == '<') {
+                issue.valid = false;
+                issue.reason = "reserved keyword `not` cannot be used as a field name in the current .ssq filter profile";
+                return std::nullopt;
+            }
+
+            auto operand = parse_unary_expression();
+            if (!operand.has_value()) {
+                return std::nullopt;
+            }
+
+            WhereExpressionNode node;
+            node.kind = WhereExpressionNode::Kind::negation;
+            node.children.push_back(std::move(*operand));
+            return node;
+        }
+
         std::optional<WhereExpressionNode> parse_and_expression() {
-            auto first = parse_primary();
+            auto first = parse_unary_expression();
             if (!first.has_value()) {
                 return std::nullopt;
             }
@@ -503,7 +534,7 @@ ParsedWhereExpression parse_where_expression(std::string_view expression) {
             children.push_back(std::move(*first));
 
             while (consume_keyword("and")) {
-                auto next = parse_primary();
+                auto next = parse_unary_expression();
                 if (!next.has_value()) {
                     return std::nullopt;
                 }
@@ -747,6 +778,9 @@ bool matches_where_expression(const std::map<std::string, std::string>& fields, 
     const auto matches_node = [&](const auto& self, const WhereExpressionNode& node) -> bool {
         if (node.kind == WhereExpressionNode::Kind::clause) {
             return matches_clause(node.clause);
+        }
+        if (node.kind == WhereExpressionNode::Kind::negation) {
+            return node.children.size() == 1U ? !self(self, node.children.front()) : false;
         }
         if (node.kind == WhereExpressionNode::Kind::disjunction) {
             for (const auto& child : node.children) {

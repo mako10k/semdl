@@ -1,0 +1,5 @@
+query {
+  select: assertion
+  where: not confidence > 0.9
+  return: matches
+}

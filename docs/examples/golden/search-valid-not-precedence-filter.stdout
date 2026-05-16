@@ -1,0 +1,4 @@
+query_file: docs/query/valid-not-precedence-filter.ssq
+mode: matches
+inputs: 1
+matches: 0

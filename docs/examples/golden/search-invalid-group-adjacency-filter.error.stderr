@@ -9,8 +9,10 @@ allowed:
   - field = 1
   - field = true|false
   - field > 0.8
+  - not field
+  - not field = true
   - field and other = true
-  - field > 0.8 or other
+  - not (field or other)
   - field and other = true or third
   - (field or other) and third > 0.8
 hint: see `ssd help reference search`

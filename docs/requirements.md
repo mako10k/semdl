@@ -482,7 +482,10 @@ anchor または candidate の埋め込みが欠落、malformed vector、unreada
 - range comparison で左辺 field が欠損または非数値の candidate は failure ではなく no-match とする
 - precedence は `and` が `or` より高い
 - 括弧は precedence override と nested grouping に使ってよい
-- `not`、関数呼び出し、新 predicate は引き続き `.ssq` grammar artifact に含めない
+- unary `not` は filter term または parenthesized group の前に置いてよく、repeated unary `not` も許可してよい
+- `not` は `and` より高い precedence を持ち、dangling `not` は validation failure とする
+- current `where` profile では operand position の `not` は reserved keyword とし、field name `not` は受け付けない
+- 関数呼び出しと新 predicate は引き続き `.ssq` grammar artifact に含めない
 
 workspace に concrete sample が少ない段階では、この artifact を full query language の完成版としてではなく、
 将来 semql family へつながる starting point として扱う。
@@ -976,6 +979,24 @@ test runner 定義:
 - `ssd search docs/query/valid-parenthesized-quoted-string-filter.ssq docs/examples/minimal.ssd`
   - quoted string 内の parentheses は grouping token として解釈せず leaf value のまま扱う
   - 期待出力は [docs/examples/golden/search-valid-parenthesized-quoted-string-filter.stdout](docs/examples/golden/search-valid-parenthesized-quoted-string-filter.stdout) と一致する
+- `ssd search docs/query/valid-not-filter.ssq docs/examples/minimal.ssd`
+  - unary `not` は leaf term に対して使えてよい
+  - 期待出力は [docs/examples/golden/search-valid-not-filter.stdout](docs/examples/golden/search-valid-not-filter.stdout) と一致する
+- `ssd search docs/query/valid-not-group-filter.ssq docs/examples/minimal.ssd`
+  - unary `not` は grouped expression 全体に対して使えてよい
+  - 期待出力は [docs/examples/golden/search-valid-not-group-filter.stdout](docs/examples/golden/search-valid-not-group-filter.stdout) と一致する
+- `ssd search docs/query/valid-double-not-filter.ssq docs/examples/minimal.ssd`
+  - repeated unary `not` も許可してよい
+  - 期待出力は [docs/examples/golden/search-valid-double-not-filter.stdout](docs/examples/golden/search-valid-double-not-filter.stdout) と一致する
+- `ssd search docs/query/valid-not-precedence-filter.ssq docs/examples/minimal.ssd`
+  - unary `not` は `and` より高い precedence で評価してよい
+  - 期待出力は [docs/examples/golden/search-valid-not-precedence-filter.stdout](docs/examples/golden/search-valid-not-precedence-filter.stdout) と一致する
+- `ssd search docs/query/valid-quoted-not-filter.ssq docs/examples/minimal.ssd`
+  - quoted string 内の `not` は unary keyword として解釈しない
+  - 期待出力は [docs/examples/golden/search-valid-quoted-not-filter.stdout](docs/examples/golden/search-valid-quoted-not-filter.stdout) と一致する
+- `ssd search docs/query/valid-not-range-filter.ssq docs/examples/minimal.ssd`
+  - unary `not` は numeric range filter term に対しても使えてよい
+  - 期待出力は [docs/examples/golden/search-valid-not-range-filter.stdout](docs/examples/golden/search-valid-not-range-filter.stdout) と一致する
 - `ssd search docs/query/valid-range-nonnumeric-no-match.ssq docs/examples/minimal.ssd`
   - 非数値 field に対する range filter は failure ではなく no-match に劣化する
   - 期待出力は [docs/examples/golden/search-valid-range-nonnumeric-no-match.stdout](docs/examples/golden/search-valid-range-nonnumeric-no-match.stdout) と一致する
@@ -1083,6 +1104,15 @@ test runner 定義:
 - `ssd search docs/query/invalid-group-adjacency-filter.ssq docs/examples/minimal.ssd`
   - term と group の間に operator がない式は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-group-adjacency-filter.error.stderr](docs/examples/golden/search-invalid-group-adjacency-filter.error.stderr) と一致する
+- `ssd search docs/query/invalid-dangling-not-filter.ssq docs/examples/minimal.ssd`
+  - operand のない unary `not` は validation failure とする
+  - 期待 stderr は [docs/examples/golden/search-invalid-dangling-not-filter.error.stderr](docs/examples/golden/search-invalid-dangling-not-filter.error.stderr) と一致する
+- `ssd search docs/query/invalid-not-right-paren-filter.ssq docs/examples/minimal.ssd`
+  - `not )` のように closing parenthesis が operand 位置へ現れる式は validation failure とする
+  - 期待 stderr は [docs/examples/golden/search-invalid-not-right-paren-filter.error.stderr](docs/examples/golden/search-invalid-not-right-paren-filter.error.stderr) と一致する
+- `ssd search docs/query/invalid-not-field-filter.ssq docs/examples/minimal.ssd`
+  - current `where` profile では reserved keyword `not` を field name として使えない
+  - 期待 stderr は [docs/examples/golden/search-invalid-not-field-filter.error.stderr](docs/examples/golden/search-invalid-not-field-filter.error.stderr) と一致する
 
 成功系と失敗系の両方は、runner から収集可能な manifest 形式で保持する。
 

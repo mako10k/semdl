@@ -664,6 +664,45 @@
       "notes": "terms and groups still require an explicit boolean operator between them"
     },
     {
+      "id": "search-invalid-dangling-not-filter",
+      "command": "ssd search docs/query/invalid-dangling-not-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/invalid-dangling-not-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/search-invalid-dangling-not-filter.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "unary not still requires a following filter term or parenthesized group"
+    },
+    {
+      "id": "search-invalid-not-right-paren-filter",
+      "command": "ssd search docs/query/invalid-not-right-paren-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/invalid-not-right-paren-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/search-invalid-not-right-paren-filter.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "unary not should reject a closing parenthesis where an operand is required"
+    },
+    {
+      "id": "search-invalid-not-field-filter",
+      "command": "ssd search docs/query/invalid-not-field-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/invalid-not-field-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/search-invalid-not-field-filter.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "reserved keyword `not` should not be accepted as a field name in the current where profile"
+    },
+    {
       "id": "remove-type-alternative-without-allow-multi",
       "command": "ssd remove type:alternative docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "type:alternative", "docs/examples/minimal.ssd"],

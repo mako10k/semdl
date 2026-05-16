@@ -1,0 +1,5 @@
+query {
+  select: assertion
+  where: not (label = "missing" and source_presence)
+  return: matches
+}
