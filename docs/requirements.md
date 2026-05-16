@@ -798,6 +798,7 @@ test runner 定義:
 - [docs/examples/golden/set-meta-A1-confidence.dryrun.stdout](docs/examples/golden/set-meta-A1-confidence.dryrun.stdout)
 - [docs/examples/golden/annotate-H1-rationale.dryrun.stdout](docs/examples/golden/annotate-H1-rationale.dryrun.stdout)
 - [docs/examples/golden/split-minimal.dryrun.stdout](docs/examples/golden/split-minimal.dryrun.stdout)
+- [docs/examples/golden/split-minimal.apply.stdout](docs/examples/golden/split-minimal.apply.stdout)
 - [docs/examples/golden/remove-type-alternative.error.stderr](docs/examples/golden/remove-type-alternative.error.stderr)
 - [docs/examples/golden/remove-id-A1.error.stderr](docs/examples/golden/remove-id-A1.error.stderr)
 - [docs/examples/golden/annotate-invalid-kind.error.stderr](docs/examples/golden/annotate-invalid-kind.error.stderr)
@@ -832,6 +833,9 @@ test runner 定義:
 - `ssd split docs/examples/minimal.inline.ssd --dry-run`
   - インラインへ戻せる項目とサイドカーへ残る項目を確認できる
   - 期待出力は [docs/examples/golden/split-minimal.dryrun.stdout](docs/examples/golden/split-minimal.dryrun.stdout) と一致する
+- `ssd split docs/examples/minimal.inline.ssd`
+  - 対応する `.ssd` と `.ssm` へ分離を書き込み、標準出力では書き込んだパスと移動件数を報告する
+  - 期待出力は [docs/examples/golden/split-minimal.apply.stdout](docs/examples/golden/split-minimal.apply.stdout) と一致する
 
 これらの例は説明用サンプルではなく、仕様の期待動作を固定するための最小受け入れケースとして扱う。
 

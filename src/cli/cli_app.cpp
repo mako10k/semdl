@@ -262,12 +262,6 @@ struct UpdatePreview {
 };
 
 std::filesystem::path derive_sidecar_path(const std::filesystem::path& input_file) {
-    const std::string input = input_file.generic_string();
-    constexpr std::string_view inline_suffix = ".inline.ssd";
-    if (input.size() >= inline_suffix.size() && input.ends_with(inline_suffix)) {
-        return std::filesystem::path(input.substr(0, input.size() - inline_suffix.size()) + ".ssm");
-    }
-
     auto sidecar = input_file;
     sidecar.replace_extension(".ssm");
     return sidecar;
@@ -383,6 +377,16 @@ CommandResult make_apply_not_implemented_error(const std::vector<std::string_vie
                        "\noperation: " + std::string(operation) +
                        "\nhint: use `--dry-run` for preview in the current slice\n",
     };
+}
+
+CommandResult make_split_apply_result(const std::filesystem::path& input_file,
+                                      const std::filesystem::path& sidecar_file,
+                                      int moved_count) {
+    std::ostringstream output;
+    output << "wrote_ssd: " << input_file.generic_string() << "\n";
+    output << "wrote_ssm: " << sidecar_file.generic_string() << "\n";
+    output << "moved: " << moved_count << "\n";
+    return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
 }
 
 std::string root_help_text() {
@@ -603,15 +607,16 @@ std::string reference_help_text(std::string_view target) {
     if (target == "split") {
         return "SEMDL Help Topic: reference split\n\n"
                "Usage:\n"
+               "- `ssd split <input.ssd>`\n"
                "- `ssd split <input.ssd> --dry-run`\n\n"
                "Purpose:\n"
-               "- Preview an inline-to-sidecar separation while preserving meaning.\n"
-               "- In the current slice, apply behavior is not implemented yet.\n\n"
+               "- Separate sidecar-eligible metadata into a paired `.ssm` while preserving the semantic skeleton in `.ssd`.\n"
+               "- `--dry-run` previews what stays in `.ssd` and what moves to `.ssm`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help samples`\n\n"
                "Sample:\n"
-               "- `ssd split docs/examples/minimal.inline.ssd --dry-run`\n";
+               "- `ssd split docs/examples/minimal.inline.ssd`\n";
     }
 
     if (target == "merge") {
@@ -1160,43 +1165,28 @@ UpdatePreview build_annotate_preview(const std::vector<std::string_view>& args) 
     return preview;
 }
 
-UpdatePreview build_split_preview(const std::vector<std::string_view>& args) {
+UpdatePreview build_split_preview(const semdl::core::DocumentData& document, const std::vector<std::string_view>& args) {
     const auto input_file = std::filesystem::path(args[1]);
     const auto sidecar_path = derive_sidecar_path(input_file);
+    const auto split_output = semdl::core::render_split_document(document);
 
     UpdatePreview preview;
     preview.command_line = "ssd split " + input_file.generic_string();
     preview.target_profile = "sidecar";
     preview.target_file = sidecar_path.generic_string();
     preview.include_target_header = false;
-    preview.detail_lines = {
-        "source_profile: inline",
-        "result_profile: sidecar",
-        "create: " + sidecar_path.generic_string(),
-        "keep_in_ssd:",
-        "  - document D1.title",
-        "  - document D1.source_ref",
-        "  - resource R1",
-        "  - segment S1",
-        "  - assertion A1.label",
-        "  - assertion A1.source_segment",
-        "  - assertion A1.source_presence",
-        "  - assertion A1.embedding_presence",
-        "  - hypothesis H1.kind",
-        "  - hypothesis H1.summary",
-        "  - hypothesis H1.alternative_group",
-        "move_to_ssm:",
-        "  - document_meta D1.version",
-        "  - document_meta D1.generator",
-        "  - meta A1.confidence",
-        "  - meta A1.provenance_kind",
-        "  - meta A1.rationale",
-        "  - meta A1.embedding",
-        "  - meta H1.confidence",
-        "  - meta H1.rationale",
-        "  - meta H1.caveat",
-    };
-    preview.changes = 9;
+    preview.detail_lines.push_back(std::string("source_profile: ") + (document.has_sidecar ? "sidecar" : "inline"));
+    preview.detail_lines.push_back("result_profile: sidecar");
+    preview.detail_lines.push_back("create: " + sidecar_path.generic_string());
+    preview.detail_lines.push_back("keep_in_ssd:");
+    for (const auto& item : split_output.kept_items) {
+        preview.detail_lines.push_back("  - " + item);
+    }
+    preview.detail_lines.push_back("move_to_ssm:");
+    for (const auto& item : split_output.moved_items) {
+        preview.detail_lines.push_back("  - " + item);
+    }
+    preview.changes = split_output.moved_count;
     return preview;
 }
 
@@ -1426,10 +1416,30 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             return make_help_result(args, "reference", "split", parsed.format);
         }
         if (args.size() >= 3 && args[2] == "--dry-run") {
-            return make_dry_run_result(build_split_preview(args));
+            semdl::core::DocumentStore store;
+            const auto document = store.load_document(std::filesystem::path(args[1]));
+            return make_dry_run_result(build_split_preview(document, args));
+        }
+        if (args.size() == 2) {
+            semdl::core::DocumentStore store;
+            const auto input_file = std::filesystem::path(args[1]);
+            const auto sidecar_file = derive_sidecar_path(input_file);
+            const auto document = store.load_document(input_file);
+            const auto split_output = semdl::core::render_split_document(document);
+
+            {
+                std::ofstream output(input_file, std::ios::binary);
+                output << split_output.inline_document;
+            }
+            {
+                std::ofstream output(sidecar_file, std::ios::binary);
+                output << split_output.sidecar_document;
+            }
+
+            return make_split_apply_result(input_file, sidecar_file, split_output.moved_count);
         }
         if (args.size() >= 2) {
-            return make_apply_not_implemented_error(args, "split");
+            return make_subcommand_not_implemented_error(args);
         }
     }
 

@@ -2,19 +2,29 @@ DRY-RUN
 command: ssd split docs/examples/minimal.inline.ssd
 source_profile: inline
 result_profile: sidecar
-create: docs/examples/minimal.ssm
+create: docs/examples/minimal.inline.ssm
 keep_in_ssd:
-  - document D1.title
   - document D1.source_ref
-  - resource R1
-  - segment S1
-  - assertion A1.label
-  - assertion A1.source_segment
-  - assertion A1.source_presence
+  - document D1.title
+  - resource R1.label
+  - resource R1.type
+  - segment S1.source
+  - segment S1.text_quote
   - assertion A1.embedding_presence
+  - assertion A1.label
+  - assertion A1.object
+  - assertion A1.predicate
+  - assertion A1.source_presence
+  - assertion A1.source_segment
+  - assertion A1.subject
+  - hypothesis H1.about
+  - hypothesis H1.alternative_group
   - hypothesis H1.kind
   - hypothesis H1.summary
-  - hypothesis H1.alternative_group
+  - alternative ALT1A.group
+  - alternative ALT1A.label
+  - alternative ALT1B.group
+  - alternative ALT1B.label
 move_to_ssm:
   - document_meta D1.version
   - document_meta D1.generator

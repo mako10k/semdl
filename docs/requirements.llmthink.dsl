@@ -94,7 +94,7 @@ step S7:
   decision D7 based_on D6:
     |
       minimal 系サンプルには、入力ファイルだけでなく expected stdout も用意する。
-      check、explain、set path dry-run、set meta dry-run、annotate dry-run、split dry-run の golden 出力を固定し、
+      check、explain、set path dry-run、set meta dry-run、annotate dry-run、split dry-run、split apply stdout の golden 出力を固定し、
       merge --stdout の期待値は minimal.inline.ssd として保持する。
     annotation rationale:
       "入力だけでなく出力も固定すると、CLI 表示仕様の回帰を早い段階で検出できる"
