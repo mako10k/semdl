@@ -1,5 +1,7 @@
 #include "semdl/core/render.hpp"
 
+#include "semdl/core/sidecar_fields.hpp"
+
 #include <algorithm>
 #include <array>
 #include <map>
@@ -34,16 +36,6 @@ std::vector<std::string> collect_sorted_ids_for_kind(const DocumentData& documen
     }
     std::sort(ids.begin(), ids.end());
     return ids;
-}
-
-bool is_document_sidecar_field(std::string_view field_name) {
-    return field_name == "version" || field_name == "generator";
-}
-
-bool is_entity_sidecar_field(std::string_view field_name) {
-    return field_name == "confidence" || field_name == "provenance_kind" || field_name == "rationale" ||
-           field_name == "caveat" || field_name == "todo" || field_name == "status" || field_name == "explanation" ||
-           field_name.starts_with("embedding.");
 }
 
 std::map<std::string, std::string> collect_inline_document_fields(const DocumentData& document, const std::string& id) {
@@ -288,7 +280,13 @@ std::map<std::string, std::string> document_level_fields(const DocumentData& doc
         fields.insert(entity->fields.begin(), entity->fields.end());
     }
     if (const auto* metadata = document.find_metadata(id); metadata != nullptr) {
-        fields.insert(metadata->fields.begin(), metadata->fields.end());
+        for (const auto& [name, value] : metadata->fields) {
+            if (is_document_sidecar_field(name)) {
+                fields[name] = value;
+                continue;
+            }
+            fields.insert({name, value});
+        }
     }
     return fields;
 }

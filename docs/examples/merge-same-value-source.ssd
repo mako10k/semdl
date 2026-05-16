@@ -1,0 +1,34 @@
+document D1 {
+  title: "競合なしマージ"
+  source_ref: "docs/source/merge-same-value.txt"
+  version: "0.1"
+  generator: "ssd extract"
+}
+
+resource R1 {
+  type: document
+  label: "競合なし資料"
+}
+
+segment S1 {
+  source: R1
+  text_quote: "同じ値なら競合にしない"
+}
+
+assertion A1 {
+  subject: R1
+  predicate: reports
+  object: "同値重複は許可される"
+  label: "同値重複"
+  source_segment: S1
+
+  meta {
+    confidence: 0.82
+    rationale: "inline rationale"
+
+    embedding {
+      model: "text-embedding-3-large"
+      dimensions: 3072
+    }
+  }
+}

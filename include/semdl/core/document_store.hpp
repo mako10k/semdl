@@ -40,9 +40,15 @@ struct DocumentSummary {
     std::vector<std::string> entity_ids;
 };
 
+struct DocumentSourceViews {
+    DocumentData inline_source;
+    DocumentData sidecar_source;
+};
+
 class DocumentStore {
 public:
     [[nodiscard]] DocumentData load_document(const std::filesystem::path& input_file) const;
+    [[nodiscard]] DocumentSourceViews load_document_source_views(const std::filesystem::path& input_file) const;
     [[nodiscard]] DocumentSummary load_summary(const std::filesystem::path& input_file) const;
 };
 

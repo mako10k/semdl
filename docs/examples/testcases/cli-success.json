@@ -923,6 +923,45 @@
       "notes": "merge out should write merged inline output without mutating the source pair"
     },
     {
+      "id": "merge-standalone-stdout-fail-on-conflict",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --stdout --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--stdout", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/normalize-standalone.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "merge stdout with fail-on-conflict should still succeed when no paired sidecar exists"
+    },
+    {
+      "id": "merge-same-value-stdout-fail-on-conflict",
+      "command": "ssd merge docs/examples/merge-same-value-source.ssd --stdout --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-same-value-source.ssd", "--stdout", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/merge-same-value.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "same-value duplicate sidecar-owned fields should not trip merge fail-on-conflict"
+    },
+    {
+      "id": "merge-conflict-stdout-default-precedence",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/merge-conflict-default.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "default merge should keep paired sidecar precedence for sidecar-owned duplicate fields"
+    },
+    {
       "id": "normalize-paired-apply",
       "command": "ssd normalize docs/examples/normalize-source.ssd",
       "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd"],

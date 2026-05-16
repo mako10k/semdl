@@ -816,6 +816,110 @@
       "notes": "merge out should reject aliasing the paired sidecar path"
     },
     {
+      "id": "merge-conflict-stdout-fail-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-conflict-stdout.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge stdout should fail on differing duplicate sidecar-owned fields when fail-on-conflict is requested"
+    },
+    {
+      "id": "merge-conflict-dryrun-fail-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --dry-run --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--dry-run", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-conflict-dryrun.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge dry-run should fail before preview when fail-on-conflict is requested"
+    },
+    {
+      "id": "merge-conflict-out-fail-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --out docs/examples/merge-conflict-output.ssd --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--out", "docs/examples/merge-conflict-output.ssd", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_absent_files": ["docs/examples/merge-conflict-output.ssd"],
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-conflict-out.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge out should fail before writing output when fail-on-conflict is requested"
+    },
+    {
+      "id": "merge-conflict-apply-fail-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-conflict-apply.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge apply should fail before rewriting or deleting files when fail-on-conflict is requested"
+    },
+    {
+      "id": "merge-fail-on-conflict-nontrailing",
+      "command": "ssd merge docs/examples/minimal.ssd --fail-on-conflict --stdout",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--fail-on-conflict", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-fail-on-conflict-nontrailing.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "fail-on-conflict remains trailing-only on merge"
+    },
+    {
+      "id": "normalize-fail-on-conflict-invalid",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --dry-run --fail-on-conflict",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--dry-run", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-fail-on-conflict.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "fail-on-conflict is not accepted outside merge in this slice"
+    },
+    {
       "id": "annotate-unterminated-quoted-string",
       "command": "ssd annotate id:H1 rationale \"未完 --target sidecar docs/examples/minimal.ssd",
       "argv": ["ssd", "annotate", "id:H1", "rationale", "\"未完", "--target", "sidecar", "docs/examples/minimal.ssd"],

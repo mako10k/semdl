@@ -17,8 +17,10 @@ extract-cmd     = extract-out-cmd | extract-stdout-cmd | "extract" , ws , help-o
 similarity-cmd  = "similarity" , ws , id-ref , ws , id-ref , ws , input-file | "similarity" , ws , help-opt , [ ws , help-render-opt ] ;
 explain-cmd     = "explain" , ws , id-ref , ws , input-file | "explain" , ws , help-opt , [ ws , help-render-opt ] ;
 split-cmd       = "split" , ws , input-file , [ ws , dry-run-opt ] | "split" , ws , help-opt , [ ws , help-render-opt ] ;
-merge-cmd       = "merge" , ws , input-file , [ ws , stdout-opt | ws , dry-run-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] ] | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
+merge-cmd       = "merge" , ws , input-file , [ ws , merge-surface ] , [ ws , fail-on-conflict-opt ] | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
 normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt | ws , dry-run-opt , [ ws , format-opt ] | ws , out-opt , ws , output-file , [ ws , format-opt ] , [ ws , dry-run-opt ] ] | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
+
+merge-surface   = stdout-opt | dry-run-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
 
 extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file ;
 extract-stdout-cmd = "extract" , ws , stdout-opt , { ws , extract-opt } , ws , input-file ;
@@ -46,7 +48,7 @@ model-token     = identifier , { ":" , identifier } ;
 add-kind        = "resource" | "segment" | "assertion" | "hypothesis" | "alternative" | "annotation" | "provenance" ;
 annotation-kind = "rationale" | "caveat" | "todo" | "status" | "explanation" ;
 
-common-opt      = dry-run-opt | out-opt , ws , output-file | stdout-opt | target-opt | format-opt | fail-on-conflict-opt | allow-multi-opt ;
+common-opt      = dry-run-opt | out-opt , ws , output-file | stdout-opt | target-opt | format-opt | allow-multi-opt ;
 out-opt         = "--out" ;
 stdout-opt      = "--stdout" ;
 dry-run-opt     = "--dry-run" ;

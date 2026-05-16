@@ -1,0 +1,16 @@
+document_meta D1 {
+  version: "0.1"
+  generator: "ssd extract"
+}
+
+meta A1 {
+  confidence: 0.82
+  rationale: "inline rationale"
+  todo: "sidecar extra"
+
+  embedding {
+    model: "text-embedding-3-large"
+    dimensions: 3072
+    provider: "openai"
+  }
+}

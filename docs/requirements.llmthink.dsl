@@ -369,6 +369,18 @@ step S18D:
     annotation rationale:
       "non-destructive normalize surface に profile selection を閉じると、merge / split の既存責務境界を壊さずに profile option を先に固定できる"
 
+step S18E:
+  decision D18E based_on D18B, D18D:
+    |
+      次の merge conflict slice では `ssd merge` に限って trailing `--fail-on-conflict` を追加してよい。
+      `merge --fail-on-conflict` は merged view ではなく pre-merge source comparison で differing duplicate を検出し、stdout、dry-run、out、apply のいずれでも file mutation や output 前に failure する。
+      comparison scope は inline source の document body にある `version` / `generator` と、inline `meta {}`、paired `meta`、paired `document_meta` に現れる field に限定してよい。
+      `embedding.*` は leaf field 単位で比較し、same-value duplicate は success してよい。
+      flag なしの `merge` は current behavior を明示し、paired `.ssm` 側を sidecar-owned duplicate field の既定優先元として扱ってよい。
+      warning mode と preferred-source selection は引き続き後続 slice に分離する。
+    annotation rationale:
+      "既存 merge 出力互換を保ったまま、source-aware な safety option を merge にだけ狭く追加できるため"
+
 step S27A:
   decision D27A based_on D27, D8A:
     |

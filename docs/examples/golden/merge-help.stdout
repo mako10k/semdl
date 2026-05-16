@@ -5,11 +5,13 @@ Usage:
 - `ssd merge <input.ssd>`
 - `ssd merge <input.ssd> --dry-run`
 - `ssd merge <input.ssd> --out <output.ssd> [--dry-run]`
+- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] --fail-on-conflict`
 
 Status:
 - `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`.
 - Bare apply and `--dry-run` require a paired `.ssm`; in-place apply removes that sidecar after writing inline output.
 - `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`.
+- `--fail-on-conflict` fails before output or mutation when inline source and paired sidecar disagree on the same sidecar-owned field; without it, paired `.ssm` keeps precedence.
 
 Related help:
 - `ssd help grammar`
@@ -18,3 +20,4 @@ Related help:
 Sample:
 - `ssd merge docs/examples/minimal.ssd --stdout`
 - `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`
+- `ssd merge docs/examples/merge-conflict-source.ssd --stdout --fail-on-conflict`

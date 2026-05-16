@@ -1,0 +1,10 @@
+document_meta D1 {
+  version: "0.2"
+  generator: "ssd extract"
+}
+
+meta A1 {
+  confidence: 0.82
+  rationale: "shared rationale"
+  todo: "sidecar keeps precedence"
+}

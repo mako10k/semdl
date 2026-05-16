@@ -13,6 +13,7 @@ add_library(semdl_core STATIC
     src/core/extract_embeddings.cpp
     src/core/query_validation.cpp
     src/core/render.cpp
+    src/core/sidecar_fields.cpp
     src/core/similarity.cpp
     src/core/semantic_model.cpp
 )

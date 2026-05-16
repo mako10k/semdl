@@ -1,0 +1,6 @@
+ERROR merge_sidecar_conflict
+command: ssd merge docs/examples/merge-conflict-source.ssd --out docs/examples/merge-conflict-output.ssd --fail-on-conflict
+input: docs/examples/merge-conflict-source.ssd
+id: D1
+field: version
+hint: rerun without `--fail-on-conflict` to keep paired sidecar precedence in this slice

@@ -186,6 +186,27 @@ DocumentData DocumentStore::load_document(const std::filesystem::path& input_fil
     return data;
 }
 
+DocumentSourceViews DocumentStore::load_document_source_views(const std::filesystem::path& input_file) const {
+    DocumentSourceViews views;
+
+    views.inline_source.input_file = input_file;
+    views.inline_source.sidecar_file = derive_sidecar_path(input_file);
+    views.inline_source.has_sidecar = std::filesystem::exists(views.inline_source.sidecar_file);
+    parse_file(input_file, views.inline_source, false);
+    if (views.inline_source.document_count == 0) {
+        views.inline_source.issues.push_back("missing document block");
+    }
+
+    views.sidecar_source.input_file = input_file;
+    views.sidecar_source.sidecar_file = views.inline_source.sidecar_file;
+    views.sidecar_source.has_sidecar = views.inline_source.has_sidecar;
+    if (views.sidecar_source.has_sidecar) {
+        parse_file(views.sidecar_source.sidecar_file, views.sidecar_source, true);
+    }
+
+    return views;
+}
+
 DocumentSummary DocumentStore::load_summary(const std::filesystem::path& input_file) const {
     const auto document = load_document(input_file);
 

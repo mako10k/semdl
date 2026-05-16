@@ -5,6 +5,7 @@
 #include "semdl/core/query_validation.hpp"
 #include "semdl/core/render.hpp"
 #include "semdl/core/semantic_model.hpp"
+#include "semdl/core/sidecar_fields.hpp"
 #include "semdl/core/similarity.hpp"
 
 #include <array>
@@ -279,10 +280,16 @@ struct ParsedTransformArgs {
     bool valid = true;
     bool use_stdout = false;
     bool use_dry_run = false;
+    bool fail_on_conflict = false;
     std::filesystem::path input_file;
     std::optional<std::filesystem::path> output_file;
     std::optional<std::string> format;
     std::string invalid_option;
+};
+
+struct MergeConflictDetail {
+    std::string id;
+    std::string field_name;
 };
 
 struct ParsedAnnotateArgs {
@@ -480,37 +487,43 @@ ParsedTransformArgs parse_transform_args(const std::vector<std::string_view>& ar
     }
 
     parsed.input_file = std::filesystem::path(args[1]);
-    if (args.size() == 2) {
+    std::size_t option_end = args.size();
+    if (args.size() >= 3 && args.back() == "--fail-on-conflict") {
+        parsed.fail_on_conflict = true;
+        option_end = args.size() - 1;
+    }
+
+    if (option_end == 2) {
         return parsed;
     }
-    if (args.size() == 3 && args[2] == "--stdout") {
+    if (option_end == 3 && args[2] == "--stdout") {
         parsed.use_stdout = true;
         return parsed;
     }
-    if (args.size() == 3 && args[2] == "--dry-run") {
+    if (option_end == 3 && args[2] == "--dry-run") {
         parsed.use_dry_run = true;
         return parsed;
     }
-    if (args.size() == 4 && args[2] == "--out") {
+    if (option_end == 4 && args[2] == "--out") {
         parsed.output_file = std::filesystem::path(args[3]);
         return parsed;
     }
-    if (args.size() == 5 && args[2] == "--out" && args[4] == "--dry-run") {
+    if (option_end == 5 && args[2] == "--out" && args[4] == "--dry-run") {
         parsed.output_file = std::filesystem::path(args[3]);
         parsed.use_dry_run = true;
         return parsed;
     }
-    if (args.size() == 5 && args[2] == "--dry-run" && args[3] == "--format") {
+    if (option_end == 5 && args[2] == "--dry-run" && args[3] == "--format") {
         parsed.use_dry_run = true;
         parsed.format = std::string(args[4]);
         return parsed;
     }
-    if (args.size() == 6 && args[2] == "--out" && args[4] == "--format") {
+    if (option_end == 6 && args[2] == "--out" && args[4] == "--format") {
         parsed.output_file = std::filesystem::path(args[3]);
         parsed.format = std::string(args[5]);
         return parsed;
     }
-    if (args.size() == 7 && args[2] == "--out" && args[4] == "--format" && args[6] == "--dry-run") {
+    if (option_end == 7 && args[2] == "--out" && args[4] == "--format" && args[6] == "--dry-run") {
         parsed.output_file = std::filesystem::path(args[3]);
         parsed.format = std::string(args[5]);
         parsed.use_dry_run = true;
@@ -821,6 +834,21 @@ CommandResult make_merge_requires_paired_input_error(const std::vector<std::stri
     };
 }
 
+CommandResult make_merge_conflict_error(const std::vector<std::string_view>& args,
+                                        const std::filesystem::path& input_file,
+                                        std::string_view entity_id,
+                                        std::string_view field_name) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR merge_sidecar_conflict\ncommand: " + join_args(args) +
+                       "\ninput: " + input_file.generic_string() +
+                       "\nid: " + std::string(entity_id) +
+                       "\nfield: " + std::string(field_name) +
+                       "\nhint: rerun without `--fail-on-conflict` to keep paired sidecar precedence in this slice\n",
+    };
+}
+
 CommandResult make_invalid_transform_options_error(const std::vector<std::string_view>& args,
                                                    std::string_view subcommand,
                                                    std::string_view usage) {
@@ -844,6 +872,85 @@ CommandResult make_transform_out_alias_error(const std::vector<std::string_view>
                        "\naliases: " + aliased_file.generic_string() +
                        "\nhint: `--out` must not overwrite the source `.ssd` or paired `.ssm` in this slice\n",
     };
+}
+
+std::optional<MergeConflictDetail> find_merge_conflict_in_entity_fields(const semdl::core::EntityData& inline_entity,
+                                                                        const semdl::core::EntityData* sidecar_metadata,
+                                                                        std::string_view entity_id) {
+    if (sidecar_metadata == nullptr) {
+        return std::nullopt;
+    }
+
+    for (const auto& [field_name, inline_value] : inline_entity.fields) {
+        const bool is_sidecar_owned = inline_entity.kind == "document"
+                                          ? semdl::core::is_document_sidecar_field(field_name)
+                                          : semdl::core::is_entity_sidecar_field(field_name);
+        if (!is_sidecar_owned) {
+            continue;
+        }
+
+        const auto sidecar_it = sidecar_metadata->fields.find(field_name);
+        if (sidecar_it != sidecar_metadata->fields.end() && sidecar_it->second != inline_value) {
+            return MergeConflictDetail{.id = std::string(entity_id), .field_name = field_name};
+        }
+    }
+
+    return std::nullopt;
+}
+
+std::optional<MergeConflictDetail> find_merge_conflict_in_metadata_fields(const semdl::core::EntityData* inline_metadata,
+                                                                          const semdl::core::EntityData* sidecar_metadata,
+                                                                          std::string_view entity_id) {
+    if (inline_metadata == nullptr || sidecar_metadata == nullptr) {
+        return std::nullopt;
+    }
+
+    for (const auto& [field_name, inline_value] : inline_metadata->fields) {
+        const auto sidecar_it = sidecar_metadata->fields.find(field_name);
+        if (sidecar_it != sidecar_metadata->fields.end() && sidecar_it->second != inline_value) {
+            return MergeConflictDetail{.id = std::string(entity_id), .field_name = field_name};
+        }
+    }
+
+    return std::nullopt;
+}
+
+std::optional<MergeConflictDetail> find_merge_sidecar_conflict(const semdl::core::DocumentSourceViews& source_views) {
+    if (!source_views.inline_source.has_sidecar) {
+        return std::nullopt;
+    }
+
+    std::set<std::string> ids;
+    for (const auto& [id, entity] : source_views.inline_source.entities) {
+        (void)entity;
+        ids.insert(id);
+    }
+    for (const auto& [id, metadata] : source_views.inline_source.metadata_entities) {
+        (void)metadata;
+        ids.insert(id);
+    }
+    for (const auto& [id, metadata] : source_views.sidecar_source.metadata_entities) {
+        (void)metadata;
+        ids.insert(id);
+    }
+
+    for (const auto& id : ids) {
+        const auto* sidecar_metadata = source_views.sidecar_source.find_metadata(id);
+        if (const auto* inline_entity = source_views.inline_source.find_entity(id); inline_entity != nullptr) {
+            if (const auto conflict = find_merge_conflict_in_entity_fields(*inline_entity, sidecar_metadata, id);
+                conflict.has_value()) {
+                return conflict;
+            }
+        }
+        if (const auto conflict = find_merge_conflict_in_metadata_fields(source_views.inline_source.find_metadata(id),
+                                                                         sidecar_metadata,
+                                                                         id);
+            conflict.has_value()) {
+            return conflict;
+        }
+    }
+
+    return std::nullopt;
 }
 
 std::string root_help_text() {
@@ -928,7 +1035,7 @@ std::string grammar_help_text() {
            "- `ssd remove <selector> <file>`\n"
            "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
            "- `ssd split <input.ssd> [--dry-run]`\n"
-           "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`\n"
+           "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--fail-on-conflict]`\n"
            "- `ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <file> [--format inline|sidecar] [--dry-run]]`\n"
            "- `ssd help grammar --format semdl`\n\n"
            "Selectors:\n"
@@ -946,7 +1053,7 @@ std::string grammar_help_text() {
            "- `--stdout` is currently used by `merge`, `normalize`, and `extract`\n"
            "- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`\n"
            "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`\n"
-           "- `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms\n\n"
+           "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--fail-on-conflict` is currently merge-only and must trail the merge surface\n\n"
            "This topic is the canonical user-facing operational syntax summary.\n"
            "Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details.\n"
            "Use `--format semdl` for line-preserving SEMDL help output.\n"
@@ -1096,17 +1203,20 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd merge <input.ssd> --stdout`\n"
                "- `ssd merge <input.ssd>`\n"
                "- `ssd merge <input.ssd> --dry-run`\n"
-               "- `ssd merge <input.ssd> --out <output.ssd> [--dry-run]`\n\n"
+               "- `ssd merge <input.ssd> --out <output.ssd> [--dry-run]`\n"
+               "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] --fail-on-conflict`\n\n"
                "Status:\n"
                "- `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`.\n"
                "- Bare apply and `--dry-run` require a paired `.ssm`; in-place apply removes that sidecar after writing inline output.\n"
-               "- `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`.\n\n"
+               "- `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`.\n"
+               "- `--fail-on-conflict` fails before output or mutation when inline source and paired sidecar disagree on the same sidecar-owned field; without it, paired `.ssm` keeps precedence.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help samples`\n\n"
                "Sample:\n"
                "- `ssd merge docs/examples/minimal.ssd --stdout`\n"
-               "- `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`\n";
+               "- `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`\n"
+               "- `ssd merge docs/examples/merge-conflict-source.ssd --stdout --fail-on-conflict`\n";
     }
 
     if (target == "normalize") {
@@ -2753,10 +2863,16 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (!parsed.valid) {
             return make_invalid_transform_options_error(args,
                                                         "merge",
-                                                        "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]]");
+                                                        "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--fail-on-conflict]");
         }
 
         semdl::core::DocumentStore store;
+        if (parsed.fail_on_conflict) {
+            const auto source_views = store.load_document_source_views(parsed.input_file);
+            if (const auto conflict = find_merge_sidecar_conflict(source_views); conflict.has_value()) {
+                return make_merge_conflict_error(args, parsed.input_file, conflict->id, conflict->field_name);
+            }
+        }
         const auto document = store.load_document(parsed.input_file);
         if (parsed.use_stdout) {
             return CommandResult{
@@ -2783,14 +2899,14 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             return make_transform_out_result(*parsed.output_file, 1);
         }
 
-        if (args.size() == 2) {
+        if (!parsed.use_stdout && !parsed.use_dry_run && !parsed.output_file.has_value()) {
             write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
             std::filesystem::remove(document.sidecar_file);
             return make_transform_apply_result(parsed.input_file, document.sidecar_file, 1);
         }
         return make_invalid_transform_options_error(args,
                                                     "merge",
-                                                    "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]]");
+                                                    "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--fail-on-conflict]");
     }
 
     if (args[0] == "search") {
@@ -3063,6 +3179,11 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
         const auto parsed = parse_transform_args(args);
         if (!parsed.valid) {
+            return make_invalid_transform_options_error(args,
+                                                        "normalize",
+                                                        "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");
+        }
+        if (parsed.fail_on_conflict) {
             return make_invalid_transform_options_error(args,
                                                         "normalize",
                                                         "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");

@@ -1,0 +1,29 @@
+document D1 {
+  title: "競合ありマージ"
+  source_ref: "docs/source/merge-conflict.txt"
+  version: "0.1"
+  generator: "ssd extract"
+}
+
+resource R1 {
+  type: document
+  label: "競合資料"
+}
+
+segment S1 {
+  source: R1
+  text_quote: "sidecar の優先を明示する"
+}
+
+assertion A1 {
+  subject: R1
+  predicate: reports
+  object: "version conflict"
+  label: "競合"
+  source_segment: S1
+
+  meta {
+    confidence: 0.82
+    rationale: "shared rationale"
+  }
+}
