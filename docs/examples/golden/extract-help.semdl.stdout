@@ -28,45 +28,50 @@ segment HELP_LINE_3 {
 
 segment HELP_LINE_4 {
   source: HELP_TOPIC
-  text_quote: "- `ssd extract --out <output.ssd> <input.txt>`"
+  text_quote: "- `ssd extract --out <output.ssd> <input.ssd|input.txt>`"
 }
 
 segment HELP_LINE_5 {
   source: HELP_TOPIC
-  text_quote: "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> <input.ssd>`"
+  text_quote: "- `ssd extract --out <output.ssd> <input.ssd|input.txt> <input.ssd|input.txt>...`"
 }
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt>`"
+  text_quote: "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> <input.ssd>`"
 }
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "Status:"
+  text_quote: "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt> <input.ssd|input.txt>...`"
 }
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "- This subcommand currently supports skeletal raw `.txt` to `.ssd` extraction and explicit embedding generation through `ollama` or `openai` adapters."
+  text_quote: "Status:"
 }
 
 segment HELP_LINE_9 {
   source: HELP_TOPIC
-  text_quote: "- Raw `.txt` with `--stdout` emits only generated `.ssd`; embedding generation for raw inputs requires `--out <output.ssd>`."
+  text_quote: "- This subcommand currently supports skeletal raw `.txt` to `.ssd` extraction, multi-input inline `.ssd` aggregation through `--out`, and explicit embedding generation through `ollama` or `openai` adapters."
 }
 
 segment HELP_LINE_10 {
   source: HELP_TOPIC
-  text_quote: "Related help:"
+  text_quote: "- Raw `.txt` with `--stdout` emits only generated `.ssd`; `--stdout` remains single-input, and embedding generation for raw inputs requires `--out <output.ssd>`."
 }
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "Related help:"
 }
 
 segment HELP_LINE_12 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help grammar`"
+}
+
+segment HELP_LINE_13 {
   source: HELP_TOPIC
   text_quote: "- `ssd help troubleshooting`"
 }

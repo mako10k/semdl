@@ -22,7 +22,7 @@ normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt | ws , dry-r
 
 merge-surface   = stdout-opt | dry-run-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
 
-extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file ;
+extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file , { ws , input-file } ;
 extract-stdout-cmd = "extract" , ws , stdout-opt , { ws , extract-opt } , ws , input-file ;
 
 add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , [ ws , target-sidecar-opt ] , [ ws , dry-run-opt ] | "add" , ws , help-opt , [ ws , help-render-opt ] ;
@@ -40,7 +40,7 @@ path-selector   = "path:" , identifier , "." , field-path ;
 meta-selector   = "meta:" , identifier , "." , field-path ;
 doc-selector    = "doc:self" ;
 
-extract-opt     = format-opt | embed-provider-opt | embed-model-opt ;
+extract-opt     = embed-provider-opt | embed-model-opt ;
 embed-provider-opt = "--embed-provider" , ws , identifier ;
 embed-model-opt = "--embed-model" , ws , model-token ;
 model-token     = identifier , { ":" , identifier } ;

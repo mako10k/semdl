@@ -1,0 +1,4 @@
+ERROR subcommand_not_implemented
+command: ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small docs/examples/extract-source.ssd docs/examples/minimal.ssd
+subcommand: extract
+hint: see `ssd help reference extract`

@@ -50,7 +50,7 @@ struct ParsedExtractArgs {
     bool valid = true;
     bool use_stdout = false;
     std::optional<std::filesystem::path> output_file;
-    std::optional<std::filesystem::path> input_file;
+    std::vector<std::filesystem::path> input_files;
     std::string provider;
     std::string model;
 };
@@ -248,11 +248,19 @@ ParsedExtractArgs parse_extract_args(const std::vector<std::string_view>& args) 
         break;
     }
 
-    if (index != args.size() - 1) {
+    while (index < args.size()) {
+        if (args[index].starts_with("--")) {
+            parsed.valid = false;
+            return parsed;
+        }
+        parsed.input_files.emplace_back(args[index]);
+        ++index;
+    }
+
+    if (parsed.input_files.empty()) {
         parsed.valid = false;
         return parsed;
     }
-    parsed.input_file = std::filesystem::path(args.back());
     return parsed;
 }
 
@@ -323,6 +331,246 @@ std::string quote_value(std::string_view value) {
 
 bool is_raw_text_extract_input(const std::filesystem::path& input_file) {
     return input_file.extension() == ".txt";
+}
+
+int extract_entity_kind_priority(std::string_view kind) {
+    if (kind == "document") {
+        return 0;
+    }
+    if (kind == "resource") {
+        return 1;
+    }
+    if (kind == "segment") {
+        return 2;
+    }
+    if (kind == "assertion") {
+        return 3;
+    }
+    if (kind == "hypothesis") {
+        return 4;
+    }
+    if (kind == "alternative") {
+        return 5;
+    }
+    return 6;
+}
+
+void increment_extract_kind_count(semdl::core::DocumentData& document, std::string_view kind) {
+    if (kind == "document") {
+        ++document.document_count;
+    } else if (kind == "resource") {
+        ++document.resource_count;
+    } else if (kind == "segment") {
+        ++document.segment_count;
+    } else if (kind == "assertion") {
+        ++document.assertion_count;
+    } else if (kind == "hypothesis") {
+        ++document.hypothesis_count;
+    } else if (kind == "alternative") {
+        ++document.alternative_count;
+    }
+}
+
+std::string next_rebased_extract_id(std::string_view kind,
+                                    int& document_index,
+                                    int& resource_index,
+                                    int& segment_index,
+                                    int& assertion_index,
+                                    int& hypothesis_index,
+                                    int& alternative_index) {
+    if (kind == "document") {
+        return "D" + std::to_string(++document_index);
+    }
+    if (kind == "resource") {
+        return "R" + std::to_string(++resource_index);
+    }
+    if (kind == "segment") {
+        return "S" + std::to_string(++segment_index);
+    }
+    if (kind == "assertion") {
+        return "A" + std::to_string(++assertion_index);
+    }
+    if (kind == "hypothesis") {
+        return "H" + std::to_string(++hypothesis_index);
+    }
+    if (kind == "alternative") {
+        return "ALT" + std::to_string(++alternative_index);
+    }
+    return std::string(kind) + std::to_string(++alternative_index);
+}
+
+bool is_extract_entity_reference_field(std::string_view kind, std::string_view field_name) {
+    if (kind == "segment") {
+        return field_name == "source";
+    }
+    if (kind == "assertion") {
+        return field_name == "subject" || field_name == "source_segment";
+    }
+    if (kind == "hypothesis") {
+        return field_name == "about";
+    }
+    return false;
+}
+
+std::vector<std::string> collect_extract_ordered_entity_ids(const semdl::core::DocumentData& document) {
+    std::vector<std::string> ids;
+    ids.reserve(document.entities.size());
+    for (const auto& [entity_id, entity] : document.entities) {
+        (void)entity;
+        ids.push_back(entity_id);
+    }
+
+    std::sort(ids.begin(), ids.end(), [&](const std::string& left, const std::string& right) {
+        const auto* left_entity = document.find_entity(left);
+        const auto* right_entity = document.find_entity(right);
+        const int left_priority = left_entity == nullptr ? 99 : extract_entity_kind_priority(left_entity->kind);
+        const int right_priority = right_entity == nullptr ? 99 : extract_entity_kind_priority(right_entity->kind);
+        if (left_priority != right_priority) {
+            return left_priority < right_priority;
+        }
+        return left < right;
+    });
+
+    return ids;
+}
+
+std::string normalize_extract_group_token(const std::string& token,
+                                          std::map<std::string, std::string>& group_map,
+                                          int& group_index) {
+    const auto [it, inserted] = group_map.emplace(token, std::string{});
+    if (inserted) {
+        it->second = "ALTG" + std::to_string(++group_index);
+    }
+    return it->second;
+}
+
+semdl::core::DocumentData aggregate_extract_documents(const std::vector<semdl::core::DocumentData>& source_documents) {
+    semdl::core::DocumentData merged;
+
+    int document_index = 0;
+    int resource_index = 0;
+    int segment_index = 0;
+    int assertion_index = 0;
+    int hypothesis_index = 0;
+    int alternative_index = 0;
+    int alternative_group_index = 0;
+
+    for (const auto& source_document : source_documents) {
+        std::map<std::string, std::string> id_map;
+        std::map<std::string, std::string> group_map;
+        const auto ordered_ids = collect_extract_ordered_entity_ids(source_document);
+
+        for (const auto& old_id : ordered_ids) {
+            const auto* entity = source_document.find_entity(old_id);
+            if (entity == nullptr) {
+                continue;
+            }
+            id_map.emplace(old_id,
+                           next_rebased_extract_id(entity->kind,
+                                                   document_index,
+                                                   resource_index,
+                                                   segment_index,
+                                                   assertion_index,
+                                                   hypothesis_index,
+                                                   alternative_index));
+
+            const auto alt_group = entity->fields.find("alternative_group");
+            if (alt_group != entity->fields.end()) {
+                normalize_extract_group_token(alt_group->second, group_map, alternative_group_index);
+            }
+            const auto group = entity->fields.find("group");
+            if (group != entity->fields.end()) {
+                normalize_extract_group_token(group->second, group_map, alternative_group_index);
+            }
+        }
+
+        for (const auto& old_id : ordered_ids) {
+            const auto* entity = source_document.find_entity(old_id);
+            if (entity == nullptr) {
+                continue;
+            }
+
+            auto rebased = *entity;
+            for (auto& [field_name, value] : rebased.fields) {
+                if (is_extract_entity_reference_field(rebased.kind, field_name)) {
+                    const auto mapped = id_map.find(value);
+                    if (mapped != id_map.end()) {
+                        value = mapped->second;
+                    }
+                    continue;
+                }
+                if (field_name == "alternative_group" || field_name == "group") {
+                    value = normalize_extract_group_token(value, group_map, alternative_group_index);
+                }
+            }
+
+            const auto& new_id = id_map.at(old_id);
+            merged.entities.emplace(new_id, std::move(rebased));
+            increment_extract_kind_count(merged, entity->kind);
+        }
+
+        for (const auto& [old_id, metadata] : source_document.metadata_entities) {
+            const auto mapped = id_map.find(old_id);
+            if (mapped == id_map.end()) {
+                continue;
+            }
+            merged.metadata_entities.emplace(mapped->second, metadata);
+        }
+
+        merged.issues.insert(merged.issues.end(), source_document.issues.begin(), source_document.issues.end());
+    }
+
+    return merged;
+}
+
+std::filesystem::path normalize_path_for_alias_compare(const std::filesystem::path& path) {
+    return std::filesystem::absolute(path).lexically_normal();
+}
+
+bool extract_out_aliases_source(const std::vector<std::filesystem::path>& input_files,
+                                const std::vector<semdl::core::DocumentData>& source_documents,
+                                const std::filesystem::path& output_file,
+                                const std::optional<std::filesystem::path>& secondary_output,
+                                std::filesystem::path& conflicting_output,
+                                std::filesystem::path& aliased_file) {
+    std::vector<std::filesystem::path> known_sources;
+    known_sources.reserve(input_files.size() + source_documents.size());
+    for (const auto& input_file : input_files) {
+        known_sources.push_back(input_file);
+    }
+    for (const auto& document : source_documents) {
+        if (document.has_sidecar) {
+            known_sources.push_back(document.sidecar_file);
+        }
+    }
+
+    const auto aliases_known_source = [&](const std::filesystem::path& candidate) {
+        const auto normalized_candidate = normalize_path_for_alias_compare(candidate);
+        for (const auto& source : known_sources) {
+            if (normalized_candidate == normalize_path_for_alias_compare(source)) {
+                aliased_file = source;
+                return true;
+            }
+        }
+        return false;
+    };
+
+    if (aliases_known_source(output_file)) {
+        conflicting_output = output_file;
+        return true;
+    }
+    if (secondary_output.has_value()) {
+        if (normalize_path_for_alias_compare(*secondary_output) == normalize_path_for_alias_compare(output_file)) {
+            conflicting_output = *secondary_output;
+            aliased_file = output_file;
+            return true;
+        }
+        if (aliases_known_source(*secondary_output)) {
+            conflicting_output = *secondary_output;
+            return true;
+        }
+    }
+    return false;
 }
 
 std::string trim_trailing_cr(std::string value) {
@@ -1005,7 +1253,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, and parenthesized grouping; `not` and function calls remain outside this slice. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, and parenthesized grouping; `not` and function calls remain outside this slice. `extract` supports skeletal raw `.txt` intake, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; raw `--stdout` stays single-input and embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -1105,12 +1353,13 @@ std::string reference_help_text(std::string_view target) {
         return "SEMDL Help Topic: reference extract\n\n"
                "Usage:\n"
                "- `ssd extract --stdout <input.txt>`\n"
-               "- `ssd extract --out <output.ssd> <input.txt>`\n"
+               "- `ssd extract --out <output.ssd> <input.ssd|input.txt>`\n"
+               "- `ssd extract --out <output.ssd> <input.ssd|input.txt> <input.ssd|input.txt>...`\n"
                "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> <input.ssd>`\n"
-               "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt>`\n\n"
+               "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt> <input.ssd|input.txt>...`\n\n"
                "Status:\n"
-               "- This subcommand currently supports skeletal raw `.txt` to `.ssd` extraction and explicit embedding generation through `ollama` or `openai` adapters.\n"
-               "- Raw `.txt` with `--stdout` emits only generated `.ssd`; embedding generation for raw inputs requires `--out <output.ssd>`.\n\n"
+               "- This subcommand currently supports skeletal raw `.txt` to `.ssd` extraction, multi-input inline `.ssd` aggregation through `--out`, and explicit embedding generation through `ollama` or `openai` adapters.\n"
+               "- Raw `.txt` with `--stdout` emits only generated `.ssd`; `--stdout` remains single-input, and embedding generation for raw inputs requires `--out <output.ssd>`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -1450,7 +1699,7 @@ CommandResult make_missing_extract_embedding_args_error(const std::vector<std::s
         .exit_code = 2,
         .stdout_text = "",
         .stderr_text = "ERROR missing_required_argument\ncommand: " + join_args(args) +
-                       "\nusage: ssd extract --stdout <input.txt> | ssd extract --stdout|--out <output.ssd> --embed-provider <provider> --embed-model <model> <input.ssd|input.txt>\nsubcommand: extract\nhint: see `ssd help reference extract`\n",
+                       "\nusage: ssd extract --stdout <input.txt> | ssd extract --stdout --embed-provider <provider> --embed-model <model> <input.ssd> | ssd extract --out <output.ssd> [--embed-provider <provider> --embed-model <model>] <input.ssd|input.txt>...\nsubcommand: extract\nhint: see `ssd help reference extract`\n",
     };
 }
 
@@ -1506,6 +1755,19 @@ CommandResult make_extract_out_result(std::string_view output_file,
         output << "skipped: " << *skipped_count << "\n";
     }
     return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
+}
+
+CommandResult make_extract_out_alias_error(const std::vector<std::string_view>& args,
+                                           const std::filesystem::path& conflicting_output,
+                                           const std::filesystem::path& aliased_file) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR extract_out_alias_conflict\ncommand: " + join_args(args) +
+                       "\noutput: " + conflicting_output.generic_string() +
+                       "\naliases: " + aliased_file.generic_string() +
+                       "\nreason: extract --out must not overwrite a source input, a source sidecar, or the generated paired sidecar target\nhint: choose a distinct output path\n",
+    };
 }
 
 CommandResult make_search_result(const std::vector<std::string_view>& args, const semdl::core::SearchResult& result) {
@@ -2412,17 +2674,13 @@ bool transform_out_aliases_source(const semdl::core::DocumentData& document,
                                   const std::filesystem::path& output_file,
                                   std::filesystem::path& aliased_file,
                                   const std::optional<std::filesystem::path>& secondary_output = std::nullopt) {
-    const auto normalize_for_alias_compare = [](const std::filesystem::path& path) {
-        return std::filesystem::absolute(path).lexically_normal();
-    };
-
-    const auto normalized_input = normalize_for_alias_compare(input_file);
+    const auto normalized_input = normalize_path_for_alias_compare(input_file);
     const auto normalized_sidecar = document.has_sidecar
-        ? std::optional<std::filesystem::path>(normalize_for_alias_compare(document.sidecar_file))
+        ? std::optional<std::filesystem::path>(normalize_path_for_alias_compare(document.sidecar_file))
         : std::nullopt;
 
     const auto aliases_known_source = [&](const std::filesystem::path& candidate) {
-        const auto normalized_candidate = normalize_for_alias_compare(candidate);
+        const auto normalized_candidate = normalize_path_for_alias_compare(candidate);
         if (normalized_candidate == normalized_input) {
             aliased_file = input_file;
             return true;
@@ -2965,42 +3223,86 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
 
         const auto parsed = parse_extract_args(args);
-        if (!parsed.valid || !parsed.input_file.has_value()) {
+        if (!parsed.valid || parsed.input_files.empty()) {
+            return make_subcommand_not_implemented_error(args);
+        }
+        if (parsed.use_stdout && parsed.input_files.size() != 1U) {
             return make_subcommand_not_implemented_error(args);
         }
         if (parsed.provider.empty() != parsed.model.empty()) {
             return make_missing_extract_embedding_args_error(args);
         }
-        const bool raw_text_input = is_raw_text_extract_input(*parsed.input_file);
-        if (raw_text_input && parsed.use_stdout && !parsed.provider.empty()) {
-            return make_invalid_extract_output_mode_error(args);
-        }
         if (!parsed.provider.empty() && !is_supported_extract_provider(parsed.provider)) {
             return make_unsupported_extract_provider_error(args, parsed.provider);
         }
 
-        semdl::core::DocumentData document;
-        if (raw_text_input) {
-            document = build_raw_text_extract_document(*parsed.input_file);
-        } else {
-            if (parsed.provider.empty()) {
-                return make_missing_extract_embedding_args_error(args);
+        semdl::core::DocumentStore store;
+        std::vector<semdl::core::DocumentData> source_documents;
+        source_documents.reserve(parsed.input_files.size());
+        bool raw_stdout_input = false;
+
+        for (const auto& input_file : parsed.input_files) {
+            const bool raw_text_input = is_raw_text_extract_input(input_file);
+            if (raw_text_input && parsed.use_stdout && !parsed.provider.empty()) {
+                return make_invalid_extract_output_mode_error(args);
             }
-            semdl::core::DocumentStore store;
-            document = store.load_document(*parsed.input_file);
+
+            if (raw_text_input) {
+                source_documents.push_back(build_raw_text_extract_document(input_file));
+            } else {
+                source_documents.push_back(store.load_document(input_file));
+            }
+
+            if (parsed.use_stdout && raw_text_input) {
+                raw_stdout_input = true;
+            }
         }
 
+        auto document = source_documents.size() == 1U
+            ? source_documents.front()
+            : aggregate_extract_documents(source_documents);
+
         if (parsed.provider.empty()) {
+            if (parsed.use_stdout && !raw_stdout_input) {
+                return make_missing_extract_embedding_args_error(args);
+            }
             const std::string inline_text = semdl::core::render_canonical_inline_document(document);
             if (parsed.use_stdout) {
                 return make_extract_stdout_result(inline_text);
+            }
+
+            std::filesystem::path conflicting_output;
+            std::filesystem::path aliased_file;
+            if (extract_out_aliases_source(parsed.input_files,
+                                           source_documents,
+                                           *parsed.output_file,
+                                           std::nullopt,
+                                           conflicting_output,
+                                           aliased_file)) {
+                return make_extract_out_alias_error(args, conflicting_output, aliased_file);
             }
 
             {
                 std::ofstream output(*parsed.output_file, std::ios::binary);
                 output << inline_text;
             }
-            return make_extract_out_result(args[2], std::nullopt, std::nullopt, std::nullopt);
+            return make_extract_out_result(parsed.output_file->generic_string(), std::nullopt, std::nullopt, std::nullopt);
+        }
+
+        const auto sidecar_file = parsed.use_stdout
+            ? std::optional<std::filesystem::path>()
+            : std::optional<std::filesystem::path>(derive_sidecar_path(*parsed.output_file));
+        if (sidecar_file.has_value()) {
+            std::filesystem::path conflicting_output;
+            std::filesystem::path aliased_file;
+            if (extract_out_aliases_source(parsed.input_files,
+                                           source_documents,
+                                           *parsed.output_file,
+                                           *sidecar_file,
+                                           conflicting_output,
+                                           aliased_file)) {
+                return make_extract_out_alias_error(args, conflicting_output, aliased_file);
+            }
         }
 
         const auto plan = semdl::core::build_extract_embedding_plan(document);
@@ -3033,20 +3335,15 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             return make_extract_stdout_result(sidecar_text);
         }
 
-        const auto sidecar_file = derive_sidecar_path(*parsed.output_file);
         {
             std::ofstream output(*parsed.output_file, std::ios::binary);
-            if (raw_text_input) {
-                output << semdl::core::render_canonical_inline_document(document);
-            } else {
-                output << read_text_file(*parsed.input_file);
-            }
+            output << semdl::core::render_canonical_inline_document(document);
         }
         {
-            std::ofstream output(sidecar_file, std::ios::binary);
+            std::ofstream output(*sidecar_file, std::ios::binary);
             output << sidecar_text;
         }
-        return make_extract_out_result(args[2], sidecar_file, static_cast<int>(records.size()), plan.skipped_count);
+        return make_extract_out_result(parsed.output_file->generic_string(), sidecar_file, static_cast<int>(records.size()), plan.skipped_count);
     }
 
     if (args[0] == "similarity") {

@@ -1,0 +1,6 @@
+ERROR extract_out_alias_conflict
+command: ssd extract --out docs/examples/extract-self-alias.ssm --embed-provider openai --embed-model text-embedding-3-small docs/examples/extract-source.ssd
+output: docs/examples/extract-self-alias.ssm
+aliases: docs/examples/extract-self-alias.ssm
+reason: extract --out must not overwrite a source input, a source sidecar, or the generated paired sidecar target
+hint: choose a distinct output path

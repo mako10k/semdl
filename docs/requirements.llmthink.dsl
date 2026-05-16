@@ -221,8 +221,11 @@ step S8I:
       document.title と resource.label は input stem を使い、document.source_ref には command line で指定した input path を保持する。
       raw `.txt` input に対する `--stdout` は generated `.ssd` だけを返し、embedding option との併用は failure とする。
       raw `.txt` input の embedding generation は `--out <output.ssd>` 成功時だけ許可し、embeddable target は generated resource.label と segment.text_quote に限定し、document D1 は対象に含めない。
+      後続 multi-input out slice では `ssd extract --out <output.ssd> <input>...` に限って mixed `.ssd` / `.txt` input を受け付け、resolved view を 1 つの canonical inline `.ssd` に集約してよい。
+      source 間の entity ID 衝突は deterministic rebasing で解決し、`alternative_group` / `alternative.group` token も source ごとに rebased value へ書き換える。
+      embedding option を伴う場合の generated `.ssm` は rebased merged view に対して 1 つだけ生成し、`--out` は source input、source sidecar、generated sidecar と alias する equivalent path を拒否する。
     annotation rationale:
-      "raw intake を最小 shape で実装しつつ、single stdout に `.ssd` と `.ssm` を同時 multiplex する新契約を避けるため"
+      "raw intake を最小 shape で保ちつつ、multi-input aggregation は non-destructive な `--out` path に閉じて stdout / profile 契約を広げすぎないため"
 
 step S9:
   decision D9 based_on D7:

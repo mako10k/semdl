@@ -1,0 +1,6 @@
+ERROR extract_out_alias_conflict
+command: ssd extract --out docs/examples/./extract-source.ssd docs/examples/extract-source.ssd
+output: docs/examples/./extract-source.ssd
+aliases: docs/examples/extract-source.ssd
+reason: extract --out must not overwrite a source input, a source sidecar, or the generated paired sidecar target
+hint: choose a distinct output path

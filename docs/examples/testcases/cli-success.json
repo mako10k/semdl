@@ -502,6 +502,51 @@
       "notes": "raw extract out mode should write skeletal `.ssd` plus paired embeddings when explicit provider options are present"
     },
     {
+      "id": "extract-multi-existing-out",
+      "command": "ssd extract --out docs/examples/extract-multi-output.ssd docs/examples/extract-source.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "extract", "--out", "docs/examples/extract-multi-output.ssd", "docs/examples/extract-source.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/extract-source.ssd", "docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/extract-source.ssd": "docs/examples/extract-source.ssd",
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/extract-multi-output.ssd": "docs/examples/fixtures/extract-multi-output.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-multi-existing-out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract --out should aggregate multiple existing semantic inputs into one rebased inline document while preserving source sidecar metadata"
+    },
+    {
+      "id": "extract-mixed-openai-out",
+      "command": "ssd extract --out docs/examples/extract-mixed-output.ssd --embed-provider openai --embed-model text-embedding-3-small docs/examples/extract-source.ssd docs/examples/extract-raw-source.txt",
+      "argv": ["ssd", "extract", "--out", "docs/examples/extract-mixed-output.ssd", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "docs/examples/extract-source.ssd", "docs/examples/extract-raw-source.txt"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T12:00:00Z"
+      },
+      "setup_files": ["docs/examples/extract-source.ssd", "docs/examples/extract-raw-source.txt", "docs/examples/fixtures/fake-openai.sh", "docs/examples/fixtures/openai-embeddings.psv"],
+      "expected_files": {
+        "docs/examples/extract-source.ssd": "docs/examples/extract-source.ssd",
+        "docs/examples/extract-raw-source.txt": "docs/examples/extract-raw-source.txt",
+        "docs/examples/fixtures/fake-openai.sh": "docs/examples/fixtures/fake-openai.sh",
+        "docs/examples/fixtures/openai-embeddings.psv": "docs/examples/fixtures/openai-embeddings.psv",
+        "docs/examples/extract-mixed-output.ssd": "docs/examples/fixtures/extract-mixed-output.expected.ssd",
+        "docs/examples/extract-mixed-output.ssm": "docs/examples/fixtures/extract-mixed-output.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-mixed-openai-out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract --out should aggregate mixed `.ssd` and `.txt` inputs and generate embeddings for the rebased merged view"
+    },
+    {
       "id": "search-presence-minimal",
       "command": "ssd search docs/query/example.ssq docs/examples/minimal.ssd",
       "argv": ["ssd", "search", "docs/query/example.ssq", "docs/examples/minimal.ssd"],

@@ -139,6 +139,9 @@ embedding enrichment path として使ってよい。
 `--embed-provider <provider> --embed-model <model>` を明示指定する。
 加えて `ssd extract` は plain `.txt` input から skeletal `.ssd` を生成してよく、
 初期 raw extraction では `document D1`、`resource R1`、non-empty line ごとの `segment S<n>` に限定する。
+後続 multi-input extract out slice では、`ssd extract --out <output.ssd> <input>...` に限って
+複数 input を集約して 1 つの inline `.ssd` を生成してよく、mixed `.ssd` / `.txt` input、
+deterministic な ID rebasing、paired `.ssm` 付き input の resolved view 集約を受け付けてよい。
 
 `ssd search`、`ssd similarity`、`.ssq` evaluation は、既存埋め込みを読み取って使うだけに留め、
 暗黙の再計算や自動永続化を行わないことを推奨する。
@@ -553,7 +556,7 @@ CLI は、少なくとも次のサイドカー運用を支援すること。
 - ssd check sample.ssd
   - sample.ssm が存在すれば自動併読して検証できること
 - ssd extract --out sample.ssd <input>
-  - オプションによりインライン出力または .ssm 分離出力を選べること
+  - この段階では inline `.ssd` output に固定してよく、embedding option がある場合だけ paired `.ssm` を追加生成してよい
 
 最初の explicit embedding + raw text extract slice では、`extract` は少なくとも以下を満たすこと。
 
@@ -565,7 +568,14 @@ CLI は、少なくとも次のサイドカー運用を支援すること。
 - raw `.txt` に対する `--stdout` は skeletal `.ssd` を出力できること
 - raw `.txt` に対する `--stdout` では embedding option を拒否すること
 - 既存 `.ssd` に対する `--stdout` では generated `.ssm` profile を出力できること
-- `--out <file>` では出力先 `.ssd` を生成でき、embedding option を伴う場合は paired `.ssm` も生成できること
+- `--out <file>` では 1 件以上の input から出力先 inline `.ssd` を生成でき、embedding option を伴う場合は paired `.ssm` も生成できること
+- `--out <file>` は existing `.ssd` と plain `.txt` を同一 command で混在させてよいこと
+- multi-input `--out` は source order を保った resolved view を集約し、source 間の ID 衝突を deterministic rebasing で解決すること
+- rebasing は entity ID だけでなく、`alternative_group` と `alternative.group` の shared token にも適用すること
+- multi-input `--out` の output `.ssd` は canonical inline document として書かれること
+- multi-input `--out` の generated `.ssm` は rebased merged view の ID を使うこと
+- `--stdout` の multi-input surface、profile selection、stdout multiplexing は引き続き後続 slice に分離してよいこと
+- `--out <file>` は non-destructive とし、任意の source input path、任意の source paired `.ssm`、または generated paired `.ssm` と alias する path を拒否すること
 - raw `.txt` の embedding target は少なくとも generated `resource.label` と generated `segment.text_quote` に限定すること
 - provider 実行失敗や unsupported provider は non-zero failure として返すこと
 - ssd explain <id> sample.ssd
