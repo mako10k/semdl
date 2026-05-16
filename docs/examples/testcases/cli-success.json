@@ -527,6 +527,54 @@
       "notes": "extract should support a non-Ollama provider through the explicit adapter boundary"
     },
     {
+      "id": "extract-openai-stdout-sidecar",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small --format sidecar docs/examples/search-similar-anchor.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "--format", "sidecar", "docs/examples/search-similar-anchor.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T10:00:00Z"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-openai-stdout.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract should also accept an explicit sidecar stdout profile for embedding-enabled single-input stdout"
+    },
+    {
+      "id": "extract-openai-stdout-sidecar-leading-format",
+      "command": "ssd extract --stdout --format sidecar --embed-provider openai --embed-model text-embedding-3-small docs/examples/search-similar-anchor.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--format", "sidecar", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "docs/examples/search-similar-anchor.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T10:00:00Z"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-openai-stdout.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract should accept the documented leading-order stdout format option before the provider/model pair"
+    },
+    {
+      "id": "extract-ollama-stdout-inline",
+      "command": "ssd extract --stdout --embed-provider ollama --embed-model nomic-embed-text:latest --format inline docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "ollama", "--embed-model", "nomic-embed-text:latest", "--format", "inline", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OLLAMA_COMMAND": "docs/examples/fixtures/fake-ollama.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-14T12:00:00Z"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-ollama-stdout-inline.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract inline stdout profile should keep a single `.ssd` payload while preserving non-inlineable embedding metadata as top-level meta blocks"
+    },
+    {
       "id": "extract-ollama-out",
       "command": "ssd extract --out docs/examples/extract-output.ssd --embed-provider ollama --embed-model nomic-embed-text:latest docs/examples/extract-source.ssd",
       "argv": ["ssd", "extract", "--out", "docs/examples/extract-output.ssd", "--embed-provider", "ollama", "--embed-model", "nomic-embed-text:latest", "docs/examples/extract-source.ssd"],

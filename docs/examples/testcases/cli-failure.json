@@ -326,6 +326,19 @@
       "notes": "embedding model alone should not activate extract-time embedding generation"
     },
     {
+      "id": "extract-missing-embed-model-with-format",
+      "command": "ssd extract --stdout --format inline --embed-provider ollama docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--format", "inline", "--embed-provider", "ollama", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-missing-embed-model-with-format.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "extract should still report a missing embedding model when format is present but the provider/model pair is incomplete"
+    },
+    {
       "id": "extract-unsupported-provider",
       "command": "ssd extract --stdout --embed-provider anthropic --embed-model text-embedding-3-large docs/examples/extract-source.ssd",
       "argv": ["ssd", "extract", "--stdout", "--embed-provider", "anthropic", "--embed-model", "text-embedding-3-large", "docs/examples/extract-source.ssd"],
@@ -432,6 +445,62 @@
       "expected_stderr": "docs/examples/golden/extract-stdout-multi-input.error.stderr",
       "expected_output_kind": "exact",
       "notes": "embedding-enabled extract --stdout should remain single-input even after no-provider stdout aggregation is added"
+    },
+    {
+      "id": "extract-stdout-inline-format-without-embedding",
+      "command": "ssd extract --stdout --format inline docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--format", "inline", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-stdout-inline-format-without-embedding.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "extract should reject stdout inline profile selection unless embedding generation is enabled"
+    },
+    {
+      "id": "extract-stdout-sidecar-format-without-embedding",
+      "command": "ssd extract --stdout --format sidecar docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--format", "sidecar", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-stdout-sidecar-format-without-embedding.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "extract should reject explicit sidecar stdout profile selection on the no-provider path"
+    },
+    {
+      "id": "extract-out-format-inline",
+      "command": "ssd extract --out docs/examples/generated/extract-format-inline.ssd --format inline docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--out", "docs/examples/generated/extract-format-inline.ssd", "--format", "inline", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/extract-source.ssd"],
+      "expected_absent_files": ["docs/examples/generated/extract-format-inline.ssd"],
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-out-format-inline.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "extract --out should reject profile selection because this slice only opens format on embedding-enabled stdout"
+    },
+    {
+      "id": "extract-out-format-sidecar",
+      "command": "ssd extract --out docs/examples/generated/extract-format-sidecar.ssd --format sidecar docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--out", "docs/examples/generated/extract-format-sidecar.ssd", "--format", "sidecar", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/extract-source.ssd"],
+      "expected_absent_files": ["docs/examples/generated/extract-format-sidecar.ssd"],
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-out-format-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "extract --out should reject sidecar profile selection because format stays stdout-only in this slice"
     },
     {
       "id": "extract-out-alias-input",

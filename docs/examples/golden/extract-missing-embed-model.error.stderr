@@ -1,5 +1,5 @@
 ERROR missing_required_argument
 command: ssd extract --stdout --embed-provider ollama docs/examples/extract-source.ssd
-usage: ssd extract --stdout <input.ssd|input.txt>... | ssd extract --stdout --embed-provider <provider> --embed-model <model> <input.ssd> | ssd extract --out <output.ssd> [--embed-provider <provider> --embed-model <model>] <input.ssd|input.txt>...
+usage: ssd extract --stdout <input.ssd|input.txt>... | ssd extract --stdout --embed-provider <provider> --embed-model <model> [--format inline|sidecar] <input.ssd> | ssd extract --out <output.ssd> [--embed-provider <provider> --embed-model <model>] <input.ssd|input.txt>...
 subcommand: extract
 hint: see `ssd help reference extract`
