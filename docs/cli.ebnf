@@ -17,7 +17,7 @@ extract-cmd     = extract-out-cmd | extract-stdout-cmd | "extract" , ws , help-o
 similarity-cmd  = "similarity" , ws , id-ref , ws , id-ref , ws , input-file | "similarity" , ws , help-opt , [ ws , help-render-opt ] ;
 explain-cmd     = "explain" , ws , id-ref , ws , input-file | "explain" , ws , help-opt , [ ws , help-render-opt ] ;
 split-cmd       = "split" , ws , input-file , [ ws , dry-run-opt ] | "split" , ws , help-opt , [ ws , help-render-opt ] ;
-merge-cmd       = "merge" , ws , input-file , ws , stdout-opt | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
+merge-cmd       = "merge" , ws , input-file , [ ws , stdout-opt ] | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
 normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt ] | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
 
 extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file ;

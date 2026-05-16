@@ -563,22 +563,21 @@
       "notes": "unknown trailing option is rejected instead of being ignored"
     },
     {
-      "id": "normalize-paired-apply-requires-standalone",
-      "command": "ssd normalize docs/examples/normalize-source.ssd",
-      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd"],
+      "id": "merge-standalone-apply-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd"],
       "cwd": ".",
       "stdin": "",
       "environment": {},
-      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
       "expected_files": {
-        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
-        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
       },
       "expected_exit": 3,
       "expected_stdout": "",
-      "expected_stderr": "docs/examples/golden/normalize-paired-apply-requires-standalone.error.stderr",
+      "expected_stderr": "docs/examples/golden/merge-standalone-apply-requires-paired-input.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "paired sidecar apply remains disabled so normalize does not leave stale sidecar state"
+      "notes": "bare merge apply remains disabled when no paired sidecar exists"
     },
     {
       "id": "annotate-unterminated-quoted-string",

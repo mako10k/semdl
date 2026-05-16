@@ -1,0 +1,4 @@
+ERROR merge_apply_requires_paired_input
+command: ssd merge docs/examples/normalize-standalone-source.ssd
+input: docs/examples/normalize-standalone-source.ssd
+hint: bare merge apply requires a paired `.ssm` in the current slice

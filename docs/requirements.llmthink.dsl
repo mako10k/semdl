@@ -306,10 +306,12 @@ step S18A:
     |
       初期 `ssd normalize` の stdout 面は `--stdout` で canonical inline view を返す。
       paired `.ssm` があれば統合し、なければ standalone `.ssd` を block / field の canonical order へ整形する。
-      bare `ssd normalize <input.ssd>` は standalone `.ssd` 入力に限って同一ファイルへの apply を許可し、paired `.ssm` がある入力では stale sidecar state を避けるため失敗する。
+      bare `ssd normalize <input.ssd>` は standalone と paired の両方で apply を許可し、paired 入力では canonical inline `.ssd` へ収束させたうえで sibling `.ssm` を削除する。
+      bare `ssd merge <input.ssd>` は paired `.ssm` がある入力に限って apply を許可し、統合後の inline `.ssd` を書き戻したうえで sibling `.ssm` を削除する。
+      paired sidecar がない入力に対する bare merge apply は、この段階では merge と normalize の責務境界を保つため失敗する。
       `--out`、`--inline`、`--sidecar`、`--dry-run` は後続 slice に分離する。
     annotation rationale:
-      "stdout と standalone apply だけに絞れば canonicalization の責務を保ちつつ、sidecar lifecycle を同時に設計せずに file write を 1 段だけ解禁できるため"
+      "paired apply を inline `.ssd` へ収束させて sibling `.ssm` を除去すれば stale sidecar state を残さず、merge と normalize の write path を最小対称面で解禁できるため"
 
 step S27A:
   decision D27A based_on D27, D8A:

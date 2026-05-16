@@ -128,6 +128,11 @@ private:
                 for (const auto& [runtime_path, fixture_path] : values) {
                     test_case.expected_files.emplace(std::filesystem::path(runtime_path), repo_root / fixture_path);
                 }
+            } else if (key == "expected_absent_files") {
+                const auto values = parse_string_array();
+                for (const auto& value : values) {
+                    test_case.expected_absent_files.emplace_back(value);
+                }
             } else if (key == "notes") {
                 test_case.notes = parse_string();
                 has_notes = true;

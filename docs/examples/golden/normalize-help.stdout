@@ -5,7 +5,7 @@ Usage:
 
 Status:
 - `--stdout` returns canonical inline output from `.ssd` with an optional paired `.ssm`.
-- Bare `ssd normalize <input.ssd>` currently applies only to standalone `.ssd` inputs without a paired `.ssm`.
+- Bare `ssd normalize <input.ssd>` applies to standalone or paired input and removes a paired `.ssm` after writing canonical inline output.
 
 Related help:
 - `ssd help grammar`

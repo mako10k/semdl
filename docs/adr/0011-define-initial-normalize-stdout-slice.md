@@ -1,6 +1,6 @@
 # 0011 Define Initial Normalize Stdout And Standalone Apply Slice
 
-- Status: Accepted
+- Status: Superseded by 0015
 - Date: 2026-05-15
 
 ## Context

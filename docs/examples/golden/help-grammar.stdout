@@ -23,7 +23,7 @@ Key syntax forms:
 - `ssd remove <selector> <file>`
 - `ssd annotate <selector> <kind> <text> ... <file>`
 - `ssd split <input.ssd> [--dry-run]`
-- `ssd merge <input.ssd> --stdout`
+- `ssd merge <input.ssd> [--stdout]`
 - `ssd normalize <input.ssd> [--stdout]`
 - `ssd help grammar --format semdl`
 

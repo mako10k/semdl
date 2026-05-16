@@ -88,7 +88,7 @@ void copy_file_into_sandbox(const std::filesystem::path& repo_root,
 }
 
 bool case_uses_sandbox(const TestCaseSpec& test_case) {
-    return !test_case.setup_files.empty() || !test_case.expected_files.empty();
+    return !test_case.setup_files.empty() || !test_case.expected_files.empty() || !test_case.expected_absent_files.empty();
 }
 
 }  // namespace
@@ -227,6 +227,21 @@ CaseResult compare_case_result(const std::filesystem::path& repo_root, const Tes
         } catch (const std::runtime_error&) {
             result.passed = false;
             result.failure_reason = "file output missing: " + runtime_path.generic_string();
+            return result;
+        }
+    }
+
+    for (const auto& runtime_path : test_case.expected_absent_files) {
+        if (execution.sandbox_root.empty()) {
+            result.passed = false;
+            result.failure_reason = "sandbox missing for expected_absent_files";
+            return result;
+        }
+
+        const auto actual_path = execution.sandbox_root / runtime_path;
+        if (std::filesystem::exists(actual_path)) {
+            result.passed = false;
+            result.failure_reason = "file should be absent: " + runtime_path.generic_string();
             return result;
         }
     }

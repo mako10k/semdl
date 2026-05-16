@@ -741,6 +741,42 @@
       "notes": "normalize should return a canonical inline view from non-canonical input and paired sidecar"
     },
     {
+      "id": "merge-minimal-apply",
+      "command": "ssd merge docs/examples/minimal.ssd",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.inline.ssd"
+      },
+      "expected_absent_files": ["docs/examples/minimal.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-minimal.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "merge apply should rewrite the inline file and remove the paired sidecar"
+    },
+    {
+      "id": "normalize-paired-apply",
+      "command": "ssd normalize docs/examples/normalize-source.ssd",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.inline.ssd"
+      },
+      "expected_absent_files": ["docs/examples/normalize-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/normalize-paired.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "paired normalize apply should rewrite the input file to canonical inline output and remove the sidecar"
+    },
+    {
       "id": "normalize-standalone-apply",
       "command": "ssd normalize docs/examples/normalize-standalone-source.ssd",
       "argv": ["ssd", "normalize", "docs/examples/normalize-standalone-source.ssd"],

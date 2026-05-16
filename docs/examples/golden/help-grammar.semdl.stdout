@@ -122,7 +122,7 @@ segment HELP_LINE_22 {
 
 segment HELP_LINE_23 {
   source: HELP_TOPIC
-  text_quote: "- `ssd merge <input.ssd> --stdout`"
+  text_quote: "- `ssd merge <input.ssd> [--stdout]`"
 }
 
 segment HELP_LINE_24 {

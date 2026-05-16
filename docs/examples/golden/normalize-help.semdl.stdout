@@ -38,7 +38,7 @@ segment HELP_LINE_5 {
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- Bare `ssd normalize <input.ssd>` currently applies only to standalone `.ssd` inputs without a paired `.ssm`."
+  text_quote: "- Bare `ssd normalize <input.ssd>` applies to standalone or paired input and removes a paired `.ssm` after writing canonical inline output."
 }
 
 segment HELP_LINE_7 {

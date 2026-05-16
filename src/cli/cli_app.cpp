@@ -594,15 +594,25 @@ CommandResult make_update_apply_result(const std::optional<std::filesystem::path
     return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
 }
 
-CommandResult make_normalize_apply_requires_standalone_error(const std::vector<std::string_view>& args,
-                                                             const std::filesystem::path& sidecar_file) {
+CommandResult make_transform_apply_result(const std::filesystem::path& ssd_file,
+                                          const std::optional<std::filesystem::path>& removed_ssm,
+                                          int changes) {
+    std::ostringstream output;
+    output << "wrote_ssd: " << ssd_file.generic_string() << "\n";
+    if (removed_ssm.has_value()) {
+        output << "removed_ssm: " << removed_ssm->generic_string() << "\n";
+    }
+    output << "changes: " << changes << "\n";
+    return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
+}
+
+CommandResult make_merge_apply_requires_paired_input_error(const std::vector<std::string_view>& args) {
     return CommandResult{
         .exit_code = 3,
         .stdout_text = "",
-        .stderr_text = "ERROR normalize_apply_requires_standalone_input\ncommand: " + join_args(args) +
+        .stderr_text = "ERROR merge_apply_requires_paired_input\ncommand: " + join_args(args) +
                        "\ninput: " + std::string(args[1]) +
-                       "\nsidecar: " + sidecar_file.generic_string() +
-                       "\nhint: use `--stdout` for paired `.ssd` + `.ssm` normalization in the current slice\n",
+                       "\nhint: bare merge apply requires a paired `.ssm` in the current slice\n",
     };
 }
 
@@ -688,7 +698,7 @@ std::string grammar_help_text() {
            "- `ssd remove <selector> <file>`\n"
            "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
            "- `ssd split <input.ssd> [--dry-run]`\n"
-           "- `ssd merge <input.ssd> --stdout`\n"
+           "- `ssd merge <input.ssd> [--stdout]`\n"
            "- `ssd normalize <input.ssd> [--stdout]`\n"
            "- `ssd help grammar --format semdl`\n\n"
            "Selectors:\n"
@@ -844,9 +854,11 @@ std::string reference_help_text(std::string_view target) {
     if (target == "merge") {
         return "SEMDL Help Topic: reference merge\n\n"
                "Usage:\n"
-               "- `ssd merge <input.ssd> --stdout`\n\n"
-               "Purpose:\n"
-               "- Produce the merged inline view of `.ssd` plus paired `.ssm`.\n\n"
+               "- `ssd merge <input.ssd> --stdout`\n"
+               "- `ssd merge <input.ssd>`\n\n"
+               "Status:\n"
+               "- `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`.\n"
+               "- Bare `ssd merge <input.ssd>` currently applies only when a paired `.ssm` exists, then removes that sidecar after writing inline output.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help samples`\n\n"
@@ -860,7 +872,7 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd normalize <input.ssd> [--stdout]`\n\n"
                "Status:\n"
                "- `--stdout` returns canonical inline output from `.ssd` with an optional paired `.ssm`.\n"
-               "- Bare `ssd normalize <input.ssd>` currently applies only to standalone `.ssd` inputs without a paired `.ssm`.\n\n"
+               "- Bare `ssd normalize <input.ssd>` applies to standalone or paired input and removes a paired `.ssm` after writing canonical inline output.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -1996,12 +2008,27 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             return make_help_result(args, "reference", "merge", parsed.format);
         }
         if (args.size() >= 3 && args[2] == "--stdout") {
+            semdl::core::DocumentStore store;
+            const auto document = store.load_document(std::filesystem::path(args[1]));
             return CommandResult{
                 .exit_code = 0,
-                .stdout_text = read_text_file(std::filesystem::path(args[1]).replace_extension(".inline.ssd")),
+                .stdout_text = semdl::core::render_canonical_inline_document(document),
                 .stderr_text = "",
             };
         }
+        if (args.size() == 2) {
+            semdl::core::DocumentStore store;
+            const auto input_file = std::filesystem::path(args[1]);
+            const auto document = store.load_document(input_file);
+            if (!document.has_sidecar) {
+                return make_merge_apply_requires_paired_input_error(args);
+            }
+
+            write_text_file(input_file, semdl::core::render_canonical_inline_document(document));
+            std::filesystem::remove(document.sidecar_file);
+            return make_transform_apply_result(input_file, document.sidecar_file, 1);
+        }
+        return make_subcommand_not_implemented_error(args);
     }
 
     if (args[0] == "search") {
@@ -2259,11 +2286,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             semdl::core::DocumentStore store;
             const auto input_file = std::filesystem::path(args[1]);
             const auto document = store.load_document(input_file);
-            if (document.has_sidecar) {
-                return make_normalize_apply_requires_standalone_error(args, document.sidecar_file);
-            }
 
             write_text_file(input_file, semdl::core::render_canonical_inline_document(document));
+            if (document.has_sidecar) {
+                std::filesystem::remove(document.sidecar_file);
+                return make_transform_apply_result(input_file, document.sidecar_file, 1);
+            }
             return make_update_apply_result(input_file, std::nullopt, 1);
         }
         return make_subcommand_not_implemented_error(args);

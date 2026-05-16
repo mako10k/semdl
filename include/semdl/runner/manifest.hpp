@@ -18,6 +18,7 @@ struct TestCaseSpec {
     std::map<std::string, std::string> environment;
     std::vector<std::filesystem::path> setup_files;
     std::map<std::filesystem::path, std::filesystem::path> expected_files;
+    std::vector<std::filesystem::path> expected_absent_files;
     int expected_exit = 0;
     std::filesystem::path expected_stdout;
     std::filesystem::path expected_stderr;

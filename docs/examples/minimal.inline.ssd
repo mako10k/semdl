@@ -1,6 +1,3 @@
-# SEMDL minimal inline example for merge golden tests
-# This file is the expected merged output for minimal.ssd + minimal.ssm.
-
 document D1 {
   title: "月次売上サンプル"
   source_ref: "docs/source/monthly-sales.txt"
@@ -36,6 +33,8 @@ assertion A1 {
       model: "text-embedding-3-large"
       dimensions: 3072
       generated_at: "2026-05-14T00:00:00Z"
+      provider: "openai"
+      vector_ref: "embeddings/A1.json"
     }
   }
 }

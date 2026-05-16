@@ -46,6 +46,8 @@ write case 向けに、次の optional key を持ってよい。
 - `expected_files`
   - 実行後に sandbox 内の runtime path を fixture file と比較する map
   - key は runtime relative path、value は expected fixture の relative path
+- `expected_absent_files`
+  - 実行後に sandbox 内で存在しないことを要求する runtime relative path の array
 
 ## 例
 
@@ -79,4 +81,5 @@ write case 向けに、次の optional key を持ってよい。
 - dry-run 系は stdout にのみ差分予定を固定し、ファイル実体変更は期待しない
 - merge の成功系は stdout の期待値として `minimal.inline.ssd` を参照してよい
 - write case は `setup_files` と `expected_files` を使って sandbox 内の file output を固定してよい
+- file removal を伴う write case は `expected_absent_files` を使って sandbox 内の不在を固定してよい
 - breaking change 時は manifest と golden を同一コミットで更新する
