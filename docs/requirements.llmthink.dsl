@@ -263,6 +263,13 @@ step S17:
       "runner が library へ直接結合すると、CLI 公開契約と golden 回帰の境界が崩れやすい"
 
 step S18:
+  decision D18 based_on D16:
+    |
+      初期実装では repository layout も 3 層境界に合わせて分ける。
+      core library、ssd CLI、test runner は別ディレクトリとして配置し、依存方向は library <- CLI <- runner ではなく、
+      library を CLI が利用し、runner は CLI を外部プロセスとして実行する構成を保つ。
+    annotation rationale:
+      "責務だけでなく配置先も分けると、実装初期から層の癒着を防ぎやすい"
 
 step S18A:
   decision D18A based_on D18:
@@ -280,13 +287,6 @@ step S27A:
       detailed command usage は reference help で補い、language grammar work は `.ssd` と `.ssq` / semql 側へ寄せる。
     annotation rationale:
       "help を入口として保ちつつ、grammar の主戦場を CLI 以外へ移すため"
-  decision D18 based_on D16:
-    |
-      初期実装では repository layout も 3 層境界に合わせて分ける。
-      core library、ssd CLI、test runner は別ディレクトリとして配置し、依存方向は library <- CLI <- runner ではなく、
-      library を CLI が利用し、runner は CLI を外部プロセスとして実行する構成を保つ。
-    annotation rationale:
-      "責務だけでなく配置先も分けると、実装初期から層の癒着を防ぎやすい"
 
 step S19:
   decision D19 based_on D18, D6:
