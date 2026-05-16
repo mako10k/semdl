@@ -1,0 +1,4 @@
+ERROR add_target_not_found
+command: ssd add annotation docs/examples/minimal.ssd id=Z9 kind=todo text=bad --target sidecar
+id: Z9
+hint: metadata-only add requires an existing semantic target id

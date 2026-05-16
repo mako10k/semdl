@@ -1,0 +1,4 @@
+ERROR add_requires_sidecar_target
+command: ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=missing-target-sidecar
+kind: annotation
+hint: metadata-only add currently requires `--target sidecar`

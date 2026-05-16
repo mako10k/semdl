@@ -4,5 +4,5 @@ target_profile: sidecar
 target_file: docs/examples/minimal.ssm
 selector: id:H1
 annotation_kind: rationale
-append: "原文に主語がないため補完"
+write: "原文に主語がないため補完"
 changes: 1

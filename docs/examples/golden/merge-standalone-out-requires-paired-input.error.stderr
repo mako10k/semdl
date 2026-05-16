@@ -1,4 +1,4 @@
 ERROR merge_requires_paired_input
-command: ssd merge docs/examples/normalize-standalone-source.ssd
+command: ssd merge docs/examples/normalize-standalone-source.ssd --out docs/examples/merge-output.ssd
 input: docs/examples/normalize-standalone-source.ssd
 hint: merge currently requires a paired `.ssm` for apply, `--dry-run`, and `--out`

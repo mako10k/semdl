@@ -3,10 +3,12 @@ SEMDL Help Topic: reference add
 Usage:
 - `ssd add <kind> <file> [field=value ...]`
 - `ssd add <kind> <file> [field=value ...] --dry-run`
+- `ssd add <kind> <file> [field=value ...] --target sidecar [--dry-run]`
 
 Status:
-- The current slice supports inline structural kinds: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`.
-- `provenance`, `annotation`, and sidecar-targeted add remain deferred.
+- Inline structural add supports: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`.
+- Metadata-only add supports `annotation` and `provenance` with `--target sidecar` only.
+- Metadata-only add is create-only: it creates missing sidecar fields, creates a paired `.ssm` when absent, and fails on existing field conflicts.
 
 Related help:
 - `ssd help grammar`
@@ -14,3 +16,4 @@ Related help:
 
 Sample:
 - `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --dry-run`
+- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --dry-run`

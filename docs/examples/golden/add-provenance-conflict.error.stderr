@@ -1,0 +1,5 @@
+ERROR add_metadata_conflict
+command: ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed --target sidecar
+id: A1
+field: provenance_kind
+hint: add creates missing metadata fields only; use `ssd set` or `ssd annotate` to update an existing field

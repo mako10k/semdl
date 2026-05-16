@@ -54,6 +54,17 @@ step S2A:
     annotation rationale:
       "既存 renderer と acceptance fixture に乗る構造追加を先に実装すると、更新系最小集合の入口を小さく閉じられる"
 
+step S2B:
+  decision D2B based_on D2A, D3:
+    |
+      後続 `ssd add` slice では metadata-only kind として `annotation` と `provenance` を許可してよい。
+      この slice の metadata add は `--target sidecar` 必須とし、既存 target id に対する create-only metadata field 作成だけを扱う。
+      requested field が既に存在する場合は conflict failure とし、更新責務は `ssd set` または `ssd annotate` に残す。
+      paired `.ssm` がない入力では sidecar を新規作成してよい。
+      `--out` と `--stdout` は引き続き後続 slice に分離する。
+    annotation rationale:
+      "metadata add を create-only に限定すると、新規作成と既存値更新の責務が分離され、`add` と `set` と `annotate` の重なりを最小化できる"
+
 problem P2:
   "初期更新 CLI において、更新対象 selector と各レイヤの責務をどの粒度まで固定するか"
   annotation rationale:
@@ -312,6 +323,30 @@ step S18A:
       `--out`、`--inline`、`--sidecar`、`--dry-run` は後続 slice に分離する。
     annotation rationale:
       "paired apply を inline `.ssd` へ収束させて sibling `.ssm` を除去すれば stale sidecar state を残さず、merge と normalize の write path を最小対称面で解禁できるため"
+
+step S18B:
+  decision D18B based_on D18A:
+    |
+      後続 transform slice では `merge` と `normalize` の両方に `--dry-run` と `--out <output.ssd>` を追加してよい。
+      `merge` の `--dry-run` と `--out` は paired `.ssm` がある入力に限って成功し、standalone 入力には広げない。
+      `normalize` の `--dry-run` と `--out` は standalone / paired の両方で成功してよい。
+      `--out` は non-destructive とし、source `.ssd` と paired `.ssm` を変更または削除しない。
+      また `--out` は source `.ssd` や paired `.ssm` を alias してはならない。
+      `--inline`、`--sidecar`、profile selection、conflict policy は引き続き後続 slice に分離する。
+    annotation rationale:
+      "merge と normalize の option 面を `--dry-run` と `--out` に絞ると、paired apply の責務境界を保ったまま非破壊 preview と別ファイル出力を対称に追加できる"
+
+step S18C:
+  decision D18C based_on D2B, D18B:
+    |
+      後続 update slice では `ssd annotate` に `--target inline|sidecar|auto` を追加してよい。
+      `--target inline` は standalone `.ssd` 入力に限り成功し、対象 kind は `assertion` と `hypothesis` に限定する。
+      `--target auto` は paired 入力なら sidecar を選び、standalone 入力なら inline が許される target だけ inline を選び、それ以外は sidecar へ落としてよい。
+      同じ slice で `ssd remove` は structural single-target delete を許可してよいが、inbound reference がある structural target は既定で failure とする。
+      `--cascade` が明示されたときだけ direct / transitive dependent を同時削除でき、initial dependency edge は `assertion <- hypothesis.about`、`hypothesis <- alternative.group`、`resource <- segment.source` に固定する。
+      `type:<kind> --allow-multi` 以外の multi-target structural remove は引き続き後続 slice に分離する。
+    annotation rationale:
+      "annotate の target 行列と remove cascade edge を同時に固定すると、inline / sidecar write-path と安全削除境界を acceptance でぶらさず実装できる"
 
 step S27A:
   decision D27A based_on D27, D8A:

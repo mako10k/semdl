@@ -1,15 +1,19 @@
 SEMDL Help Topic: reference annotate
 
 Usage:
-- `ssd annotate <selector> <kind> <text> --target sidecar <file>`
-- `ssd annotate <selector> <kind> <text> --target sidecar --dry-run <file>`
+- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto <file>`
+- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto --dry-run <file>`
 
 Purpose:
-- Append or preview rationale, caveat, todo, status, or explanation metadata.
+- Write or preview one rationale, caveat, todo, status, or explanation field in inline or sidecar metadata.
+- `--target inline` is currently limited to standalone input and `assertion` / `hypothesis` targets.
+- `--target auto` uses sidecar on paired input and otherwise prefers inline only where that standalone inline form is supported.
+- Use `ssd add annotation ... --target sidecar` when you need create-only field-map semantics.
 
 Related help:
 - `ssd help grammar`
 - `ssd help samples`
 
 Sample:
-- `ssd annotate id:H1 todo 追加入力で主体を確認する --target sidecar docs/examples/minimal.ssd`
+- `ssd annotate id:H1 todo 追加入力で主体を確認する --target inline docs/examples/minimal.inline.ssd`
+- `ssd annotate id:R1 rationale 参照元を追記する --target auto docs/examples/minimal.ssd`

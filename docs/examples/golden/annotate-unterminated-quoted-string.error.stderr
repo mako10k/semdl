@@ -1,4 +1,4 @@
 ERROR unterminated_quoted_string
-command: ssd annotate id:H1 rationale "未完 docs/examples/minimal.ssd
+command: ssd annotate id:H1 rationale "未完 --target sidecar docs/examples/minimal.ssd
 context: annotate text-value
 hint: quoted string must be closed with a matching double quote before the input file argument

@@ -97,7 +97,7 @@ segment HELP_LINE_17 {
 
 segment HELP_LINE_18 {
   source: HELP_TOPIC
-  text_quote: "- `ssd add <kind> <file> [field=value ...]`"
+  text_quote: "- `ssd add <kind> <file> [field=value ...] [--target sidecar] [--dry-run]`"
 }
 
 segment HELP_LINE_19 {
@@ -122,12 +122,12 @@ segment HELP_LINE_22 {
 
 segment HELP_LINE_23 {
   source: HELP_TOPIC
-  text_quote: "- `ssd merge <input.ssd> [--stdout]`"
+  text_quote: "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`"
 }
 
 segment HELP_LINE_24 {
   source: HELP_TOPIC
-  text_quote: "- `ssd normalize <input.ssd> [--stdout]`"
+  text_quote: "- `ssd normalize <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`"
 }
 
 segment HELP_LINE_25 {
@@ -202,7 +202,7 @@ segment HELP_LINE_38 {
 
 segment HELP_LINE_39 {
   source: HELP_TOPIC
-  text_quote: "- `--target sidecar` is currently required by `annotate`"
+  text_quote: "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`"
 }
 
 segment HELP_LINE_40 {

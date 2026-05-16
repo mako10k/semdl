@@ -1,0 +1,7 @@
+ERROR remove_would_break_references
+command: ssd remove id:H1 docs/examples/minimal.ssd
+selector: id:H1
+referenced_by:
+  - ALT1A.group
+  - ALT1B.group
+hint: referenced structural elements cannot be removed without an explicit safe strategy

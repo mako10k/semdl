@@ -18,13 +18,13 @@ Key syntax forms:
 - `ssd extract --out <output.ssd> <input>...`
 - `ssd similarity <id> <id> <file>`
 - `ssd explain <id> <file>`
-- `ssd add <kind> <file> [field=value ...]`
+- `ssd add <kind> <file> [field=value ...] [--target sidecar] [--dry-run]`
 - `ssd set <selector> <value-or-field> ... <file>`
 - `ssd remove <selector> <file>`
 - `ssd annotate <selector> <kind> <text> ... <file>`
 - `ssd split <input.ssd> [--dry-run]`
-- `ssd merge <input.ssd> [--stdout]`
-- `ssd normalize <input.ssd> [--stdout]`
+- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`
+- `ssd normalize <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`
 - `ssd help grammar --format semdl`
 
 Selectors:
@@ -42,7 +42,7 @@ Value forms:
 Common options:
 - `--dry-run` previews update-oriented commands
 - `--stdout` is currently used by `merge`, `normalize`, and `extract`
-- `--target sidecar` is currently required by `annotate`
+- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`
 - `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms
 
 This topic is the canonical user-facing operational syntax summary.

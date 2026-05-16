@@ -17,16 +17,16 @@ extract-cmd     = extract-out-cmd | extract-stdout-cmd | "extract" , ws , help-o
 similarity-cmd  = "similarity" , ws , id-ref , ws , id-ref , ws , input-file | "similarity" , ws , help-opt , [ ws , help-render-opt ] ;
 explain-cmd     = "explain" , ws , id-ref , ws , input-file | "explain" , ws , help-opt , [ ws , help-render-opt ] ;
 split-cmd       = "split" , ws , input-file , [ ws , dry-run-opt ] | "split" , ws , help-opt , [ ws , help-render-opt ] ;
-merge-cmd       = "merge" , ws , input-file , [ ws , stdout-opt ] | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
-normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt ] | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
+merge-cmd       = "merge" , ws , input-file , [ ws , stdout-opt | ws , dry-run-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] ] | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
+normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt | ws , dry-run-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] ] | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
 
 extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file ;
 extract-stdout-cmd = "extract" , ws , stdout-opt , { ws , extract-opt } , ws , input-file ;
 
-add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , [ ws , dry-run-opt ] | "add" , ws , help-opt , [ ws , help-render-opt ] ;
+add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , [ ws , target-sidecar-opt ] , [ ws , dry-run-opt ] | "add" , ws , help-opt , [ ws , help-render-opt ] ;
 set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;
-remove-cmd      = "remove" , ws , selector , ws , input-file , [ ws , allow-multi-opt ] | "remove" , ws , help-opt , [ ws , help-render-opt ] ;
-annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , target-sidecar-opt , [ ws , dry-run-opt ] , ws , input-file | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
+remove-cmd      = "remove" , ws , selector , ws , [ allow-multi-opt , ws | cascade-opt , ws ] , input-file | "remove" , ws , help-opt , [ ws , help-render-opt ] ;
+annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , target-opt , [ ws , dry-run-opt ] , ws , input-file | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
 
 set-id-cmd      = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , input-file , { ws , common-opt } ;
 set-path-meta-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , { ws , common-opt } , ws , input-file ;
@@ -43,11 +43,10 @@ embed-provider-opt = "--embed-provider" , ws , identifier ;
 embed-model-opt = "--embed-model" , ws , model-token ;
 model-token     = identifier , { ":" , identifier } ;
 
-add-kind        = "resource" | "segment" | "assertion" | "hypothesis" | "alternative" ;
+add-kind        = "resource" | "segment" | "assertion" | "hypothesis" | "alternative" | "annotation" | "provenance" ;
 annotation-kind = "rationale" | "caveat" | "todo" | "status" | "explanation" ;
 
 common-opt      = dry-run-opt | out-opt , ws , output-file | stdout-opt | target-opt | format-opt | fail-on-conflict-opt | allow-multi-opt ;
-remove-opt      = cascade-opt ;
 out-opt         = "--out" ;
 stdout-opt      = "--stdout" ;
 dry-run-opt     = "--dry-run" ;

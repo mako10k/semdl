@@ -1,5 +1,5 @@
 ERROR invalid_annotation_kind
-command: ssd annotate id:H1 note "補足" docs/examples/minimal.ssd
+command: ssd annotate id:H1 note "補足" --target sidecar docs/examples/minimal.ssd
 annotation_kind: note
 allowed:
   - rationale

@@ -1,0 +1,3 @@
+ERROR annotate_inline_requires_standalone_input
+command: ssd annotate id:H1 todo 追加入力で主体を確認する --target inline docs/examples/minimal.ssd
+hint: `--target inline` is currently limited to standalone `.ssd` inputs

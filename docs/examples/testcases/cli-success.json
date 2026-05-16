@@ -572,6 +572,55 @@
       "notes": "add resource apply should rewrite only the inline file"
     },
     {
+      "id": "add-annotation-todo-dryrun",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --dry-run",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=追加入力で主体を確認する", "--target", "sidecar", "--dry-run"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-annotation-todo.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add dry-run should preview sidecar creation for one annotation field"
+    },
+    {
+      "id": "add-annotation-todo-apply",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=追加入力で主体を確認する", "--target", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/add-annotation-todo.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-annotation-todo.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add apply should create a missing annotation field on an existing sidecar"
+    },
+    {
+      "id": "add-provenance-A1-apply",
+      "command": "ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale=監査で人手確認した --target sidecar",
+      "argv": ["ssd", "add", "provenance", "docs/examples/minimal.ssd", "id=A1", "provenance_kind=reviewed", "confidence=0.91", "rationale=監査で人手確認した", "--target", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/add-provenance-A1.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-provenance-A1.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add should create a new sidecar when provenance is added to a standalone input"
+    },
+    {
       "id": "set-help",
       "command": "ssd set --help",
       "argv": ["ssd", "set", "--help"],
@@ -759,6 +808,43 @@
       "notes": "merge apply should rewrite the inline file and remove the paired sidecar"
     },
     {
+      "id": "merge-minimal-dryrun",
+      "command": "ssd merge docs/examples/minimal.ssd --dry-run",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--dry-run"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-minimal.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "merge dry-run should preview sidecar removal without changing files"
+    },
+    {
+      "id": "merge-minimal-out",
+      "command": "ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--out", "docs/examples/merged-output.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/merged-output.ssd": "docs/examples/minimal.inline.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-minimal.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "merge out should write merged inline output without mutating the source pair"
+    },
+    {
       "id": "normalize-paired-apply",
       "command": "ssd normalize docs/examples/normalize-source.ssd",
       "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd"],
@@ -775,6 +861,43 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "paired normalize apply should rewrite the input file to canonical inline output and remove the sidecar"
+    },
+    {
+      "id": "normalize-paired-dryrun",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --dry-run",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--dry-run"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/normalize-paired.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "normalize dry-run should preview paired inline canonicalization without mutating the source files"
+    },
+    {
+      "id": "normalize-paired-out",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-output.ssd",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--out", "docs/examples/normalized-output.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm",
+        "docs/examples/normalized-output.ssd": "docs/examples/normalize-source.inline.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/normalize-paired.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "normalize out should write canonical inline output without mutating the source pair"
     },
     {
       "id": "normalize-standalone-apply",
@@ -1001,6 +1124,41 @@
       "notes": "annotate apply should append sidecar metadata through the common update path"
     },
     {
+      "id": "annotate-H1-status-inline-apply",
+      "command": "ssd annotate id:H1 status 検証待ち --target inline docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "status", "検証待ち", "--target", "inline", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.inline.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.inline.ssd": "docs/examples/fixtures/annotate-H1-status-inline.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-H1-status-inline.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "standalone inline annotate should update supported hypothesis metadata in-place"
+    },
+    {
+      "id": "annotate-R1-rationale-auto-sidecar-apply",
+      "command": "ssd annotate id:R1 rationale 参照元を追記する --target auto docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:R1", "rationale", "参照元を追記する", "--target", "auto", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/annotate-R1-rationale-auto-sidecar.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-R1-rationale-auto-sidecar.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "auto annotate should fall back to sidecar when standalone inline metadata is unsupported"
+    },
+    {
       "id": "remove-A1-embedding-apply",
       "command": "ssd remove meta:A1.embedding docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "meta:A1.embedding", "docs/examples/minimal.ssd"],
@@ -1017,6 +1175,78 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "remove meta apply should remove a sidecar metadata subtree when structural integrity remains intact"
+    },
+    {
+      "id": "remove-ALT1B-apply",
+      "command": "ssd remove id:ALT1B docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/remove-ALT1B.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/remove-ALT1B.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-ALT1B.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "single-target structural remove should succeed when no dependents need to be removed"
+    },
+    {
+      "id": "remove-type-alternative-allow-multi-apply",
+      "command": "ssd remove type:alternative --allow-multi docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "type:alternative", "--allow-multi", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/remove-type-alternative-allow-multi.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/remove-type-alternative-allow-multi.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-type-alternative-allow-multi.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector remove can delete all matched structural targets when --allow-multi is explicit"
+    },
+    {
+      "id": "remove-H1-cascade-apply",
+      "command": "ssd remove id:H1 --cascade docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:H1", "--cascade", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/remove-H1-cascade.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/remove-H1-cascade.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-H1-cascade.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "cascade remove should delete the hypothesis and its dependent alternatives in one step"
+    },
+    {
+      "id": "remove-A1-cascade-apply",
+      "command": "ssd remove id:A1 --cascade docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:A1", "--cascade", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/remove-A1-cascade.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/remove-A1-cascade.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-A1-cascade.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "assertion cascade should remove the assertion and its transitive hypothesis and alternative dependents"
     },
     {
       "id": "merge-minimal-stdout",

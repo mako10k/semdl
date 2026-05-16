@@ -2,11 +2,17 @@ SEMDL Help Topic: reference normalize
 
 Usage:
 - `ssd normalize <input.ssd> [--stdout]`
+- `ssd normalize <input.ssd> --dry-run`
+- `ssd normalize <input.ssd> --out <output.ssd> [--dry-run]`
 
 Status:
 - `--stdout` returns canonical inline output from `.ssd` with an optional paired `.ssm`.
-- Bare `ssd normalize <input.ssd>` applies to standalone or paired input and removes a paired `.ssm` after writing canonical inline output.
+- Bare apply and `--dry-run` rewrite or preview canonical inline output at the input path; paired input removes the sibling `.ssm`.
+- `--out <output.ssd>` writes canonical inline output without modifying the source `.ssd` or paired `.ssm`.
 
 Related help:
 - `ssd help grammar`
 - `ssd help troubleshooting`
+
+Sample:
+- `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-output.ssd`

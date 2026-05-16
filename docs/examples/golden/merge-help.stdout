@@ -3,10 +3,13 @@ SEMDL Help Topic: reference merge
 Usage:
 - `ssd merge <input.ssd> --stdout`
 - `ssd merge <input.ssd>`
+- `ssd merge <input.ssd> --dry-run`
+- `ssd merge <input.ssd> --out <output.ssd> [--dry-run]`
 
 Status:
 - `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`.
-- Bare `ssd merge <input.ssd>` currently applies only when a paired `.ssm` exists, then removes that sidecar after writing inline output.
+- Bare apply and `--dry-run` require a paired `.ssm`; in-place apply removes that sidecar after writing inline output.
+- `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`.
 
 Related help:
 - `ssd help grammar`
@@ -14,3 +17,4 @@ Related help:
 
 Sample:
 - `ssd merge docs/examples/minimal.ssd --stdout`
+- `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`

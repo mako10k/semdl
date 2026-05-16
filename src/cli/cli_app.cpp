@@ -15,6 +15,8 @@
 #include <fstream>
 #include <iomanip>
 #include <optional>
+#include <queue>
+#include <set>
 #include <sstream>
 #include <string_view>
 #include <sys/types.h>
@@ -267,9 +269,38 @@ struct ParsedAddArgs {
     bool use_dry_run = false;
     std::string kind;
     std::filesystem::path input_file;
+    std::optional<std::string> target;
     std::vector<std::pair<std::string, std::string>> fields;
     std::map<std::string, std::string> field_map;
     std::string invalid_field;
+};
+
+struct ParsedTransformArgs {
+    bool valid = true;
+    bool use_stdout = false;
+    bool use_dry_run = false;
+    std::filesystem::path input_file;
+    std::optional<std::filesystem::path> output_file;
+    std::string invalid_option;
+};
+
+struct ParsedAnnotateArgs {
+    bool valid = true;
+    bool use_dry_run = false;
+    std::string selector;
+    std::string annotation_kind;
+    std::string text_value;
+    std::string target;
+    std::filesystem::path input_file;
+};
+
+struct ParsedRemoveArgs {
+    bool valid = true;
+    bool use_cascade = false;
+    bool allow_multi = false;
+    std::string selector;
+    std::filesystem::path input_file;
+    std::string invalid_option;
 };
 
 std::filesystem::path derive_sidecar_path(const std::filesystem::path& input_file) {
@@ -408,6 +439,16 @@ ParsedAddArgs parse_add_args(const std::vector<std::string_view>& args) {
             parsed.use_dry_run = true;
             continue;
         }
+        if (args[index] == "--target") {
+            if (index + 1 >= args.size()) {
+                parsed.valid = false;
+                parsed.invalid_field = "--target";
+                return parsed;
+            }
+            parsed.target = std::string(args[index + 1]);
+            ++index;
+            continue;
+        }
         if (args[index].starts_with("--")) {
             parsed.valid = false;
             parsed.invalid_field = std::string(args[index]);
@@ -427,6 +468,93 @@ ParsedAddArgs parse_add_args(const std::vector<std::string_view>& args) {
         parsed.field_map[name] = value;
     }
 
+    return parsed;
+}
+
+ParsedTransformArgs parse_transform_args(const std::vector<std::string_view>& args) {
+    ParsedTransformArgs parsed;
+    if (args.size() < 2) {
+        parsed.valid = false;
+        return parsed;
+    }
+
+    parsed.input_file = std::filesystem::path(args[1]);
+    if (args.size() == 2) {
+        return parsed;
+    }
+    if (args.size() == 3 && args[2] == "--stdout") {
+        parsed.use_stdout = true;
+        return parsed;
+    }
+    if (args.size() == 3 && args[2] == "--dry-run") {
+        parsed.use_dry_run = true;
+        return parsed;
+    }
+    if (args.size() == 4 && args[2] == "--out") {
+        parsed.output_file = std::filesystem::path(args[3]);
+        return parsed;
+    }
+    if (args.size() == 5 && args[2] == "--out" && args[4] == "--dry-run") {
+        parsed.output_file = std::filesystem::path(args[3]);
+        parsed.use_dry_run = true;
+        return parsed;
+    }
+
+    parsed.valid = false;
+    parsed.invalid_option = args.size() >= 3 ? std::string(args[2]) : std::string{};
+    return parsed;
+}
+
+ParsedAnnotateArgs parse_annotate_args(const std::vector<std::string_view>& args) {
+    ParsedAnnotateArgs parsed;
+    if (args.size() < 7) {
+        parsed.valid = false;
+        return parsed;
+    }
+    parsed.selector = std::string(args[1]);
+    parsed.annotation_kind = std::string(args[2]);
+    parsed.text_value = std::string(args[3]);
+    if (args[4] != "--target") {
+        parsed.valid = false;
+        return parsed;
+    }
+    parsed.target = std::string(args[5]);
+    if (args.size() == 7) {
+        parsed.input_file = std::filesystem::path(args[6]);
+        return parsed;
+    }
+    if (args.size() == 8 && args[6] == "--dry-run") {
+        parsed.use_dry_run = true;
+        parsed.input_file = std::filesystem::path(args[7]);
+        return parsed;
+    }
+    parsed.valid = false;
+    return parsed;
+}
+
+ParsedRemoveArgs parse_remove_args(const std::vector<std::string_view>& args) {
+    ParsedRemoveArgs parsed;
+    if (args.size() < 3) {
+        parsed.valid = false;
+        return parsed;
+    }
+    parsed.selector = std::string(args[1]);
+    if (args.size() == 3) {
+        parsed.input_file = std::filesystem::path(args[2]);
+        return parsed;
+    }
+    if (args.size() == 4 && args[2] == "--cascade") {
+        parsed.use_cascade = true;
+        parsed.input_file = std::filesystem::path(args[3]);
+        return parsed;
+    }
+    if (args.size() == 4 && args[2] == "--allow-multi") {
+        parsed.allow_multi = true;
+        parsed.input_file = std::filesystem::path(args[3]);
+        return parsed;
+    }
+    parsed.valid = false;
+    parsed.invalid_option = args.size() >= 3 ? std::string(args[2]) : std::string{};
     return parsed;
 }
 
@@ -528,7 +656,7 @@ CommandResult make_invalid_add_kind_error(const std::vector<std::string_view>& a
         .stdout_text = "",
         .stderr_text = "ERROR invalid_add_kind\ncommand: " + join_args(args) +
                        "\nkind: " + std::string(kind) +
-                       "\nallowed:\n  - resource\n  - segment\n  - assertion\n  - hypothesis\n  - alternative\n",
+                       "\nallowed:\n  - resource\n  - segment\n  - assertion\n  - hypothesis\n  - alternative\n  - annotation\n  - provenance\n",
     };
 }
 
@@ -564,6 +692,59 @@ CommandResult make_add_duplicate_id_error(const std::vector<std::string_view>& a
         .stderr_text = "ERROR add_id_conflict\ncommand: " + join_args(args) +
                        "\nid: " + std::string(entity_id) +
                        "\nhint: choose a new id that does not already exist in the current document set\n",
+    };
+}
+
+CommandResult make_add_target_sidecar_required_error(const std::vector<std::string_view>& args, std::string_view kind) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR add_requires_sidecar_target\ncommand: " + join_args(args) +
+                       "\nkind: " + std::string(kind) +
+                       "\nhint: metadata-only add currently requires `--target sidecar`\n",
+    };
+}
+
+CommandResult make_invalid_add_target_error(const std::vector<std::string_view>& args, std::string_view target) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_add_target\ncommand: " + join_args(args) +
+                       "\ntarget: " + std::string(target) +
+                       "\nallowed:\n  - sidecar\n",
+    };
+}
+
+CommandResult make_add_metadata_target_not_found_error(const std::vector<std::string_view>& args, std::string_view entity_id) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR add_target_not_found\ncommand: " + join_args(args) +
+                       "\nid: " + std::string(entity_id) +
+                       "\nhint: metadata-only add requires an existing semantic target id\n",
+    };
+}
+
+CommandResult make_add_metadata_conflict_error(const std::vector<std::string_view>& args,
+                                               std::string_view entity_id,
+                                               std::string_view field_name) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR add_metadata_conflict\ncommand: " + join_args(args) +
+                       "\nid: " + std::string(entity_id) +
+                       "\nfield: " + std::string(field_name) +
+                       "\nhint: add creates missing metadata fields only; use `ssd set` or `ssd annotate` to update an existing field\n",
+    };
+}
+
+CommandResult make_invalid_add_annotation_kind_error(const std::vector<std::string_view>& args, std::string_view kind) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_add_annotation_kind\ncommand: " + join_args(args) +
+                       "\nkind: " + std::string(kind) +
+                       "\nallowed:\n  - rationale\n  - caveat\n  - todo\n  - status\n  - explanation\n",
     };
 }
 
@@ -606,13 +787,45 @@ CommandResult make_transform_apply_result(const std::filesystem::path& ssd_file,
     return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
 }
 
-CommandResult make_merge_apply_requires_paired_input_error(const std::vector<std::string_view>& args) {
+CommandResult make_transform_out_result(const std::filesystem::path& output_file, int changes) {
+    std::ostringstream output;
+    output << "wrote_ssd: " << output_file.generic_string() << "\n";
+    output << "changes: " << changes << "\n";
+    return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
+}
+
+CommandResult make_merge_requires_paired_input_error(const std::vector<std::string_view>& args) {
     return CommandResult{
         .exit_code = 3,
         .stdout_text = "",
-        .stderr_text = "ERROR merge_apply_requires_paired_input\ncommand: " + join_args(args) +
+        .stderr_text = "ERROR merge_requires_paired_input\ncommand: " + join_args(args) +
                        "\ninput: " + std::string(args[1]) +
-                       "\nhint: bare merge apply requires a paired `.ssm` in the current slice\n",
+                       "\nhint: merge currently requires a paired `.ssm` for apply, `--dry-run`, and `--out`\n",
+    };
+}
+
+CommandResult make_invalid_transform_options_error(const std::vector<std::string_view>& args,
+                                                   std::string_view subcommand,
+                                                   std::string_view usage) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_transform_options\ncommand: " + join_args(args) +
+                       "\nsubcommand: " + std::string(subcommand) +
+                       "\nusage: " + std::string(usage) + "\n",
+    };
+}
+
+CommandResult make_transform_out_alias_error(const std::vector<std::string_view>& args,
+                                             const std::filesystem::path& output_file,
+                                             const std::filesystem::path& aliased_file) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR transform_out_alias_conflict\ncommand: " + join_args(args) +
+                       "\nout: " + output_file.generic_string() +
+                       "\naliases: " + aliased_file.generic_string() +
+                       "\nhint: `--out` must not overwrite the source `.ssd` or paired `.ssm` in this slice\n",
     };
 }
 
@@ -668,7 +881,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` currently supports inline structural kinds only.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -693,13 +906,13 @@ std::string grammar_help_text() {
            "- `ssd extract --out <output.ssd> <input>...`\n"
            "- `ssd similarity <id> <id> <file>`\n"
            "- `ssd explain <id> <file>`\n"
-           "- `ssd add <kind> <file> [field=value ...]`\n"
+           "- `ssd add <kind> <file> [field=value ...] [--target sidecar] [--dry-run]`\n"
            "- `ssd set <selector> <value-or-field> ... <file>`\n"
            "- `ssd remove <selector> <file>`\n"
            "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
            "- `ssd split <input.ssd> [--dry-run]`\n"
-           "- `ssd merge <input.ssd> [--stdout]`\n"
-           "- `ssd normalize <input.ssd> [--stdout]`\n"
+           "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`\n"
+           "- `ssd normalize <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`\n"
            "- `ssd help grammar --format semdl`\n\n"
            "Selectors:\n"
            "- `id:<id>`\n"
@@ -714,7 +927,7 @@ std::string grammar_help_text() {
            "Common options:\n"
            "- `--dry-run` previews update-oriented commands\n"
            "- `--stdout` is currently used by `merge`, `normalize`, and `extract`\n"
-           "- `--target sidecar` is currently required by `annotate`\n"
+           "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`\n"
            "- `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms\n\n"
            "This topic is the canonical user-facing operational syntax summary.\n"
            "Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details.\n"
@@ -811,29 +1024,36 @@ std::string reference_help_text(std::string_view target) {
         return "SEMDL Help Topic: reference remove\n\n"
                "Usage:\n"
                "- `ssd remove <selector> <file>`\n"
+               "- `ssd remove <selector> --cascade <file>`\n"
                "- `ssd remove type:<kind> --allow-multi <file>`\n\n"
                "Purpose:\n"
-               "- Remove one sidecar metadata field or subtree when the selector resolves safely.\n"
-               "- Structural multi-target and reference-breaking removals still fail.\n\n"
+               "- Remove one sidecar metadata field or one structural target when the selector resolves safely.\n"
+               "- Structural removals fail on inbound references unless `--cascade` removes dependent targets in the same step.\n"
+               "- Multi-target remove remains deferred outside the existing `type:<kind> --allow-multi` surface.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help recipes wrong-layer`\n\n"
                "Sample:\n"
-               "- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`\n";
+               "- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`\n"
+               "- `ssd remove id:H1 --cascade docs/examples/minimal.ssd`\n";
     }
 
     if (target == "annotate") {
         return "SEMDL Help Topic: reference annotate\n\n"
                "Usage:\n"
-               "- `ssd annotate <selector> <kind> <text> --target sidecar <file>`\n"
-               "- `ssd annotate <selector> <kind> <text> --target sidecar --dry-run <file>`\n\n"
+               "- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto <file>`\n"
+               "- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto --dry-run <file>`\n\n"
                "Purpose:\n"
-               "- Append or preview rationale, caveat, todo, status, or explanation metadata.\n\n"
+               "- Write or preview one rationale, caveat, todo, status, or explanation field in inline or sidecar metadata.\n"
+               "- `--target inline` is currently limited to standalone input and `assertion` / `hypothesis` targets.\n"
+               "- `--target auto` uses sidecar on paired input and otherwise prefers inline only where that standalone inline form is supported.\n"
+               "- Use `ssd add annotation ... --target sidecar` when you need create-only field-map semantics.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help samples`\n\n"
                "Sample:\n"
-               "- `ssd annotate id:H1 todo 追加入力で主体を確認する --target sidecar docs/examples/minimal.ssd`\n";
+               "- `ssd annotate id:H1 todo 追加入力で主体を確認する --target inline docs/examples/minimal.inline.ssd`\n"
+               "- `ssd annotate id:R1 rationale 参照元を追記する --target auto docs/examples/minimal.ssd`\n";
     }
 
     if (target == "split") {
@@ -855,42 +1075,54 @@ std::string reference_help_text(std::string_view target) {
         return "SEMDL Help Topic: reference merge\n\n"
                "Usage:\n"
                "- `ssd merge <input.ssd> --stdout`\n"
-               "- `ssd merge <input.ssd>`\n\n"
+               "- `ssd merge <input.ssd>`\n"
+               "- `ssd merge <input.ssd> --dry-run`\n"
+               "- `ssd merge <input.ssd> --out <output.ssd> [--dry-run]`\n\n"
                "Status:\n"
                "- `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`.\n"
-               "- Bare `ssd merge <input.ssd>` currently applies only when a paired `.ssm` exists, then removes that sidecar after writing inline output.\n\n"
+               "- Bare apply and `--dry-run` require a paired `.ssm`; in-place apply removes that sidecar after writing inline output.\n"
+               "- `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help samples`\n\n"
                "Sample:\n"
-               "- `ssd merge docs/examples/minimal.ssd --stdout`\n";
+               "- `ssd merge docs/examples/minimal.ssd --stdout`\n"
+               "- `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`\n";
     }
 
     if (target == "normalize") {
         return "SEMDL Help Topic: reference normalize\n\n"
                "Usage:\n"
-               "- `ssd normalize <input.ssd> [--stdout]`\n\n"
+               "- `ssd normalize <input.ssd> [--stdout]`\n"
+               "- `ssd normalize <input.ssd> --dry-run`\n"
+               "- `ssd normalize <input.ssd> --out <output.ssd> [--dry-run]`\n\n"
                "Status:\n"
                "- `--stdout` returns canonical inline output from `.ssd` with an optional paired `.ssm`.\n"
-               "- Bare `ssd normalize <input.ssd>` applies to standalone or paired input and removes a paired `.ssm` after writing canonical inline output.\n\n"
+               "- Bare apply and `--dry-run` rewrite or preview canonical inline output at the input path; paired input removes the sibling `.ssm`.\n"
+               "- `--out <output.ssd>` writes canonical inline output without modifying the source `.ssd` or paired `.ssm`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
-               "- `ssd help troubleshooting`\n";
+               "- `ssd help troubleshooting`\n\n"
+               "Sample:\n"
+               "- `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-output.ssd`\n";
     }
 
     if (target == "add") {
         return "SEMDL Help Topic: reference add\n\n"
                "Usage:\n"
                "- `ssd add <kind> <file> [field=value ...]`\n"
-               "- `ssd add <kind> <file> [field=value ...] --dry-run`\n\n"
+               "- `ssd add <kind> <file> [field=value ...] --dry-run`\n"
+               "- `ssd add <kind> <file> [field=value ...] --target sidecar [--dry-run]`\n\n"
                "Status:\n"
-               "- The current slice supports inline structural kinds: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`.\n"
-               "- `provenance`, `annotation`, and sidecar-targeted add remain deferred.\n\n"
+               "- Inline structural add supports: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`.\n"
+               "- Metadata-only add supports `annotation` and `provenance` with `--target sidecar` only.\n"
+               "- Metadata-only add is create-only: it creates missing sidecar fields, creates a paired `.ssm` when absent, and fails on existing field conflicts.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n\n"
                "Sample:\n"
-               "- `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --dry-run`\n";
+               "- `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --dry-run`\n"
+               "- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --dry-run`\n";
     }
 
     return "SEMDL Help Topic: reference\n\n"
@@ -1390,6 +1622,224 @@ CommandResult make_remove_break_reference_error(const std::vector<std::string_vi
     };
 }
 
+CommandResult make_remove_break_reference_error(const std::vector<std::string_view>& args,
+                                                const std::vector<std::string>& referenced_by) {
+    std::ostringstream output;
+    output << "ERROR remove_would_break_references\n";
+    output << "command: " << join_args(args) << "\n";
+    output << "selector: " << args[1] << "\n";
+    output << "referenced_by:\n";
+    for (const auto& field_ref : referenced_by) {
+        output << "  - " << field_ref << "\n";
+    }
+    output << "hint: referenced structural elements cannot be removed without an explicit safe strategy\n";
+    return CommandResult{.exit_code = 3, .stdout_text = "", .stderr_text = output.str()};
+}
+
+CommandResult make_invalid_annotate_target_error(const std::vector<std::string_view>& args, std::string_view target) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_annotate_target\ncommand: " + join_args(args) +
+                       "\ntarget: " + std::string(target) +
+                       "\nallowed:\n  - inline\n  - sidecar\n  - auto\n",
+    };
+}
+
+CommandResult make_annotate_inline_requires_standalone_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR annotate_inline_requires_standalone_input\ncommand: " + join_args(args) +
+                       "\nhint: `--target inline` is currently limited to standalone `.ssd` inputs\n",
+    };
+}
+
+CommandResult make_annotate_inline_target_unsupported_error(const std::vector<std::string_view>& args, std::string_view entity_id, std::string_view kind) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR annotate_inline_target_unsupported\ncommand: " + join_args(args) +
+                       "\nid: " + std::string(entity_id) +
+                       "\nkind: " + std::string(kind) +
+                       "\nhint: inline annotate currently supports `assertion` and `hypothesis` only\n",
+    };
+}
+
+bool supports_inline_annotation_kind(const semdl::core::DocumentData& document, std::string_view entity_id) {
+    const auto* entity = document.find_entity(entity_id);
+    return entity != nullptr && (entity->kind == "assertion" || entity->kind == "hypothesis");
+}
+
+std::string resolve_annotate_target(const semdl::core::DocumentData& document,
+                                    std::string_view entity_id,
+                                    std::string_view requested_target) {
+    if (requested_target == "sidecar") {
+        return "sidecar";
+    }
+    if (requested_target == "inline") {
+        return "inline";
+    }
+    if (requested_target == "auto") {
+        if (document.has_sidecar) {
+            return "sidecar";
+        }
+        return supports_inline_annotation_kind(document, entity_id) ? "inline" : "sidecar";
+    }
+    return {};
+}
+
+std::vector<std::string> direct_remove_dependents(const semdl::core::DocumentData& document, std::string_view entity_id) {
+    std::vector<std::string> dependents;
+    const auto* target = document.find_entity(entity_id);
+    if (target == nullptr) {
+        return dependents;
+    }
+
+    if (target->kind == "resource") {
+        for (const auto& [candidate_id, entity] : document.entities) {
+            if (entity.kind != "segment") {
+                continue;
+            }
+            const auto source_it = entity.fields.find("source");
+            if (source_it != entity.fields.end() && source_it->second == entity_id) {
+                dependents.push_back(candidate_id);
+            }
+        }
+    } else if (target->kind == "assertion") {
+        for (const auto& [candidate_id, entity] : document.entities) {
+            if (entity.kind != "hypothesis") {
+                continue;
+            }
+            const auto about_it = entity.fields.find("about");
+            if (about_it != entity.fields.end() && about_it->second == entity_id) {
+                dependents.push_back(candidate_id);
+            }
+        }
+    } else if (target->kind == "hypothesis") {
+        const auto group_it = target->fields.find("alternative_group");
+        if (group_it != target->fields.end()) {
+            for (const auto& [candidate_id, entity] : document.entities) {
+                if (entity.kind != "alternative") {
+                    continue;
+                }
+                const auto alt_group_it = entity.fields.find("group");
+                if (alt_group_it != entity.fields.end() && alt_group_it->second == group_it->second) {
+                    dependents.push_back(candidate_id);
+                }
+            }
+        }
+    }
+
+    std::sort(dependents.begin(), dependents.end());
+    dependents.erase(std::unique(dependents.begin(), dependents.end()), dependents.end());
+    return dependents;
+}
+
+std::vector<std::string> describe_remove_dependents(const semdl::core::DocumentData& document, std::string_view entity_id) {
+    std::vector<std::string> refs;
+    const auto* target = document.find_entity(entity_id);
+    if (target == nullptr) {
+        return refs;
+    }
+
+    if (target->kind == "resource") {
+        for (const auto& [candidate_id, entity] : document.entities) {
+            if (entity.kind != "segment") {
+                continue;
+            }
+            const auto source_it = entity.fields.find("source");
+            if (source_it != entity.fields.end() && source_it->second == entity_id) {
+                refs.push_back(candidate_id + ".source");
+            }
+        }
+    } else if (target->kind == "assertion") {
+        for (const auto& [candidate_id, entity] : document.entities) {
+            if (entity.kind != "hypothesis") {
+                continue;
+            }
+            const auto about_it = entity.fields.find("about");
+            if (about_it != entity.fields.end() && about_it->second == entity_id) {
+                refs.push_back(candidate_id + ".about");
+            }
+        }
+    } else if (target->kind == "hypothesis") {
+        const auto group_it = target->fields.find("alternative_group");
+        if (group_it != target->fields.end()) {
+            for (const auto& [candidate_id, entity] : document.entities) {
+                if (entity.kind != "alternative") {
+                    continue;
+                }
+                const auto alt_group_it = entity.fields.find("group");
+                if (alt_group_it != entity.fields.end() && alt_group_it->second == group_it->second) {
+                    refs.push_back(candidate_id + ".group");
+                }
+            }
+        }
+    }
+
+    std::sort(refs.begin(), refs.end());
+    refs.erase(std::unique(refs.begin(), refs.end()), refs.end());
+    return refs;
+}
+
+std::vector<std::string> collect_remove_targets_for_kind(const semdl::core::DocumentData& document, std::string_view kind) {
+    std::vector<std::string> targets;
+    for (const auto& [candidate_id, entity] : document.entities) {
+        if (entity.kind == kind) {
+            targets.push_back(candidate_id);
+        }
+    }
+    std::sort(targets.begin(), targets.end());
+    return targets;
+}
+
+std::vector<std::string> describe_remove_dependents_outside(const semdl::core::DocumentData& document,
+                                                            const std::vector<std::string>& removal_ids) {
+    const std::set<std::string> removal_set(removal_ids.begin(), removal_ids.end());
+    std::vector<std::string> refs;
+    for (const auto& removal_id : removal_ids) {
+        for (const auto& ref : describe_remove_dependents(document, removal_id)) {
+            const auto dot = ref.find('.');
+            const std::string dependent_id = dot == std::string::npos ? ref : ref.substr(0, dot);
+            if (!removal_set.contains(dependent_id)) {
+                refs.push_back(ref);
+            }
+        }
+    }
+    std::sort(refs.begin(), refs.end());
+    refs.erase(std::unique(refs.begin(), refs.end()), refs.end());
+    return refs;
+}
+
+std::vector<std::string> collect_remove_closure(const semdl::core::DocumentData& document, std::string_view target_id) {
+    std::vector<std::string> ordered;
+    std::queue<std::string> pending;
+    std::set<std::string> seen;
+
+    pending.push(std::string(target_id));
+    seen.insert(std::string(target_id));
+    while (!pending.empty()) {
+        const std::string current = pending.front();
+        pending.pop();
+        ordered.push_back(current);
+        for (const auto& dependent_id : direct_remove_dependents(document, current)) {
+            if (seen.insert(dependent_id).second) {
+                pending.push(dependent_id);
+            }
+        }
+    }
+    return ordered;
+}
+
+bool apply_remove_structural_change(semdl::core::DocumentData& document, const std::vector<std::string>& removed_ids) {
+    for (const auto& id : removed_ids) {
+        document.entities.erase(id);
+        document.metadata_entities.erase(id);
+    }
+    return !removed_ids.empty();
+}
+
 std::string require_field_from_entity(const semdl::core::DocumentData& document, std::string_view entity_id, const std::string& field_name, bool metadata);
 
 std::vector<std::string> required_add_fields_for_kind(std::string_view kind) {
@@ -1408,11 +1858,22 @@ std::vector<std::string> required_add_fields_for_kind(std::string_view kind) {
     if (kind == "alternative") {
         return {"id", "group", "label"};
     }
+    if (kind == "annotation") {
+        return {"id", "kind", "text"};
+    }
+    if (kind == "provenance") {
+        return {"id", "provenance_kind"};
+    }
     return {};
 }
 
+bool is_metadata_add_kind(std::string_view kind) {
+    return kind == "annotation" || kind == "provenance";
+}
+
 bool is_supported_add_kind(std::string_view kind) {
-    return kind == "resource" || kind == "segment" || kind == "assertion" || kind == "hypothesis" || kind == "alternative";
+    return kind == "resource" || kind == "segment" || kind == "assertion" || kind == "hypothesis" || kind == "alternative" ||
+           is_metadata_add_kind(kind);
 }
 
 bool looks_number_literal(std::string_view value) {
@@ -1601,10 +2062,14 @@ UpdatePreview build_add_preview(const ParsedAddArgs& parsed) {
     for (const auto& [name, value] : parsed.fields) {
         preview.command_line += " " + render_add_field_assignment(name, value);
     }
-    preview.target_profile = "inline";
-    preview.target_file = parsed.input_file.generic_string();
+    if (parsed.target.has_value()) {
+        preview.command_line += " --target " + *parsed.target;
+    }
+    preview.target_profile = is_metadata_add_kind(parsed.kind) ? "sidecar" : "inline";
+    preview.target_file = is_metadata_add_kind(parsed.kind) ? derive_sidecar_path(parsed.input_file).generic_string()
+                                                            : parsed.input_file.generic_string();
     preview.detail_lines.push_back("kind: " + parsed.kind);
-    preview.detail_lines.push_back("id: " + parsed.field_map.at("id"));
+    preview.detail_lines.push_back((is_metadata_add_kind(parsed.kind) ? "target_id: " : "id: ") + parsed.field_map.at("id"));
     preview.detail_lines.push_back("fields:");
     for (const auto& [name, value] : parsed.fields) {
         if (name == "id") {
@@ -1621,6 +2086,25 @@ bool apply_add_change(semdl::core::DocumentData& document, const ParsedAddArgs& 
         return false;
     }
 
+    if (parsed.kind == "annotation") {
+        auto& metadata = document.metadata_entities[id_it->second];
+        metadata.kind = metadata_kind_for_entity(document, id_it->second);
+        metadata.fields[parsed.field_map.at("kind")] = render_scalar_argument(parsed.field_map.at("text"));
+        return true;
+    }
+
+    if (parsed.kind == "provenance") {
+        auto& metadata = document.metadata_entities[id_it->second];
+        metadata.kind = metadata_kind_for_entity(document, id_it->second);
+        for (const auto& [name, value] : parsed.fields) {
+            if (name == "id") {
+                continue;
+            }
+            metadata.fields[name] = render_scalar_argument(value);
+        }
+        return true;
+    }
+
     semdl::core::EntityData entity;
     entity.kind = parsed.kind;
     for (const auto& [name, value] : parsed.fields) {
@@ -1631,6 +2115,41 @@ bool apply_add_change(semdl::core::DocumentData& document, const ParsedAddArgs& 
     }
     document.entities[id_it->second] = std::move(entity);
     return true;
+}
+
+bool metadata_field_exists(const semdl::core::DocumentData& document,
+                          std::string_view entity_id,
+                          std::string_view field_name) {
+    if (const auto* entity = document.find_entity(entity_id); entity != nullptr && entity->fields.contains(std::string(field_name))) {
+        return true;
+    }
+    if (const auto* metadata = document.find_metadata(entity_id); metadata != nullptr && metadata->fields.contains(std::string(field_name))) {
+        return true;
+    }
+    return false;
+}
+
+std::optional<std::string> validate_metadata_add_conflicts(const semdl::core::DocumentData& document,
+                                                           const ParsedAddArgs& parsed) {
+    const auto& entity_id = parsed.field_map.at("id");
+    if (parsed.kind == "annotation") {
+        const auto& annotation_kind = parsed.field_map.at("kind");
+        if (metadata_field_exists(document, entity_id, annotation_kind)) {
+            return annotation_kind;
+        }
+        return std::nullopt;
+    }
+
+    for (const auto& [name, value] : parsed.fields) {
+        (void)value;
+        if (name == "id") {
+            continue;
+        }
+        if (metadata_field_exists(document, entity_id, name)) {
+            return name;
+        }
+    }
+    return std::nullopt;
 }
 
 UpdatePreview build_set_preview(const semdl::core::DocumentData& document, const semdl::core::Selector& selector, const std::vector<std::string_view>& args) {
@@ -1657,17 +2176,17 @@ UpdatePreview build_set_preview(const semdl::core::DocumentData& document, const
     return preview;
 }
 
-UpdatePreview build_annotate_preview(const std::vector<std::string_view>& args) {
-    const auto input_file = std::filesystem::path(args.back());
-    const auto sidecar_path = derive_sidecar_path(input_file);
+UpdatePreview build_annotate_preview(const ParsedAnnotateArgs& parsed, std::string_view resolved_target) {
+    const auto sidecar_path = derive_sidecar_path(parsed.input_file);
 
     UpdatePreview preview;
-    preview.command_line = "ssd annotate " + std::string(args[1]) + " " + std::string(args[2]) + " " + quote_value(args[3]) + " --target sidecar " + input_file.generic_string();
-    preview.target_profile = "sidecar";
-    preview.target_file = sidecar_path.generic_string();
-    preview.detail_lines.push_back("selector: " + std::string(args[1]));
-    preview.detail_lines.push_back("annotation_kind: " + std::string(args[2]));
-    preview.detail_lines.push_back("append: " + quote_value(args[3]));
+    preview.command_line = "ssd annotate " + parsed.selector + " " + parsed.annotation_kind + " " + quote_value(parsed.text_value) +
+                           " --target " + parsed.target + " " + parsed.input_file.generic_string();
+    preview.target_profile = std::string(resolved_target);
+    preview.target_file = resolved_target == "inline" ? parsed.input_file.generic_string() : sidecar_path.generic_string();
+    preview.detail_lines.push_back("selector: " + parsed.selector);
+    preview.detail_lines.push_back("annotation_kind: " + parsed.annotation_kind);
+    preview.detail_lines.push_back("write: " + quote_value(parsed.text_value));
     return preview;
 }
 
@@ -1694,6 +2213,65 @@ UpdatePreview build_split_preview(const semdl::core::DocumentData& document, con
     }
     preview.changes = split_output.moved_count;
     return preview;
+}
+
+UpdatePreview build_merge_preview(const semdl::core::DocumentData& document,
+                                  const std::filesystem::path& input_file,
+                                  const std::optional<std::filesystem::path>& output_file) {
+    UpdatePreview preview;
+    preview.command_line = "ssd merge " + input_file.generic_string();
+    if (output_file.has_value()) {
+        preview.command_line += " --out " + output_file->generic_string();
+    }
+    preview.target_profile = "inline";
+    preview.target_file = output_file.has_value() ? output_file->generic_string() : input_file.generic_string();
+    preview.detail_lines.push_back("source_profile: sidecar");
+    preview.detail_lines.push_back("result_profile: inline");
+    if (output_file.has_value()) {
+        preview.detail_lines.push_back("preserve_source_ssd: " + input_file.generic_string());
+        preview.detail_lines.push_back("preserve_source_ssm: " + document.sidecar_file.generic_string());
+    } else {
+        preview.detail_lines.push_back("remove: " + document.sidecar_file.generic_string());
+    }
+    return preview;
+}
+
+UpdatePreview build_normalize_preview(const semdl::core::DocumentData& document,
+                                      const std::filesystem::path& input_file,
+                                      const std::optional<std::filesystem::path>& output_file) {
+    UpdatePreview preview;
+    preview.command_line = "ssd normalize " + input_file.generic_string();
+    if (output_file.has_value()) {
+        preview.command_line += " --out " + output_file->generic_string();
+    }
+    preview.target_profile = "inline";
+    preview.target_file = output_file.has_value() ? output_file->generic_string() : input_file.generic_string();
+    preview.detail_lines.push_back(std::string("source_profile: ") + (document.has_sidecar ? "sidecar" : "standalone"));
+    preview.detail_lines.push_back("result_profile: inline");
+    if (output_file.has_value()) {
+        preview.detail_lines.push_back("preserve_source_ssd: " + input_file.generic_string());
+        if (document.has_sidecar) {
+            preview.detail_lines.push_back("preserve_source_ssm: " + document.sidecar_file.generic_string());
+        }
+    } else if (document.has_sidecar) {
+        preview.detail_lines.push_back("remove: " + document.sidecar_file.generic_string());
+    }
+    return preview;
+}
+
+bool transform_out_aliases_source(const semdl::core::DocumentData& document,
+                                  const std::filesystem::path& input_file,
+                                  const std::filesystem::path& output_file,
+                                  std::filesystem::path& aliased_file) {
+    if (output_file == input_file) {
+        aliased_file = input_file;
+        return true;
+    }
+    if (document.has_sidecar && output_file == document.sidecar_file) {
+        aliased_file = document.sidecar_file;
+        return true;
+    }
+    return false;
 }
 
 bool is_allowed_annotation_kind(std::string_view kind) {
@@ -1907,30 +2485,66 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (args.size() < 4) {
             return make_missing_required_argument_error(args, "ssd annotate <selector> <kind> <text> <file>", "annotate");
         }
-        if (looks_unterminated_quoted_string(args[3])) {
+        const auto parsed = parse_annotate_args(args);
+        if (!parsed.valid) {
+            return make_missing_required_argument_error(args,
+                                                        "ssd annotate <selector> <kind> <text> --target inline|sidecar|auto <file>",
+                                                        "annotate");
+        }
+        if (looks_unterminated_quoted_string(parsed.text_value)) {
             return make_unterminated_quoted_string_error(args);
         }
-        if (!is_allowed_annotation_kind(args[2])) {
+        if (!is_allowed_annotation_kind(parsed.annotation_kind)) {
             return make_invalid_annotation_kind_error(args);
         }
-        if (args.size() >= 7 && args[4] == "--target" && args[5] == "sidecar" && has_flag(args, "--dry-run")) {
-            return make_dry_run_result(build_annotate_preview(args));
+        if (parsed.target != "inline" && parsed.target != "sidecar" && parsed.target != "auto") {
+            return make_invalid_annotate_target_error(args, parsed.target);
         }
 
-        if (args.size() >= 7 && args[4] == "--target" && args[5] == "sidecar") {
-            semdl::core::DocumentStore store;
-            auto document = store.load_document(std::filesystem::path(args.back()));
-            if (!apply_annotation_change(document, args[1], args[2], args[3])) {
-                return make_apply_not_implemented_error(args, "annotate");
+        semdl::core::DocumentStore store;
+        auto document = store.load_document(parsed.input_file);
+        const auto selector = semdl::core::parse_selector(parsed.selector);
+        const auto resolution = semdl::core::resolve_selector(document, selector);
+        if (resolution.error == semdl::core::ResolveError::invalid_selector_syntax) {
+            return make_invalid_selector_error(args);
+        }
+        if (resolution.error == semdl::core::ResolveError::target_not_found) {
+            return make_missing_target_error(args);
+        }
+        if (resolution.error == semdl::core::ResolveError::multiple_targets) {
+            return make_remove_multiple_targets_error(args, resolution.matched_count);
+        }
+
+        const std::string resolved_target = resolve_annotate_target(document, resolution.target_id, parsed.target);
+        if (resolved_target.empty()) {
+            return make_invalid_annotate_target_error(args, parsed.target);
+        }
+        if (resolved_target == "inline") {
+            if (document.has_sidecar) {
+                return make_annotate_inline_requires_standalone_error(args);
             }
-
-            const auto sidecar_file = derive_sidecar_path(std::filesystem::path(args.back()));
-            const auto rendered = semdl::core::render_split_document(document);
-            write_text_file(sidecar_file, rendered.sidecar_document);
-            return make_update_apply_result(std::nullopt, sidecar_file, 1);
+            if (!supports_inline_annotation_kind(document, resolution.target_id)) {
+                return make_annotate_inline_target_unsupported_error(args, resolution.target_id, resolution.target_kind);
+            }
         }
 
-        return make_apply_not_implemented_error(args, "annotate");
+        if (parsed.use_dry_run) {
+            return make_dry_run_result(build_annotate_preview(parsed, resolved_target));
+        }
+
+        if (!apply_annotation_change(document, parsed.selector, parsed.annotation_kind, parsed.text_value)) {
+            return make_apply_not_implemented_error(args, "annotate");
+        }
+
+        if (resolved_target == "inline") {
+            write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
+            return make_update_apply_result(parsed.input_file, std::nullopt, 1);
+        }
+
+        const auto sidecar_file = derive_sidecar_path(parsed.input_file);
+        const auto rendered = semdl::core::render_split_document(document);
+        write_text_file(sidecar_file, rendered.sidecar_document);
+        return make_update_apply_result(std::nullopt, sidecar_file, 1);
     }
 
     if (args[0] == "remove") {
@@ -1944,21 +2558,86 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (args.size() < 3) {
             return make_missing_required_argument_error(args, "ssd remove <selector> <file>", "remove");
         }
+        const auto parsed = parse_remove_args(args);
+        if (!parsed.valid) {
+            return make_missing_required_argument_error(args, "ssd remove <selector> [--cascade] <file>", "remove");
+        }
         semdl::core::DocumentStore store;
-        auto document = store.load_document(std::filesystem::path(args[2]));
-        const auto selector = semdl::core::parse_selector(args[1]);
-        const auto resolution = semdl::core::resolve_selector(document, selector);
-        if (resolution.error == semdl::core::ResolveError::multiple_targets) {
-            return make_remove_multiple_targets_error(args, resolution.matched_count);
-        }
-        if (args[1] == "id:A1") {
-            return make_remove_break_reference_error(args);
-        }
-        if (selector.kind == semdl::core::SelectorKind::meta && apply_remove_meta_change(document, selector)) {
-            const auto sidecar_file = derive_sidecar_path(std::filesystem::path(args[2]));
+        auto document = store.load_document(parsed.input_file);
+        const auto selector = semdl::core::parse_selector(parsed.selector);
+
+        if (selector.kind == semdl::core::SelectorKind::meta) {
+            const auto resolution = semdl::core::resolve_selector(document, selector);
+            if (resolution.error == semdl::core::ResolveError::invalid_selector_syntax) {
+                return make_invalid_selector_error(args);
+            }
+            if (resolution.error == semdl::core::ResolveError::wrong_layer) {
+                return make_wrong_layer_error(args);
+            }
+            if (!apply_remove_meta_change(document, selector)) {
+                return make_missing_target_error(args);
+            }
+
+            const auto sidecar_file = derive_sidecar_path(parsed.input_file);
             const auto rendered = semdl::core::render_split_document(document);
             write_text_file(sidecar_file, rendered.sidecar_document);
             return make_update_apply_result(std::nullopt, sidecar_file, 1);
+        }
+
+        const auto resolution = semdl::core::resolve_selector(document, selector);
+        if (resolution.error == semdl::core::ResolveError::invalid_selector_syntax) {
+            return make_invalid_selector_error(args);
+        }
+        if (resolution.error == semdl::core::ResolveError::target_not_found) {
+            return make_missing_target_error(args);
+        }
+        if (resolution.error == semdl::core::ResolveError::multiple_targets) {
+            if (selector.kind == semdl::core::SelectorKind::type && parsed.allow_multi) {
+                const auto removed_ids = collect_remove_targets_for_kind(document, selector.entity_id);
+                const auto referenced_by = describe_remove_dependents_outside(document, removed_ids);
+                if (!referenced_by.empty()) {
+                    return make_remove_break_reference_error(args, referenced_by);
+                }
+                if (!apply_remove_structural_change(document, removed_ids)) {
+                    return make_apply_not_implemented_error(args, "remove");
+                }
+
+                if (document.has_sidecar) {
+                    const auto rendered = semdl::core::render_split_document(document);
+                    write_text_file(parsed.input_file, rendered.inline_document);
+                    const auto sidecar_file = derive_sidecar_path(parsed.input_file);
+                    write_text_file(sidecar_file, rendered.sidecar_document);
+                    return make_update_apply_result(parsed.input_file, sidecar_file, static_cast<int>(removed_ids.size()));
+                }
+
+                write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
+                return make_update_apply_result(parsed.input_file, std::nullopt, static_cast<int>(removed_ids.size()));
+            }
+            return make_remove_multiple_targets_error(args, resolution.matched_count);
+        }
+
+        if (selector.kind == semdl::core::SelectorKind::id || selector.kind == semdl::core::SelectorKind::path ||
+            selector.kind == semdl::core::SelectorKind::type) {
+            const auto referenced_by = describe_remove_dependents(document, resolution.target_id);
+            if (!parsed.use_cascade && !referenced_by.empty()) {
+                return make_remove_break_reference_error(args, referenced_by);
+            }
+            const auto removed_ids = parsed.use_cascade ? collect_remove_closure(document, resolution.target_id)
+                                                        : std::vector<std::string>{resolution.target_id};
+            if (!apply_remove_structural_change(document, removed_ids)) {
+                return make_apply_not_implemented_error(args, "remove");
+            }
+
+            if (document.has_sidecar) {
+                const auto rendered = semdl::core::render_split_document(document);
+                write_text_file(parsed.input_file, rendered.inline_document);
+                const auto sidecar_file = derive_sidecar_path(parsed.input_file);
+                write_text_file(sidecar_file, rendered.sidecar_document);
+                return make_update_apply_result(parsed.input_file, sidecar_file, static_cast<int>(removed_ids.size()));
+            }
+
+            write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
+            return make_update_apply_result(parsed.input_file, std::nullopt, static_cast<int>(removed_ids.size()));
         }
         return make_apply_not_implemented_error(args, "remove");
     }
@@ -2007,28 +2686,48 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             }
             return make_help_result(args, "reference", "merge", parsed.format);
         }
-        if (args.size() >= 3 && args[2] == "--stdout") {
-            semdl::core::DocumentStore store;
-            const auto document = store.load_document(std::filesystem::path(args[1]));
+        const auto parsed = parse_transform_args(args);
+        if (!parsed.valid) {
+            return make_invalid_transform_options_error(args,
+                                                        "merge",
+                                                        "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]]");
+        }
+
+        semdl::core::DocumentStore store;
+        const auto document = store.load_document(parsed.input_file);
+        if (parsed.use_stdout) {
             return CommandResult{
                 .exit_code = 0,
                 .stdout_text = semdl::core::render_canonical_inline_document(document),
                 .stderr_text = "",
             };
         }
-        if (args.size() == 2) {
-            semdl::core::DocumentStore store;
-            const auto input_file = std::filesystem::path(args[1]);
-            const auto document = store.load_document(input_file);
-            if (!document.has_sidecar) {
-                return make_merge_apply_requires_paired_input_error(args);
-            }
 
-            write_text_file(input_file, semdl::core::render_canonical_inline_document(document));
-            std::filesystem::remove(document.sidecar_file);
-            return make_transform_apply_result(input_file, document.sidecar_file, 1);
+        if (!document.has_sidecar) {
+            return make_merge_requires_paired_input_error(args);
         }
-        return make_subcommand_not_implemented_error(args);
+
+        if (parsed.use_dry_run) {
+            return make_dry_run_result(build_merge_preview(document, parsed.input_file, parsed.output_file));
+        }
+
+        if (parsed.output_file.has_value()) {
+            std::filesystem::path aliased_file;
+            if (transform_out_aliases_source(document, parsed.input_file, *parsed.output_file, aliased_file)) {
+                return make_transform_out_alias_error(args, *parsed.output_file, aliased_file);
+            }
+            write_text_file(*parsed.output_file, semdl::core::render_canonical_inline_document(document));
+            return make_transform_out_result(*parsed.output_file, 1);
+        }
+
+        if (args.size() == 2) {
+            write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
+            std::filesystem::remove(document.sidecar_file);
+            return make_transform_apply_result(parsed.input_file, document.sidecar_file, 1);
+        }
+        return make_invalid_transform_options_error(args,
+                                                    "merge",
+                                                    "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]]");
     }
 
     if (args[0] == "search") {
@@ -2229,6 +2928,14 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             return make_invalid_add_kind_error(args, parsed.kind);
         }
 
+        if (parsed.target.has_value() && *parsed.target != "sidecar") {
+            return make_invalid_add_target_error(args, *parsed.target);
+        }
+
+        if (is_metadata_add_kind(parsed.kind) && (!parsed.target.has_value() || *parsed.target != "sidecar")) {
+            return make_add_target_sidecar_required_error(args, parsed.kind);
+        }
+
         std::vector<std::string> missing_fields;
         for (const auto& field_name : required_add_fields_for_kind(parsed.kind)) {
             if (!parsed.field_map.contains(field_name)) {
@@ -2242,8 +2949,19 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         semdl::core::DocumentStore store;
         auto document = store.load_document(parsed.input_file);
         const auto& entity_id = parsed.field_map.at("id");
-        if (document.contains_entity_id(entity_id)) {
+        if (!is_metadata_add_kind(parsed.kind) && document.contains_entity_id(entity_id)) {
             return make_add_duplicate_id_error(args, entity_id);
+        }
+        if (is_metadata_add_kind(parsed.kind) && !document.contains_entity_id(entity_id)) {
+            return make_add_metadata_target_not_found_error(args, entity_id);
+        }
+        if (parsed.kind == "annotation" && !is_allowed_annotation_kind(parsed.field_map.at("kind"))) {
+            return make_invalid_add_annotation_kind_error(args, parsed.field_map.at("kind"));
+        }
+        if (is_metadata_add_kind(parsed.kind)) {
+            if (const auto conflict = validate_metadata_add_conflicts(document, parsed); conflict.has_value()) {
+                return make_add_metadata_conflict_error(args, entity_id, *conflict);
+            }
         }
         if (const auto reference_error = validate_add_references(document, parsed.kind, parsed.field_map); reference_error.has_value()) {
             return make_add_reference_target_not_found_error(args, reference_error->first, reference_error->second);
@@ -2253,6 +2971,13 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
         if (!apply_add_change(document, parsed)) {
             return make_subcommand_not_implemented_error(args);
+        }
+
+        if (is_metadata_add_kind(parsed.kind)) {
+            const auto sidecar_file = derive_sidecar_path(parsed.input_file);
+            const auto rendered = semdl::core::render_split_document(document);
+            write_text_file(sidecar_file, rendered.sidecar_document);
+            return make_update_apply_result(std::nullopt, sidecar_file, 1);
         }
 
         if (document.has_sidecar) {
@@ -2273,28 +2998,47 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             }
             return make_help_result(args, "reference", "normalize", parsed.format);
         }
-        if (args.size() >= 3 && args[2] == "--stdout") {
-            semdl::core::DocumentStore store;
-            const auto document = store.load_document(std::filesystem::path(args[1]));
+        const auto parsed = parse_transform_args(args);
+        if (!parsed.valid) {
+            return make_invalid_transform_options_error(args,
+                                                        "normalize",
+                                                        "ssd normalize <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]]");
+        }
+
+        semdl::core::DocumentStore store;
+        const auto document = store.load_document(parsed.input_file);
+        if (parsed.use_stdout) {
             return CommandResult{
                 .exit_code = 0,
                 .stdout_text = semdl::core::render_canonical_inline_document(document),
                 .stderr_text = "",
             };
         }
-        if (args.size() == 2) {
-            semdl::core::DocumentStore store;
-            const auto input_file = std::filesystem::path(args[1]);
-            const auto document = store.load_document(input_file);
 
-            write_text_file(input_file, semdl::core::render_canonical_inline_document(document));
+        if (parsed.use_dry_run) {
+            return make_dry_run_result(build_normalize_preview(document, parsed.input_file, parsed.output_file));
+        }
+
+        if (parsed.output_file.has_value()) {
+            std::filesystem::path aliased_file;
+            if (transform_out_aliases_source(document, parsed.input_file, *parsed.output_file, aliased_file)) {
+                return make_transform_out_alias_error(args, *parsed.output_file, aliased_file);
+            }
+            write_text_file(*parsed.output_file, semdl::core::render_canonical_inline_document(document));
+            return make_transform_out_result(*parsed.output_file, 1);
+        }
+
+        if (args.size() == 2) {
+            write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
             if (document.has_sidecar) {
                 std::filesystem::remove(document.sidecar_file);
-                return make_transform_apply_result(input_file, document.sidecar_file, 1);
+                return make_transform_apply_result(parsed.input_file, document.sidecar_file, 1);
             }
-            return make_update_apply_result(input_file, std::nullopt, 1);
+            return make_update_apply_result(parsed.input_file, std::nullopt, 1);
         }
-        return make_subcommand_not_implemented_error(args);
+        return make_invalid_transform_options_error(args,
+                                                    "normalize",
+                                                    "ssd normalize <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]]");
     }
 
     return CommandResult{

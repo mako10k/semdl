@@ -1,0 +1,9 @@
+ERROR invalid_add_annotation_kind
+command: ssd add annotation docs/examples/minimal.ssd id=H1 kind=unknown text=bad --target sidecar
+kind: unknown
+allowed:
+  - rationale
+  - caveat
+  - todo
+  - status
+  - explanation

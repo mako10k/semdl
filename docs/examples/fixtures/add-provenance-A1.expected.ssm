@@ -1,0 +1,5 @@
+meta A1 {
+  confidence: 0.91
+  provenance_kind: reviewed
+  rationale: "監査で人手確認した"
+}

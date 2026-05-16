@@ -1,0 +1,6 @@
+ERROR remove_would_break_references
+command: ssd remove id:R1 docs/examples/minimal.ssd
+selector: id:R1
+referenced_by:
+  - S1.source
+hint: referenced structural elements cannot be removed without an explicit safe strategy

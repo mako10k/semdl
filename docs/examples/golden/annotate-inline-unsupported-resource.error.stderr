@@ -1,0 +1,5 @@
+ERROR annotate_inline_target_unsupported
+command: ssd annotate id:R1 rationale bad --target inline docs/examples/minimal.inline.ssd
+id: R1
+kind: resource
+hint: inline annotate currently supports `assertion` and `hypothesis` only

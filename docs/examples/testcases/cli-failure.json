@@ -27,6 +27,58 @@
       "notes": "existing ids cannot be reused"
     },
     {
+      "id": "add-annotation-requires-sidecar",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=missing-target-sidecar",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=missing-target-sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-annotation-requires-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add currently requires explicit sidecar targeting"
+    },
+    {
+      "id": "add-annotation-invalid-kind",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=unknown text=bad --target sidecar",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=unknown", "text=bad", "--target", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-annotation-invalid-kind.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotation add should validate the annotation kind before writing"
+    },
+    {
+      "id": "add-provenance-conflict",
+      "command": "ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed --target sidecar",
+      "argv": ["ssd", "add", "provenance", "docs/examples/minimal.ssd", "id=A1", "provenance_kind=reviewed", "--target", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-provenance-conflict.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add is create-only and should fail on an existing provenance field"
+    },
+    {
+      "id": "add-annotation-target-not-found",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=Z9 kind=todo text=bad --target sidecar",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=Z9", "kind=todo", "text=bad", "--target", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-annotation-target-not-found.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add still requires an existing semantic target id"
+    },
+    {
       "id": "similarity-missing-args-help",
       "command": "ssd similarity A1 ALT1A",
       "argv": ["ssd", "similarity", "A1", "ALT1A"],
@@ -511,9 +563,35 @@
       "notes": "referenced structural element cannot be removed"
     },
     {
+      "id": "remove-H1-without-cascade",
+      "command": "ssd remove id:H1 docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:H1", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-H1-references.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "structural remove should fail when dependent alternatives require an explicit cascade"
+    },
+    {
+      "id": "remove-R1-without-cascade",
+      "command": "ssd remove id:R1 docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:R1", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-R1-references.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "resource remove should fail when a segment still depends on the resource source edge"
+    },
+    {
       "id": "annotate-invalid-kind-note",
-      "command": "ssd annotate id:H1 note \"補足\" docs/examples/minimal.ssd",
-      "argv": ["ssd", "annotate", "id:H1", "note", "補足", "docs/examples/minimal.ssd"],
+      "command": "ssd annotate id:H1 note \"補足\" --target sidecar docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "note", "補足", "--target", "sidecar", "docs/examples/minimal.ssd"],
       "cwd": ".",
       "stdin": "",
       "environment": {},
@@ -522,6 +600,32 @@
       "expected_stderr": "docs/examples/golden/annotate-invalid-kind.error.stderr",
       "expected_output_kind": "exact",
       "notes": "annotation kind is validated before execution"
+    },
+    {
+      "id": "annotate-inline-unsupported-resource",
+      "command": "ssd annotate id:R1 rationale bad --target inline docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "annotate", "id:R1", "rationale", "bad", "--target", "inline", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-inline-unsupported-resource.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "inline annotate is currently limited to assertion and hypothesis targets"
+    },
+    {
+      "id": "annotate-inline-requires-standalone",
+      "command": "ssd annotate id:H1 todo 追加入力で主体を確認する --target inline docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "todo", "追加入力で主体を確認する", "--target", "inline", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-inline-requires-standalone.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "inline annotate should reject paired input because the inline write-path is standalone-only in this slice"
     },
     {
       "id": "set-malformed-selector-missing-field",
@@ -580,9 +684,79 @@
       "notes": "bare merge apply remains disabled when no paired sidecar exists"
     },
     {
+      "id": "merge-standalone-dryrun-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --dry-run",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--dry-run"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-standalone-dryrun-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge dry-run should preserve the paired-input requirement"
+    },
+    {
+      "id": "merge-standalone-out-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --out docs/examples/merge-output.ssd",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--out", "docs/examples/merge-output.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-standalone-out-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge out should not widen merge to standalone inputs"
+    },
+    {
+      "id": "normalize-out-alias-input",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalize-source.ssd",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--out", "docs/examples/normalize-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-out-alias-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "normalize out should reject aliasing the source input path"
+    },
+    {
+      "id": "merge-out-alias-sidecar",
+      "command": "ssd merge docs/examples/minimal.ssd --out docs/examples/minimal.ssm",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--out", "docs/examples/minimal.ssm"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-out-alias-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge out should reject aliasing the paired sidecar path"
+    },
+    {
       "id": "annotate-unterminated-quoted-string",
-      "command": "ssd annotate id:H1 rationale \"未完 docs/examples/minimal.ssd",
-      "argv": ["ssd", "annotate", "id:H1", "rationale", "\"未完", "docs/examples/minimal.ssd"],
+      "command": "ssd annotate id:H1 rationale \"未完 --target sidecar docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "rationale", "\"未完", "--target", "sidecar", "docs/examples/minimal.ssd"],
       "cwd": ".",
       "stdin": "",
       "environment": {},

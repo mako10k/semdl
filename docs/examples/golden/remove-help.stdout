@@ -2,11 +2,13 @@ SEMDL Help Topic: reference remove
 
 Usage:
 - `ssd remove <selector> <file>`
+- `ssd remove <selector> --cascade <file>`
 - `ssd remove type:<kind> --allow-multi <file>`
 
 Purpose:
-- Remove one sidecar metadata field or subtree when the selector resolves safely.
-- Structural multi-target and reference-breaking removals still fail.
+- Remove one sidecar metadata field or one structural target when the selector resolves safely.
+- Structural removals fail on inbound references unless `--cascade` removes dependent targets in the same step.
+- Multi-target remove remains deferred outside the existing `type:<kind> --allow-multi` surface.
 
 Related help:
 - `ssd help grammar`
@@ -14,3 +16,4 @@ Related help:
 
 Sample:
 - `ssd remove meta:A1.embedding docs/examples/minimal.ssd`
+- `ssd remove id:H1 --cascade docs/examples/minimal.ssd`
