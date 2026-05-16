@@ -1,0 +1,25 @@
+document_meta D1 {
+  version: "0.1"
+  generator: "ssd extract"
+}
+
+meta A1 {
+  confidence: 0.82
+  provenance_kind: extracted
+  rationale: "文中の明示表現をそのまま主張化した"
+
+  embedding {
+    model: "text-embedding-3-large"
+    dimensions: 3072
+    generated_at: "2026-05-14T00:00:00Z"
+    provider: "openai"
+    source_field: "object"
+    vector_ref: "embeddings/A1.json"
+  }
+}
+
+meta H1 {
+  confidence: 0.57
+  rationale: "原文に売上区分の主語がなく、文脈補完が必要"
+  caveat: "全売上を指す可能性も残る"
+}

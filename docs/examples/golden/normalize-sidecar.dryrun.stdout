@@ -1,0 +1,9 @@
+DRY-RUN
+command: ssd normalize docs/examples/normalize-source.ssd --format sidecar
+target_profile: sidecar
+target_file: docs/examples/normalize-source.ssd
+source_profile: sidecar
+result_profile: sidecar
+write_ssd: docs/examples/normalize-source.ssd
+write_ssm: docs/examples/normalize-source.ssm
+changes: 1

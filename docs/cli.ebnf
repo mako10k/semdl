@@ -18,7 +18,7 @@ similarity-cmd  = "similarity" , ws , id-ref , ws , id-ref , ws , input-file | "
 explain-cmd     = "explain" , ws , id-ref , ws , input-file | "explain" , ws , help-opt , [ ws , help-render-opt ] ;
 split-cmd       = "split" , ws , input-file , [ ws , dry-run-opt ] | "split" , ws , help-opt , [ ws , help-render-opt ] ;
 merge-cmd       = "merge" , ws , input-file , [ ws , stdout-opt | ws , dry-run-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] ] | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
-normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt | ws , dry-run-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] ] | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
+normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt | ws , dry-run-opt , [ ws , format-opt ] | ws , out-opt , ws , output-file , [ ws , format-opt ] , [ ws , dry-run-opt ] ] | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
 
 extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file ;
 extract-stdout-cmd = "extract" , ws , stdout-opt , { ws , extract-opt } , ws , input-file ;

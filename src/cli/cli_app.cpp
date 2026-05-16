@@ -281,6 +281,7 @@ struct ParsedTransformArgs {
     bool use_dry_run = false;
     std::filesystem::path input_file;
     std::optional<std::filesystem::path> output_file;
+    std::optional<std::string> format;
     std::string invalid_option;
 };
 
@@ -496,6 +497,22 @@ ParsedTransformArgs parse_transform_args(const std::vector<std::string_view>& ar
     }
     if (args.size() == 5 && args[2] == "--out" && args[4] == "--dry-run") {
         parsed.output_file = std::filesystem::path(args[3]);
+        parsed.use_dry_run = true;
+        return parsed;
+    }
+    if (args.size() == 5 && args[2] == "--dry-run" && args[3] == "--format") {
+        parsed.use_dry_run = true;
+        parsed.format = std::string(args[4]);
+        return parsed;
+    }
+    if (args.size() == 6 && args[2] == "--out" && args[4] == "--format") {
+        parsed.output_file = std::filesystem::path(args[3]);
+        parsed.format = std::string(args[5]);
+        return parsed;
+    }
+    if (args.size() == 7 && args[2] == "--out" && args[4] == "--format" && args[6] == "--dry-run") {
+        parsed.output_file = std::filesystem::path(args[3]);
+        parsed.format = std::string(args[5]);
         parsed.use_dry_run = true;
         return parsed;
     }
@@ -912,7 +929,7 @@ std::string grammar_help_text() {
            "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
            "- `ssd split <input.ssd> [--dry-run]`\n"
            "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`\n"
-           "- `ssd normalize <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`\n"
+           "- `ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <file> [--format inline|sidecar] [--dry-run]]`\n"
            "- `ssd help grammar --format semdl`\n\n"
            "Selectors:\n"
            "- `id:<id>`\n"
@@ -927,6 +944,7 @@ std::string grammar_help_text() {
            "Common options:\n"
            "- `--dry-run` previews update-oriented commands\n"
            "- `--stdout` is currently used by `merge`, `normalize`, and `extract`\n"
+           "- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`\n"
            "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`\n"
            "- `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms\n\n"
            "This topic is the canonical user-facing operational syntax summary.\n"
@@ -1094,17 +1112,19 @@ std::string reference_help_text(std::string_view target) {
         return "SEMDL Help Topic: reference normalize\n\n"
                "Usage:\n"
                "- `ssd normalize <input.ssd> [--stdout]`\n"
-               "- `ssd normalize <input.ssd> --dry-run`\n"
-               "- `ssd normalize <input.ssd> --out <output.ssd> [--dry-run]`\n\n"
+               "- `ssd normalize <input.ssd> --dry-run [--format inline|sidecar]`\n"
+               "- `ssd normalize <input.ssd> --out <output.ssd> [--format inline|sidecar] [--dry-run]`\n\n"
                "Status:\n"
                "- `--stdout` returns canonical inline output from `.ssd` with an optional paired `.ssm`.\n"
-               "- Bare apply and `--dry-run` rewrite or preview canonical inline output at the input path; paired input removes the sibling `.ssm`.\n"
-               "- `--out <output.ssd>` writes canonical inline output without modifying the source `.ssd` or paired `.ssm`.\n\n"
+               "- Bare apply remains inline-only and removes the sibling `.ssm` on paired input after writing canonical inline output.\n"
+               "- `--dry-run` and `--out` default to inline output, but `--format sidecar` previews or writes a split `.ssd` + `.ssm` pair without modifying the source files.\n"
+               "- `--stdout` and bare apply do not accept `--format` in this slice.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n\n"
                "Sample:\n"
-               "- `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-output.ssd`\n";
+               "- `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-output.ssd`\n"
+               "- `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-sidecar.ssd --format sidecar`\n";
     }
 
     if (target == "add") {
@@ -2238,16 +2258,33 @@ UpdatePreview build_merge_preview(const semdl::core::DocumentData& document,
 
 UpdatePreview build_normalize_preview(const semdl::core::DocumentData& document,
                                       const std::filesystem::path& input_file,
-                                      const std::optional<std::filesystem::path>& output_file) {
+                                      const std::optional<std::filesystem::path>& output_file,
+                                      std::string_view result_format) {
     UpdatePreview preview;
     preview.command_line = "ssd normalize " + input_file.generic_string();
     if (output_file.has_value()) {
         preview.command_line += " --out " + output_file->generic_string();
     }
-    preview.target_profile = "inline";
+    if (result_format != "inline") {
+        preview.command_line += " --format " + std::string(result_format);
+    }
+    preview.target_profile = std::string(result_format);
     preview.target_file = output_file.has_value() ? output_file->generic_string() : input_file.generic_string();
     preview.detail_lines.push_back(std::string("source_profile: ") + (document.has_sidecar ? "sidecar" : "standalone"));
-    preview.detail_lines.push_back("result_profile: inline");
+    preview.detail_lines.push_back("result_profile: " + std::string(result_format));
+    if (result_format == "sidecar") {
+        const auto sidecar_target = derive_sidecar_path(output_file.has_value() ? *output_file : input_file);
+        preview.detail_lines.push_back("write_ssd: " + preview.target_file);
+        preview.detail_lines.push_back("write_ssm: " + sidecar_target.generic_string());
+        if (output_file.has_value()) {
+            preview.detail_lines.push_back("preserve_source_ssd: " + input_file.generic_string());
+            if (document.has_sidecar) {
+                preview.detail_lines.push_back("preserve_source_ssm: " + document.sidecar_file.generic_string());
+            }
+        }
+        return preview;
+    }
+
     if (output_file.has_value()) {
         preview.detail_lines.push_back("preserve_source_ssd: " + input_file.generic_string());
         if (document.has_sidecar) {
@@ -2262,16 +2299,41 @@ UpdatePreview build_normalize_preview(const semdl::core::DocumentData& document,
 bool transform_out_aliases_source(const semdl::core::DocumentData& document,
                                   const std::filesystem::path& input_file,
                                   const std::filesystem::path& output_file,
-                                  std::filesystem::path& aliased_file) {
-    if (output_file == input_file) {
-        aliased_file = input_file;
+                                  std::filesystem::path& aliased_file,
+                                  const std::optional<std::filesystem::path>& secondary_output = std::nullopt) {
+    const auto normalize_for_alias_compare = [](const std::filesystem::path& path) {
+        return std::filesystem::absolute(path).lexically_normal();
+    };
+
+    const auto normalized_input = normalize_for_alias_compare(input_file);
+    const auto normalized_sidecar = document.has_sidecar
+        ? std::optional<std::filesystem::path>(normalize_for_alias_compare(document.sidecar_file))
+        : std::nullopt;
+
+    const auto aliases_known_source = [&](const std::filesystem::path& candidate) {
+        const auto normalized_candidate = normalize_for_alias_compare(candidate);
+        if (normalized_candidate == normalized_input) {
+            aliased_file = input_file;
+            return true;
+        }
+        if (normalized_sidecar.has_value() && normalized_candidate == *normalized_sidecar) {
+            aliased_file = document.sidecar_file;
+            return true;
+        }
+        return false;
+    };
+
+    if (aliases_known_source(output_file)) {
         return true;
     }
-    if (document.has_sidecar && output_file == document.sidecar_file) {
-        aliased_file = document.sidecar_file;
+    if (secondary_output.has_value() && aliases_known_source(*secondary_output)) {
         return true;
     }
     return false;
+}
+
+bool is_allowed_transform_format(std::string_view format) {
+    return format == "inline" || format == "sidecar";
 }
 
 bool is_allowed_annotation_kind(std::string_view kind) {
@@ -3002,11 +3064,27 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (!parsed.valid) {
             return make_invalid_transform_options_error(args,
                                                         "normalize",
-                                                        "ssd normalize <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]]");
+                                                        "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");
         }
 
         semdl::core::DocumentStore store;
         const auto document = store.load_document(parsed.input_file);
+        const std::string result_format = parsed.format.value_or("inline");
+        if (!is_allowed_transform_format(result_format)) {
+            return make_invalid_transform_options_error(args,
+                                                        "normalize",
+                                                        "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");
+        }
+        if (parsed.use_stdout && parsed.format.has_value()) {
+            return make_invalid_transform_options_error(args,
+                                                        "normalize",
+                                                        "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");
+        }
+        if (!parsed.use_dry_run && !parsed.output_file.has_value() && parsed.format.has_value()) {
+            return make_invalid_transform_options_error(args,
+                                                        "normalize",
+                                                        "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");
+        }
         if (parsed.use_stdout) {
             return CommandResult{
                 .exit_code = 0,
@@ -3016,13 +3094,22 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
 
         if (parsed.use_dry_run) {
-            return make_dry_run_result(build_normalize_preview(document, parsed.input_file, parsed.output_file));
+            return make_dry_run_result(build_normalize_preview(document, parsed.input_file, parsed.output_file, result_format));
         }
 
         if (parsed.output_file.has_value()) {
             std::filesystem::path aliased_file;
-            if (transform_out_aliases_source(document, parsed.input_file, *parsed.output_file, aliased_file)) {
+            const auto sidecar_output = result_format == "sidecar"
+                                            ? std::optional<std::filesystem::path>(derive_sidecar_path(*parsed.output_file))
+                                            : std::nullopt;
+            if (transform_out_aliases_source(document, parsed.input_file, *parsed.output_file, aliased_file, sidecar_output)) {
                 return make_transform_out_alias_error(args, *parsed.output_file, aliased_file);
+            }
+            if (result_format == "sidecar") {
+                const auto rendered = semdl::core::render_split_document(document);
+                write_text_file(*parsed.output_file, rendered.inline_document);
+                write_text_file(*sidecar_output, rendered.sidecar_document);
+                return make_update_apply_result(*parsed.output_file, *sidecar_output, 1);
             }
             write_text_file(*parsed.output_file, semdl::core::render_canonical_inline_document(document));
             return make_transform_out_result(*parsed.output_file, 1);
@@ -3038,7 +3125,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
         return make_invalid_transform_options_error(args,
                                                     "normalize",
-                                                    "ssd normalize <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]]");
+                                                    "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");
     }
 
     return CommandResult{

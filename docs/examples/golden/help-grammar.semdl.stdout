@@ -127,7 +127,7 @@ segment HELP_LINE_23 {
 
 segment HELP_LINE_24 {
   source: HELP_TOPIC
-  text_quote: "- `ssd normalize <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`"
+  text_quote: "- `ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <file> [--format inline|sidecar] [--dry-run]]`"
 }
 
 segment HELP_LINE_25 {
@@ -202,30 +202,35 @@ segment HELP_LINE_38 {
 
 segment HELP_LINE_39 {
   source: HELP_TOPIC
-  text_quote: "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`"
+  text_quote: "- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`"
 }
 
 segment HELP_LINE_40 {
   source: HELP_TOPIC
-  text_quote: "- `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms"
+  text_quote: "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`"
 }
 
 segment HELP_LINE_41 {
   source: HELP_TOPIC
-  text_quote: "This topic is the canonical user-facing operational syntax summary."
+  text_quote: "- `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms"
 }
 
 segment HELP_LINE_42 {
   source: HELP_TOPIC
-  text_quote: "Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details."
+  text_quote: "This topic is the canonical user-facing operational syntax summary."
 }
 
 segment HELP_LINE_43 {
   source: HELP_TOPIC
-  text_quote: "Use `--format semdl` for line-preserving SEMDL help output."
+  text_quote: "Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details."
 }
 
 segment HELP_LINE_44 {
+  source: HELP_TOPIC
+  text_quote: "Use `--format semdl` for line-preserving SEMDL help output."
+}
+
+segment HELP_LINE_45 {
   source: HELP_TOPIC
   text_quote: "For command-specific help, see `ssd help reference <subcommand>`."
 }

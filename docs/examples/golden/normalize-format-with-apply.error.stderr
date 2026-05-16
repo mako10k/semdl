@@ -1,0 +1,4 @@
+ERROR invalid_transform_options
+command: ssd normalize docs/examples/normalize-source.ssd --format sidecar
+subcommand: normalize
+usage: ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]

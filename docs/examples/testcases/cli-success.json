@@ -881,6 +881,24 @@
       "notes": "normalize dry-run should preview paired inline canonicalization without mutating the source files"
     },
     {
+      "id": "normalize-sidecar-dryrun",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --dry-run --format sidecar",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--dry-run", "--format", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/normalize-sidecar.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "normalize sidecar dry-run should preview a non-destructive split-profile result"
+    },
+    {
       "id": "normalize-paired-out",
       "command": "ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-output.ssd",
       "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--out", "docs/examples/normalized-output.ssd"],
@@ -900,6 +918,26 @@
       "notes": "normalize out should write canonical inline output without mutating the source pair"
     },
     {
+      "id": "normalize-sidecar-out",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-sidecar.ssd --format sidecar",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--out", "docs/examples/normalized-sidecar.ssd", "--format", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm",
+        "docs/examples/normalized-sidecar.ssd": "docs/examples/fixtures/normalize-sidecar-output.expected.ssd",
+        "docs/examples/normalized-sidecar.ssm": "docs/examples/fixtures/normalize-sidecar-output.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/normalize-sidecar.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "normalize sidecar out should emit a non-destructive canonical split pair"
+    },
+    {
       "id": "normalize-standalone-apply",
       "command": "ssd normalize docs/examples/normalize-standalone-source.ssd",
       "argv": ["ssd", "normalize", "docs/examples/normalize-standalone-source.ssd"],
@@ -915,6 +953,25 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "standalone normalize apply should rewrite the input file to canonical inline order"
+    },
+    {
+      "id": "normalize-standalone-sidecar-out",
+      "command": "ssd normalize docs/examples/normalize-standalone-source.ssd --out docs/examples/normalized-standalone-sidecar.ssd --format sidecar",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-standalone-source.ssd", "--out", "docs/examples/normalized-standalone-sidecar.ssd", "--format", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd",
+        "docs/examples/normalized-standalone-sidecar.ssd": "docs/examples/fixtures/normalize-standalone-sidecar-output.expected.ssd",
+        "docs/examples/normalized-standalone-sidecar.ssm": "docs/examples/fixtures/normalize-standalone-sidecar-output.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/normalize-standalone-sidecar.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "standalone normalize sidecar out should emit a canonical split pair without mutating the source file"
     },
     {
       "id": "check-minimal",

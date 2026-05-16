@@ -1,0 +1,5 @@
+ERROR transform_out_alias_conflict
+command: ssd normalize docs/examples/normalize-source.ssd --out docs/examples/../examples/normalize-source.ssd --format sidecar
+out: docs/examples/../examples/normalize-source.ssd
+aliases: docs/examples/normalize-source.ssd
+hint: `--out` must not overwrite the source `.ssd` or paired `.ssm` in this slice

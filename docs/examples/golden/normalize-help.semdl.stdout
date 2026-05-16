@@ -28,12 +28,12 @@ segment HELP_LINE_3 {
 
 segment HELP_LINE_4 {
   source: HELP_TOPIC
-  text_quote: "- `ssd normalize <input.ssd> --dry-run`"
+  text_quote: "- `ssd normalize <input.ssd> --dry-run [--format inline|sidecar]`"
 }
 
 segment HELP_LINE_5 {
   source: HELP_TOPIC
-  text_quote: "- `ssd normalize <input.ssd> --out <output.ssd> [--dry-run]`"
+  text_quote: "- `ssd normalize <input.ssd> --out <output.ssd> [--format inline|sidecar] [--dry-run]`"
 }
 
 segment HELP_LINE_6 {
@@ -48,35 +48,45 @@ segment HELP_LINE_7 {
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "- Bare apply and `--dry-run` rewrite or preview canonical inline output at the input path; paired input removes the sibling `.ssm`."
+  text_quote: "- Bare apply remains inline-only and removes the sibling `.ssm` on paired input after writing canonical inline output."
 }
 
 segment HELP_LINE_9 {
   source: HELP_TOPIC
-  text_quote: "- `--out <output.ssd>` writes canonical inline output without modifying the source `.ssd` or paired `.ssm`."
+  text_quote: "- `--dry-run` and `--out` default to inline output, but `--format sidecar` previews or writes a split `.ssd` + `.ssm` pair without modifying the source files."
 }
 
 segment HELP_LINE_10 {
   source: HELP_TOPIC
-  text_quote: "Related help:"
+  text_quote: "- `--stdout` and bare apply do not accept `--format` in this slice."
 }
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "Related help:"
 }
 
 segment HELP_LINE_12 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help troubleshooting`"
+  text_quote: "- `ssd help grammar`"
 }
 
 segment HELP_LINE_13 {
   source: HELP_TOPIC
-  text_quote: "Sample:"
+  text_quote: "- `ssd help troubleshooting`"
 }
 
 segment HELP_LINE_14 {
   source: HELP_TOPIC
+  text_quote: "Sample:"
+}
+
+segment HELP_LINE_15 {
+  source: HELP_TOPIC
   text_quote: "- `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-output.ssd`"
+}
+
+segment HELP_LINE_16 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-sidecar.ssd --format sidecar`"
 }

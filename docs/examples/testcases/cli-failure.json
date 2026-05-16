@@ -736,6 +736,68 @@
       "notes": "normalize out should reject aliasing the source input path"
     },
     {
+      "id": "normalize-format-with-stdout",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --stdout --format sidecar",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--stdout", "--format", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-format-with-stdout.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "normalize stdout remains inline-only and should reject format selection in this slice"
+    },
+    {
+      "id": "normalize-format-with-apply",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --format sidecar",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--format", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-format-with-apply.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "normalize apply remains inline-only and should reject bare format selection"
+    },
+    {
+      "id": "normalize-sidecar-out-alias-source-sidecar",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalize-source.ssm --format sidecar",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--out", "docs/examples/normalize-source.ssm", "--format", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-sidecar-out-alias-source-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "normalize sidecar out should reject aliasing the source sidecar path through the output base"
+    },
+    {
+      "id": "normalize-sidecar-out-alias-source-equivalent-path",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --out docs/examples/../examples/normalize-source.ssd --format sidecar",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--out", "docs/examples/../examples/normalize-source.ssd", "--format", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-sidecar-out-alias-source-equivalent-path.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "normalize sidecar out should reject equivalent path notation that aliases the source pair"
+    },
+    {
       "id": "merge-out-alias-sidecar",
       "command": "ssd merge docs/examples/minimal.ssd --out docs/examples/minimal.ssm",
       "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--out", "docs/examples/minimal.ssm"],

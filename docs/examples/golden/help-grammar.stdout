@@ -24,7 +24,7 @@ Key syntax forms:
 - `ssd annotate <selector> <kind> <text> ... <file>`
 - `ssd split <input.ssd> [--dry-run]`
 - `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`
-- `ssd normalize <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]]`
+- `ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <file> [--format inline|sidecar] [--dry-run]]`
 - `ssd help grammar --format semdl`
 
 Selectors:
@@ -42,6 +42,7 @@ Value forms:
 Common options:
 - `--dry-run` previews update-oriented commands
 - `--stdout` is currently used by `merge`, `normalize`, and `extract`
+- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`
 - `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`
 - `--allow-multi`, `--cascade`, and `--fail-on-conflict` are safety or selection controls on specific update forms
 

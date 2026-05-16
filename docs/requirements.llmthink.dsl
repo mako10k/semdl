@@ -348,6 +348,17 @@ step S18C:
     annotation rationale:
       "annotate の target 行列と remove cascade edge を同時に固定すると、inline / sidecar write-path と安全削除境界を acceptance でぶらさず実装できる"
 
+step S18D:
+  decision D18D based_on D18B:
+    |
+      次の transform profile slice では `normalize` の non-destructive surface に限って `--format inline|sidecar` を追加してよい。
+      `normalize --dry-run` と `normalize --out <output.ssd>` は `--format` 未指定時に inline を既定とし、`--format sidecar` では output `.ssd` と sibling `.ssm` pair を preview または生成してよい。
+      bare `normalize <input.ssd>` と `normalize --stdout` は inline-only のままとし、この slice では `--format` を受けない。
+      `merge` は inline-oriented command、`split` は sidecar-oriented command のままとし、profile selection は広げない。
+      conflict policy は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "non-destructive normalize surface に profile selection を閉じると、merge / split の既存責務境界を壊さずに profile option を先に固定できる"
+
 step S27A:
   decision D27A based_on D27, D8A:
     |

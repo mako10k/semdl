@@ -2,13 +2,14 @@ SEMDL Help Topic: reference normalize
 
 Usage:
 - `ssd normalize <input.ssd> [--stdout]`
-- `ssd normalize <input.ssd> --dry-run`
-- `ssd normalize <input.ssd> --out <output.ssd> [--dry-run]`
+- `ssd normalize <input.ssd> --dry-run [--format inline|sidecar]`
+- `ssd normalize <input.ssd> --out <output.ssd> [--format inline|sidecar] [--dry-run]`
 
 Status:
 - `--stdout` returns canonical inline output from `.ssd` with an optional paired `.ssm`.
-- Bare apply and `--dry-run` rewrite or preview canonical inline output at the input path; paired input removes the sibling `.ssm`.
-- `--out <output.ssd>` writes canonical inline output without modifying the source `.ssd` or paired `.ssm`.
+- Bare apply remains inline-only and removes the sibling `.ssm` on paired input after writing canonical inline output.
+- `--dry-run` and `--out` default to inline output, but `--format sidecar` previews or writes a split `.ssd` + `.ssm` pair without modifying the source files.
+- `--stdout` and bare apply do not accept `--format` in this slice.
 
 Related help:
 - `ssd help grammar`
@@ -16,3 +17,4 @@ Related help:
 
 Sample:
 - `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-output.ssd`
+- `ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalized-sidecar.ssd --format sidecar`
