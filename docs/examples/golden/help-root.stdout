@@ -56,7 +56,7 @@ SEMDL CLI Help
 - `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`
 
 7. Cautions, Known Bugs, Reporting
-- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.
+- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, and homogeneous `and`/`or` chains without parentheses. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.
 - Use `--format semdl` when another tool needs structured help output.
 - Update flows are acceptance-driven and still incomplete for full file rewriting.
 - Report problems with the command, argv, input paths, expected output, actual output, and related golden file.

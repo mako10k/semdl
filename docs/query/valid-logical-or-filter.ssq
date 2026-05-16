@@ -1,0 +1,5 @@
+query {
+  select: assertion
+  where: confidence > 0.9 or source_presence
+  return: matches
+}

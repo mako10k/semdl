@@ -465,7 +465,18 @@ anchor または candidate の埋め込みが欠落、malformed vector、unreada
 
 ここでの scalar 値は、quoted string、number、boolean に限定することを推奨する。
 
-range 条件、論理結合、比較演算子、関数呼び出しなどは、この段階では `.ssq` grammar artifact に含めないことを推奨する。
+後続 filter slice では、`.ssq` の `where` を次まで広げてよい。
+
+- numeric field に対する `>`, `>=`, `<`, `<=` の range comparison
+- `and` または `or` のみで連結された homogeneous logical chain
+- chain の各項は presence check、equality check、numeric range comparison のいずれか
+
+この slice では次を追加制約として固定する。
+
+- `=` は既存互換の token equality を維持し、数値右辺でも lexical equality として扱う
+- range comparison の右辺は number に限定する
+- range comparison で左辺 field が欠損または非数値の candidate は failure ではなく no-match とする
+- `and` と `or` の混在、括弧、関数呼び出しは引き続き `.ssq` grammar artifact に含めない
 
 workspace に concrete sample が少ない段階では、この artifact を full query language の完成版としてではなく、
 将来 semql family へつながる starting point として扱う。
@@ -912,6 +923,24 @@ test runner 定義:
 - `ssd explain A1 docs/examples/minimal.ssd`
   - A1 の構造本体は .ssd から、confidence や embedding 情報は .ssm から統合表示する
   - 期待出力は [docs/examples/golden/explain-A1.stdout](docs/examples/golden/explain-A1.stdout) と一致する
+- `ssd search docs/query/valid-range-filter.ssq docs/examples/minimal.ssd`
+  - merged view の numeric metadata field に対する range filter が成功する
+  - 期待出力は [docs/examples/golden/search-valid-range-filter.stdout](docs/examples/golden/search-valid-range-filter.stdout) と一致する
+- `ssd search docs/query/valid-logical-and-filter.ssq docs/examples/minimal.ssd`
+  - inline と sidecar の field を跨いだ homogeneous `and` chain が成功する
+  - 期待出力は [docs/examples/golden/search-valid-logical-and-filter.stdout](docs/examples/golden/search-valid-logical-and-filter.stdout) と一致する
+- `ssd search docs/query/valid-logical-or-filter.ssq docs/examples/minimal.ssd`
+  - homogeneous `or` chain が成功し、いずれかの term を満たす candidate を返す
+  - 期待出力は [docs/examples/golden/search-valid-logical-or-filter.stdout](docs/examples/golden/search-valid-logical-or-filter.stdout) と一致する
+- `ssd search docs/query/valid-range-nonnumeric-no-match.ssq docs/examples/minimal.ssd`
+  - 非数値 field に対する range filter は failure ではなく no-match に劣化する
+  - 期待出力は [docs/examples/golden/search-valid-range-nonnumeric-no-match.stdout](docs/examples/golden/search-valid-range-nonnumeric-no-match.stdout) と一致する
+- `ssd search docs/query/valid-logical-and-wide-spacing.ssq docs/examples/minimal.ssd`
+  - grammar で許される複数スペース区切りの `and` chain も成功する
+  - 期待出力は [docs/examples/golden/search-valid-logical-and-wide-spacing.stdout](docs/examples/golden/search-valid-logical-and-wide-spacing.stdout) と一致する
+- `ssd search docs/query/valid-range-less-equal-filter.ssq docs/examples/minimal.ssd`
+  - `<=` range filter も numeric sidecar field に対して成功する
+  - 期待出力は [docs/examples/golden/search-valid-range-less-equal-filter.stdout](docs/examples/golden/search-valid-range-less-equal-filter.stdout) と一致する
 - `ssd set path:A1.label "売上報告書" --dry-run docs/examples/minimal.ssd`
   - 本体フィールド変更予定のみを表示し、ファイルは変更しない
   - 期待出力は [docs/examples/golden/set-path-A1-label.dryrun.stdout](docs/examples/golden/set-path-A1-label.dryrun.stdout) と一致する
@@ -998,6 +1027,12 @@ test runner 定義:
 - `ssd annotate id:H1 rationale "未完 docs/examples/minimal.ssd`
   - quoted string が閉じていないため字句段階で失敗する
   - 期待 stderr は [docs/examples/golden/annotate-unterminated-quoted-string.error.stderr](docs/examples/golden/annotate-unterminated-quoted-string.error.stderr) と一致する
+- `ssd search docs/query/invalid-mixed-logical-filter.ssq docs/examples/minimal.ssd`
+  - `and` と `or` の mixed chain はこの slice では失敗する
+  - 期待 stderr は [docs/examples/golden/search-invalid-mixed-logical-filter.error.stderr](docs/examples/golden/search-invalid-mixed-logical-filter.error.stderr) と一致する
+- `ssd search docs/query/invalid-range-quoted-number-filter.ssq docs/examples/minimal.ssd`
+  - range filter の rhs が quoted number の場合は失敗する
+  - 期待 stderr は [docs/examples/golden/search-invalid-range-quoted-number-filter.error.stderr](docs/examples/golden/search-invalid-range-quoted-number-filter.error.stderr) と一致する
 
 成功系と失敗系の両方は、runner から収集可能な manifest 形式で保持する。
 

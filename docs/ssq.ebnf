@@ -15,9 +15,14 @@ return-entry        = "return", colon, [ ws ], result-mode, line-end ;
 
 selector-ref        = identifier | quoted-string ;
 target-ref          = identifier ;
-filter-expr         = presence-filter | equality-filter ;
+filter-expr         = and-chain | or-chain | filter-term ;
+and-chain           = filter-term, { ws, "and", ws, filter-term } ;
+or-chain            = filter-term, { ws, "or", ws, filter-term } ;
+filter-term         = presence-filter | equality-filter | range-filter ;
 presence-filter     = field-ref ;
 equality-filter     = field-ref, [ ws ], "=", [ ws ], filter-value ;
+range-filter        = field-ref, [ ws ], range-operator, [ ws ], number ;
+range-operator      = ">" | ">=" | "<" | "<=" ;
 field-ref           = identifier ;
 filter-value        = quoted-string | number | boolean ;
 result-mode         = "matches" | "subgraph" ;

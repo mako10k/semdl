@@ -1,0 +1,14 @@
+ERROR invalid_query_filter
+command: ssd search docs/query/invalid-range-quoted-number-filter.ssq docs/examples/minimal.ssd
+query_file: docs/query/invalid-range-quoted-number-filter.ssq
+where: confidence > "0.8"
+reason: range comparisons must use a number on the right-hand side
+allowed:
+  - field
+  - field = "value"
+  - field = 1
+  - field = true|false
+  - field > 0.8
+  - field and other = true
+  - field > 0.8 or other
+hint: see `ssd help reference search`

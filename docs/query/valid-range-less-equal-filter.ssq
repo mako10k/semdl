@@ -1,0 +1,5 @@
+query {
+  select: hypothesis
+  where: confidence <= 0.57
+  return: matches
+}

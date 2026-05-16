@@ -1,0 +1,5 @@
+query {
+  select: assertion
+  where: label > 1
+  return: matches
+}

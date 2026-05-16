@@ -1,0 +1,14 @@
+ERROR invalid_query_filter
+command: ssd search docs/query/invalid-mixed-logical-filter.ssq docs/examples/minimal.ssd
+query_file: docs/query/invalid-mixed-logical-filter.ssq
+where: source_presence and confidence > 0.8 or label = "売上増加"
+reason: mixing 'and' and 'or' is not supported in the current .ssq filter profile
+allowed:
+  - field
+  - field = "value"
+  - field = 1
+  - field = true|false
+  - field > 0.8
+  - field and other = true
+  - field > 0.8 or other
+hint: see `ssd help reference search`

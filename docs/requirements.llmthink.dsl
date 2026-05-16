@@ -153,6 +153,16 @@ step S8C:
     annotation rationale:
       "filter slot の存在だけを先に置くと中身が空洞化する一方、豊富な条件構文を先回りで固定すると sample 不足の段階では過剰設計になるため"
 
+step S8J:
+  decision D8J based_on D8C:
+    |
+      後続 filter slice では `.ssq` の `where` に numeric range comparison と homogeneous logical chain を追加してよい。
+      range operator は `>`, `>=`, `<`, `<=` に限定し、右辺は number に限る。
+      logical composition は `and` のみ、または `or` のみで連結された chain に限定し、mixed operator、括弧、関数呼び出しは引き続き deferred とする。
+      `=` は既存互換の token equality を維持し、range comparison で左辺 field が欠損または非数値の candidate は failure ではなく no-match とする。
+    annotation rationale:
+      "query layer を一度に full precedence grammar へ広げず、sample-backed な比較と flat composition を最小追加で formalize するため"
+
 step S8D:
   decision D8D based_on D8B, D4:
     |

@@ -1,0 +1,5 @@
+query {
+  select: assertion
+  where: source_presence and confidence > 0.8 or label = "売上増加"
+  return: matches
+}

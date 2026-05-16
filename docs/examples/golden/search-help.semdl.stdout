@@ -38,25 +38,30 @@ segment HELP_LINE_5 {
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- `similar` uses precomputed embeddings from the integrated input view and excludes the anchor target from results."
+  text_quote: "- `where` accepts presence checks, scalar equality, numeric range comparisons, and flat `and`/`or` chains; mixed operators, parentheses, and function calls remain outside this slice."
 }
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "- `similar` with `return: subgraph` reuses the grouped subgraph shape and includes top-level similarity metadata plus per-group scores."
+  text_quote: "- `similar` uses precomputed embeddings from the integrated input view and excludes the anchor target from results."
 }
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "Related help:"
+  text_quote: "- `similar` with `return: subgraph` reuses the grouped subgraph shape and includes top-level similarity metadata plus per-group scores."
 }
 
 segment HELP_LINE_9 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "Related help:"
 }
 
 segment HELP_LINE_10 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help grammar`"
+}
+
+segment HELP_LINE_11 {
   source: HELP_TOPIC
   text_quote: "- `ssd help troubleshooting`"
 }

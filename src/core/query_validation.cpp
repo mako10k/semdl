@@ -137,7 +137,272 @@ bool contains_unquoted_sequence(std::string_view text, std::string_view needle) 
     return false;
 }
 
-std::size_t find_unquoted_char(std::string_view text, char target, std::size_t start_index = 0) {
+bool contains_unquoted_logical_keyword(std::string_view text, std::string_view keyword) {
+    bool in_quotes = false;
+    for (std::size_t index = 0; index < text.size(); ++index) {
+        if (text[index] == '"') {
+            in_quotes = !in_quotes;
+            continue;
+        }
+        if (in_quotes || index == 0 || index + keyword.size() >= text.size()) {
+            continue;
+        }
+        if (text.substr(index, keyword.size()) != keyword) {
+            continue;
+        }
+        if (text[index - 1] != ' ' || text[index + keyword.size()] != ' ') {
+            continue;
+        }
+        return true;
+    }
+    return false;
+}
+
+std::size_t find_unquoted_char(std::string_view text, char target, std::size_t start_index = 0);
+
+std::vector<std::string> split_unquoted_sequence(std::string_view text, std::string_view needle) {
+    std::vector<std::string> parts;
+    bool in_quotes = false;
+    std::size_t segment_start = 0;
+    for (std::size_t index = 0; index < text.size(); ++index) {
+        if (text[index] == '"') {
+            in_quotes = !in_quotes;
+            continue;
+        }
+        if (!in_quotes && index + needle.size() <= text.size() && text.substr(index, needle.size()) == needle) {
+            parts.push_back(trim_space_copy(text.substr(segment_start, index - segment_start)));
+            index += needle.size() - 1;
+            segment_start = index + 1;
+        }
+    }
+    parts.push_back(trim_space_copy(text.substr(segment_start)));
+    return parts;
+}
+
+std::vector<std::string> split_unquoted_logical_keyword(std::string_view text, std::string_view keyword) {
+    std::vector<std::string> parts;
+    bool in_quotes = false;
+    std::size_t segment_start = 0;
+    for (std::size_t index = 0; index < text.size(); ++index) {
+        if (text[index] == '"') {
+            in_quotes = !in_quotes;
+            continue;
+        }
+        if (in_quotes || index == 0 || index + keyword.size() >= text.size()) {
+            continue;
+        }
+        if (text.substr(index, keyword.size()) != keyword) {
+            continue;
+        }
+        if (text[index - 1] != ' ' || text[index + keyword.size()] != ' ') {
+            continue;
+        }
+
+        std::size_t left_boundary = index;
+        while (left_boundary > segment_start && text[left_boundary - 1] == ' ') {
+            --left_boundary;
+        }
+        parts.push_back(trim_space_copy(text.substr(segment_start, left_boundary - segment_start)));
+
+        std::size_t next_segment = index + keyword.size();
+        while (next_segment < text.size() && text[next_segment] == ' ') {
+            ++next_segment;
+        }
+        segment_start = next_segment;
+        index = next_segment > 0 ? next_segment - 1 : next_segment;
+    }
+    parts.push_back(trim_space_copy(text.substr(segment_start)));
+    return parts;
+}
+
+enum class FilterOperator {
+    presence,
+    equal,
+    greater,
+    greater_equal,
+    less,
+    less_equal,
+};
+
+struct FilterClause {
+    std::string field;
+    FilterOperator filter_operator = FilterOperator::presence;
+    std::string raw_value;
+};
+
+struct ParsedWhereExpression {
+    QueryValidationIssue issue;
+    std::vector<FilterClause> clauses;
+    std::string logical_operator;
+};
+
+std::optional<double> parse_number_value(std::string_view value) {
+    if (!is_number_token(value)) {
+        return std::nullopt;
+    }
+
+    try {
+        return std::stod(std::string(value));
+    } catch (...) {
+        return std::nullopt;
+    }
+}
+
+std::optional<std::pair<std::size_t, FilterOperator>> find_comparison_operator(std::string_view expression) {
+    bool in_quotes = false;
+    for (std::size_t index = 0; index < expression.size(); ++index) {
+        if (expression[index] == '"') {
+            in_quotes = !in_quotes;
+            continue;
+        }
+        if (in_quotes) {
+            continue;
+        }
+        if (expression[index] == '>') {
+            if (index + 1 < expression.size() && expression[index + 1] == '=') {
+                return std::pair<std::size_t, FilterOperator>{index, FilterOperator::greater_equal};
+            }
+            return std::pair<std::size_t, FilterOperator>{index, FilterOperator::greater};
+        }
+        if (expression[index] == '<') {
+            if (index + 1 < expression.size() && expression[index + 1] == '=') {
+                return std::pair<std::size_t, FilterOperator>{index, FilterOperator::less_equal};
+            }
+            return std::pair<std::size_t, FilterOperator>{index, FilterOperator::less};
+        }
+        if (expression[index] == '=') {
+            return std::pair<std::size_t, FilterOperator>{index, FilterOperator::equal};
+        }
+        if (expression[index] == '!') {
+            return std::pair<std::size_t, FilterOperator>{index, FilterOperator::presence};
+        }
+    }
+    return std::nullopt;
+}
+
+bool contains_additional_comparison_operator(std::string_view expression, std::size_t start_index) {
+    bool in_quotes = false;
+    for (std::size_t index = start_index; index < expression.size(); ++index) {
+        if (expression[index] == '"') {
+            in_quotes = !in_quotes;
+            continue;
+        }
+        if (!in_quotes && (expression[index] == '>' || expression[index] == '<' || expression[index] == '=' || expression[index] == '!')) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::optional<FilterClause> parse_filter_clause(std::string_view expression, QueryValidationIssue& issue) {
+    const std::string trimmed = trim_space_copy(expression);
+    if (trimmed.empty()) {
+        issue.valid = false;
+        issue.reason = "logical chains require a filter term on both sides of the operator";
+        return std::nullopt;
+    }
+
+    const auto comparison = find_comparison_operator(trimmed);
+    if (!comparison.has_value()) {
+        if (!is_identifier_token(trimmed)) {
+            issue.valid = false;
+            issue.reason = "presence checks must be a single field name";
+            return std::nullopt;
+        }
+        return FilterClause{
+            .field = trimmed,
+            .filter_operator = FilterOperator::presence,
+        };
+    }
+
+    const auto [operator_index, filter_operator] = *comparison;
+    if (trimmed[operator_index] == '!') {
+        issue.valid = false;
+        issue.reason = "comparison operators other than '=', '>', '>=', '<', '<=' are not supported in the current .ssq filter profile";
+        return std::nullopt;
+    }
+
+    const std::size_t operator_width = (filter_operator == FilterOperator::greater_equal || filter_operator == FilterOperator::less_equal) ? 2 : 1;
+    if (contains_additional_comparison_operator(trimmed, operator_index + operator_width)) {
+        issue.valid = false;
+        issue.reason = "only one comparison check is supported per filter term";
+        return std::nullopt;
+    }
+
+    const std::string left = trim_space_copy(std::string_view(trimmed).substr(0, operator_index));
+    const std::string right = trim_space_copy(std::string_view(trimmed).substr(operator_index + operator_width));
+    if (!is_identifier_token(left)) {
+        issue.valid = false;
+        issue.reason = "comparison checks must use a field name on the left-hand side";
+        return std::nullopt;
+    }
+
+    if (filter_operator == FilterOperator::equal) {
+        if (!(is_quoted_string_token(right) || is_number_token(right) || right == "true" || right == "false")) {
+            issue.valid = false;
+            issue.reason = "equality checks must use a quoted string, number, or boolean on the right-hand side";
+            return std::nullopt;
+        }
+    } else if (!is_number_token(right)) {
+        issue.valid = false;
+        issue.reason = "range comparisons must use a number on the right-hand side";
+        return std::nullopt;
+    }
+
+    return FilterClause{
+        .field = left,
+        .filter_operator = filter_operator,
+        .raw_value = right,
+    };
+}
+
+ParsedWhereExpression parse_where_expression(std::string_view expression) {
+    ParsedWhereExpression parsed;
+    parsed.issue.clause = "where";
+    parsed.issue.expression = trim_space_copy(expression);
+    if (parsed.issue.expression.empty()) {
+        parsed.issue.valid = false;
+        parsed.issue.reason = "where requires a filter expression";
+        return parsed;
+    }
+
+    if (find_unquoted_char(parsed.issue.expression, '\t') != std::string::npos) {
+        parsed.issue.valid = false;
+        parsed.issue.reason = "tab characters are not supported in the current .ssq filter profile";
+        return parsed;
+    }
+
+    const bool has_and = contains_unquoted_logical_keyword(parsed.issue.expression, "and");
+    const bool has_or = contains_unquoted_logical_keyword(parsed.issue.expression, "or");
+    if (has_and && has_or) {
+        parsed.issue.valid = false;
+        parsed.issue.reason = "mixing 'and' and 'or' is not supported in the current .ssq filter profile";
+        return parsed;
+    }
+
+    std::vector<std::string> terms;
+    if (has_and) {
+        parsed.logical_operator = "and";
+        terms = split_unquoted_logical_keyword(parsed.issue.expression, "and");
+    } else if (has_or) {
+        parsed.logical_operator = "or";
+        terms = split_unquoted_logical_keyword(parsed.issue.expression, "or");
+    } else {
+        terms.push_back(parsed.issue.expression);
+    }
+
+    for (const auto& term : terms) {
+        auto clause = parse_filter_clause(term, parsed.issue);
+        if (!clause.has_value()) {
+            return parsed;
+        }
+        parsed.clauses.push_back(std::move(*clause));
+    }
+
+    return parsed;
+}
+
+std::size_t find_unquoted_char(std::string_view text, char target, std::size_t start_index) {
     bool in_quotes = false;
     for (std::size_t index = start_index; index < text.size(); ++index) {
         if (text[index] == '"') {
@@ -152,63 +417,7 @@ std::size_t find_unquoted_char(std::string_view text, char target, std::size_t s
 }
 
 QueryValidationIssue validate_where_expression(std::string_view expression) {
-    QueryValidationIssue issue;
-    issue.clause = "where";
-    issue.expression = trim_space_copy(expression);
-    if (issue.expression.empty()) {
-        issue.valid = false;
-        issue.reason = "where requires a filter expression";
-        return issue;
-    }
-
-    if (find_unquoted_char(issue.expression, '\t') != std::string::npos) {
-        issue.valid = false;
-        issue.reason = "tab characters are not supported in the current .ssq filter profile";
-        return issue;
-    }
-
-    if (contains_unquoted_sequence(issue.expression, " and ") || contains_unquoted_sequence(issue.expression, " or ")) {
-        issue.valid = false;
-        issue.reason = "logical composition is not supported in the current .ssq filter profile";
-        return issue;
-    }
-
-    if (find_unquoted_char(issue.expression, '>') != std::string::npos ||
-        find_unquoted_char(issue.expression, '<') != std::string::npos ||
-        contains_unquoted_sequence(issue.expression, "!=")) {
-        issue.valid = false;
-        issue.reason = "comparison operators other than '=' are not supported in the current .ssq filter profile";
-        return issue;
-    }
-
-    const auto equal_index = find_unquoted_char(issue.expression, '=');
-    if (equal_index == std::string::npos) {
-        if (!is_identifier_token(issue.expression)) {
-            issue.valid = false;
-            issue.reason = "presence checks must be a single field name";
-        }
-        return issue;
-    }
-
-    if (find_unquoted_char(issue.expression, '=', equal_index + 1) != std::string::npos) {
-        issue.valid = false;
-        issue.reason = "only one equality check is supported in the current .ssq filter profile";
-        return issue;
-    }
-
-    const std::string left = trim_space_copy(std::string_view(issue.expression).substr(0, equal_index));
-    const std::string right = trim_space_copy(std::string_view(issue.expression).substr(equal_index + 1));
-    if (!is_identifier_token(left)) {
-        issue.valid = false;
-        issue.reason = "equality checks must use a field name on the left-hand side";
-        return issue;
-    }
-
-    if (!(is_quoted_string_token(right) || is_number_token(right) || right == "true" || right == "false")) {
-        issue.valid = false;
-        issue.reason = "equality checks must use a quoted string, number, or boolean on the right-hand side";
-    }
-    return issue;
+    return parse_where_expression(expression).issue;
 }
 
 QueryValidationIssue validate_selector_ref_expression(std::string_view expression, std::string_view label) {
@@ -331,15 +540,63 @@ std::vector<SearchMatch> build_structural_context_nodes(const DocumentData& docu
 }
 
 bool matches_where_expression(const std::map<std::string, std::string>& fields, std::string_view expression) {
-    const auto equal_index = find_unquoted_char(expression, '=');
-    if (equal_index == std::string::npos) {
-        return fields.contains(std::string(trim_space_copy(expression)));
+    const auto parsed = parse_where_expression(expression);
+    if (!parsed.issue.valid) {
+        return false;
     }
 
-    const std::string left = trim_space_copy(std::string_view(expression).substr(0, equal_index));
-    const std::string right = trim_space_copy(std::string_view(expression).substr(equal_index + 1));
-    const auto it = fields.find(left);
-    return it != fields.end() && it->second == right;
+    const auto matches_clause = [&](const FilterClause& clause) {
+        if (clause.filter_operator == FilterOperator::presence) {
+            return fields.contains(clause.field);
+        }
+
+        const auto it = fields.find(clause.field);
+        if (it == fields.end()) {
+            return false;
+        }
+
+        if (clause.filter_operator == FilterOperator::equal) {
+            return it->second == clause.raw_value;
+        }
+
+        const auto left_number = parse_number_value(it->second);
+        const auto right_number = parse_number_value(clause.raw_value);
+        if (!left_number.has_value() || !right_number.has_value()) {
+            return false;
+        }
+
+        switch (clause.filter_operator) {
+            case FilterOperator::greater:
+                return *left_number > *right_number;
+            case FilterOperator::greater_equal:
+                return *left_number >= *right_number;
+            case FilterOperator::less:
+                return *left_number < *right_number;
+            case FilterOperator::less_equal:
+                return *left_number <= *right_number;
+            case FilterOperator::presence:
+            case FilterOperator::equal:
+                return false;
+        }
+
+        return false;
+    };
+
+    if (parsed.logical_operator == "or") {
+        for (const auto& clause : parsed.clauses) {
+            if (matches_clause(clause)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    for (const auto& clause : parsed.clauses) {
+        if (!matches_clause(clause)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 QueryValidationIssue validate_select_expression(std::string_view expression) {
