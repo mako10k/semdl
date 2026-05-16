@@ -741,6 +741,23 @@
       "notes": "normalize should return a canonical inline view from non-canonical input and paired sidecar"
     },
     {
+      "id": "normalize-standalone-apply",
+      "command": "ssd normalize docs/examples/normalize-standalone-source.ssd",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-standalone-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/fixtures/normalize-standalone.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/normalize-standalone.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "standalone normalize apply should rewrite the input file to canonical inline order"
+    },
+    {
       "id": "check-minimal",
       "command": "ssd check docs/examples/minimal.ssd",
       "argv": ["ssd", "check", "docs/examples/minimal.ssd"],
@@ -817,6 +834,19 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "sidecar metadata update preview"
+    },
+    {
+      "id": "set-id-A1-label-dryrun",
+      "command": "ssd set id:A1 label \"売上報告書\" --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1", "label", "売上報告書", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-id-A1-label.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id selector update preview should resolve one inline field update"
     },
     {
       "id": "annotate-H1-rationale-dryrun",
@@ -897,6 +927,24 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "set meta apply should rewrite only the sidecar file"
+    },
+    {
+      "id": "set-id-A1-label-apply",
+      "command": "ssd set id:A1 label 売上報告書 docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1", "label", "売上報告書", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/set-path-A1-label.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-path-A1-label.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id selector apply should rewrite only the inline file"
     },
     {
       "id": "annotate-H1-todo-apply",

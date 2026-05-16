@@ -117,17 +117,17 @@ segment HELP_LINE_21 {
 
 segment HELP_LINE_22 {
   source: HELP_TOPIC
-  text_quote: "- `ssd split <input.ssd> [common options]`"
+  text_quote: "- `ssd split <input.ssd> [--dry-run]`"
 }
 
 segment HELP_LINE_23 {
   source: HELP_TOPIC
-  text_quote: "- `ssd merge <input.ssd> [common options]`"
+  text_quote: "- `ssd merge <input.ssd> --stdout`"
 }
 
 segment HELP_LINE_24 {
   source: HELP_TOPIC
-  text_quote: "- `ssd normalize <input.ssd> [common options]`"
+  text_quote: "- `ssd normalize <input.ssd> [--stdout]`"
 }
 
 segment HELP_LINE_25 {
@@ -197,12 +197,12 @@ segment HELP_LINE_37 {
 
 segment HELP_LINE_38 {
   source: HELP_TOPIC
-  text_quote: "- `--out <file>`, `--stdout`, and `--format inline|sidecar` choose emitted output destinations or profile when the command supports them"
+  text_quote: "- `--stdout` is currently used by `merge`, `normalize`, and `extract`"
 }
 
 segment HELP_LINE_39 {
   source: HELP_TOPIC
-  text_quote: "- `--target inline|sidecar|auto` controls update destination selection"
+  text_quote: "- `--target sidecar` is currently required by `annotate`"
 }
 
 segment HELP_LINE_40 {

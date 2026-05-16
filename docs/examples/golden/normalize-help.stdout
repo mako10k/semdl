@@ -4,7 +4,8 @@ Usage:
 - `ssd normalize <input.ssd> [--stdout]`
 
 Status:
-- This subcommand currently supports `--stdout` for canonical inline output from `.ssd` with an optional paired `.ssm`.
+- `--stdout` returns canonical inline output from `.ssd` with an optional paired `.ssm`.
+- Bare `ssd normalize <input.ssd>` currently applies only to standalone `.ssd` inputs without a paired `.ssm`.
 
 Related help:
 - `ssd help grammar`

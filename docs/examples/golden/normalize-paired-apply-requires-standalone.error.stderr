@@ -1,0 +1,5 @@
+ERROR normalize_apply_requires_standalone_input
+command: ssd normalize docs/examples/normalize-source.ssd
+input: docs/examples/normalize-source.ssd
+sidecar: docs/examples/normalize-source.ssm
+hint: use `--stdout` for paired `.ssd` + `.ssm` normalization in the current slice

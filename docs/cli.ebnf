@@ -16,17 +16,17 @@ search-cmd      = "search" , ws , query-file , ws , input-file , { ws , input-fi
 extract-cmd     = extract-out-cmd | extract-stdout-cmd | "extract" , ws , help-opt , [ ws , help-render-opt ] ;
 similarity-cmd  = "similarity" , ws , id-ref , ws , id-ref , ws , input-file | "similarity" , ws , help-opt , [ ws , help-render-opt ] ;
 explain-cmd     = "explain" , ws , id-ref , ws , input-file | "explain" , ws , help-opt , [ ws , help-render-opt ] ;
-split-cmd       = "split" , ws , input-file , { ws , common-opt } | "split" , ws , help-opt , [ ws , help-render-opt ] ;
-merge-cmd       = "merge" , ws , input-file , { ws , common-opt } | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
-normalize-cmd   = "normalize" , ws , input-file , { ws , common-opt } | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
+split-cmd       = "split" , ws , input-file , [ ws , dry-run-opt ] | "split" , ws , help-opt , [ ws , help-render-opt ] ;
+merge-cmd       = "merge" , ws , input-file , ws , stdout-opt | "merge" , ws , help-opt , [ ws , help-render-opt ] ;
+normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt ] | "normalize" , ws , help-opt , [ ws , help-render-opt ] ;
 
 extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file ;
 extract-stdout-cmd = "extract" , ws , stdout-opt , { ws , extract-opt } , ws , input-file ;
 
 add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , [ ws , dry-run-opt ] | "add" , ws , help-opt , [ ws , help-render-opt ] ;
 set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;
-remove-cmd      = "remove" , ws , selector , ws , input-file , { ws , remove-opt } , { ws , common-opt } | "remove" , ws , help-opt , [ ws , help-render-opt ] ;
-annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , { ws , common-opt } , ws , input-file | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
+remove-cmd      = "remove" , ws , selector , ws , input-file , [ ws , allow-multi-opt ] | "remove" , ws , help-opt , [ ws , help-render-opt ] ;
+annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , target-sidecar-opt , [ ws , dry-run-opt ] , ws , input-file | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
 
 set-id-cmd      = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , input-file , { ws , common-opt } ;
 set-path-meta-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , { ws , common-opt } , ws , input-file ;
@@ -52,6 +52,7 @@ out-opt         = "--out" ;
 stdout-opt      = "--stdout" ;
 dry-run-opt     = "--dry-run" ;
 target-opt      = "--target" , ws , ( "inline" | "sidecar" | "auto" ) ;
+target-sidecar-opt = "--target" , ws , "sidecar" ;
 format-opt      = "--format" , ws , ( "inline" | "sidecar" ) ;
 fail-on-conflict-opt = "--fail-on-conflict" ;
 allow-multi-opt = "--allow-multi" ;

@@ -563,6 +563,24 @@
       "notes": "unknown trailing option is rejected instead of being ignored"
     },
     {
+      "id": "normalize-paired-apply-requires-standalone",
+      "command": "ssd normalize docs/examples/normalize-source.ssd",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-paired-apply-requires-standalone.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "paired sidecar apply remains disabled so normalize does not leave stale sidecar state"
+    },
+    {
       "id": "annotate-unterminated-quoted-string",
       "command": "ssd annotate id:H1 rationale \"未完 docs/examples/minimal.ssd",
       "argv": ["ssd", "annotate", "id:H1", "rationale", "\"未完", "docs/examples/minimal.ssd"],
@@ -600,6 +618,19 @@
       "expected_stderr": "docs/examples/golden/set-path-wrong-layer.error.stderr",
       "expected_output_kind": "exact",
       "notes": "path selector cannot target sidecar-only fields"
+    },
+    {
+      "id": "set-id-wrong-layer",
+      "command": "ssd set id:H1 caveat \"注意\" docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:H1", "caveat", "注意", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-id-wrong-layer.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "id selector set remains inline-only when the requested field exists only in sidecar metadata"
     },
     {
       "id": "set-meta-wrong-layer",
