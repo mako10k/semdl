@@ -13,9 +13,10 @@ argument-hint: 'Describe the architecture decision to record'
 - Layer boundaries between library, CLI, and runner may change
 
 ## Procedure
+Follow these steps in order: establish the governing docs first, confirm whether intake clarification is needed, then draft and review the ADR.
 1. Read [docs/adr/README.md](../../../docs/adr/README.md) and the latest accepted ADRs under [docs/adr](../../../docs/adr).
 2. Check the requirements impact in [docs/requirements.md](../../../docs/requirements.md).
-3. If the request is broad or under-specified, invoke the `todo-intake-auditor` subagent before drafting.
+3. If the request lacks specific details or has a wide scope of impact, invoke the `todo-intake-auditor` subagent before drafting.
 4. Draft or update an ADR using the template in [adr-template.md](./assets/adr-template.md).
 5. Link affected docs such as [docs/cli.ebnf](../../../docs/cli.ebnf), [docs/test-runner-format.md](../../../docs/test-runner-format.md), and [docs/test-runner-contract.md](../../../docs/test-runner-contract.md).
 6. Invoke the `semantics-code-reviewer` subagent before finalizing the ADR.
