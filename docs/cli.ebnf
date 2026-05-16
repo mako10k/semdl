@@ -25,8 +25,11 @@ merge-surface   = stdout-opt | dry-run-opt | out-opt , ws , output-file , [ ws ,
 extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file , { ws , input-file } ;
 extract-stdout-cmd = extract-stdout-inline-cmd | extract-stdout-embed-cmd ;
 extract-stdout-inline-cmd = "extract" , ws , stdout-opt , ws , input-file , { ws , input-file } ;
-extract-stdout-embed-cmd = "extract" , ws , stdout-opt , ws , extract-embed-pair , [ ws , format-opt ] , ws , input-file
-                        | "extract" , ws , stdout-opt , ws , format-opt , ws , extract-embed-pair , ws , input-file ;
+extract-stdout-embed-cmd = "extract" , ws , stdout-opt , ws , extract-embed-pair , ws , input-file
+                        | "extract" , ws , stdout-opt , ws , extract-embed-pair , ws , extract-stdout-format-opt , ws , input-file
+                        | "extract" , ws , stdout-opt , ws , extract-embed-pair , ws , extract-stdout-format-opt , ws , input-file , { ws , input-file }
+                        | "extract" , ws , stdout-opt , ws , extract-stdout-format-opt , ws , extract-embed-pair , ws , input-file
+                        | "extract" , ws , stdout-opt , ws , extract-stdout-format-opt , ws , extract-embed-pair , ws , input-file , { ws , input-file } ;
 extract-embed-pair = embed-provider-opt , ws , embed-model-opt | embed-model-opt , ws , embed-provider-opt ;
 
 add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , [ ws , target-sidecar-opt ] , [ ws , dry-run-opt ] | "add" , ws , help-opt , [ ws , help-render-opt ] ;
@@ -59,6 +62,7 @@ dry-run-opt     = "--dry-run" ;
 target-opt      = "--target" , ws , ( "inline" | "sidecar" | "auto" ) ;
 target-sidecar-opt = "--target" , ws , "sidecar" ;
 format-opt      = "--format" , ws , ( "inline" | "sidecar" ) ;
+extract-stdout-format-opt = "--format" , ws , ( "inline" | "sidecar" | "bundle" ) ;
 fail-on-conflict-opt = "--fail-on-conflict" ;
 allow-multi-opt = "--allow-multi" ;
 cascade-opt     = "--cascade" ;

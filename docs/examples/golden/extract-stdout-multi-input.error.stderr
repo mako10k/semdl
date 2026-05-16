@@ -1,4 +1,4 @@
-ERROR subcommand_not_implemented
+ERROR invalid_extract_options
 command: ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small docs/examples/extract-source.ssd docs/examples/minimal.ssd
 subcommand: extract
-hint: see `ssd help reference extract`
+usage: ssd extract --stdout <input.ssd|input.txt>... | ssd extract --stdout --embed-provider <provider> --embed-model <model> [--format inline|sidecar|bundle] <input.ssd> | ssd extract --stdout --embed-provider <provider> --embed-model <model> --format inline|sidecar|bundle <input.ssd> <input.ssd>... | ssd extract --out <output.ssd> [--embed-provider <provider> --embed-model <model>] <input.ssd|input.txt>...

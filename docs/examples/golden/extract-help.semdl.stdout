@@ -48,40 +48,45 @@ segment HELP_LINE_7 {
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar <input.ssd>`"
+  text_quote: "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar|bundle <input.ssd>`"
 }
 
 segment HELP_LINE_9 {
   source: HELP_TOPIC
-  text_quote: "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt> <input.ssd|input.txt>...`"
+  text_quote: "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar|bundle <input.ssd> <input.ssd>...`"
 }
 
 segment HELP_LINE_10 {
   source: HELP_TOPIC
-  text_quote: "Status:"
+  text_quote: "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt> <input.ssd|input.txt>...`"
 }
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- This subcommand currently supports canonical inline `.ssd` stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input inline `.ssd` aggregation through `--out`, and explicit embedding generation through `ollama` or `openai` adapters."
+  text_quote: "Status:"
 }
 
 segment HELP_LINE_12 {
   source: HELP_TOPIC
-  text_quote: "- Embedding-enabled `--stdout` remains single-input `.ssd`; `--format` omitted and `--format sidecar` emit generated `.ssm`, while `--format inline` returns one `.ssd` payload without introducing stdout multiplexing. Raw `.txt` embedding generation still requires `--out <output.ssd>`."
+  text_quote: "- This subcommand currently supports canonical inline `.ssd` stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input inline `.ssd` aggregation through `--out`, and explicit embedding generation through `ollama` or `openai` adapters."
 }
 
 segment HELP_LINE_13 {
   source: HELP_TOPIC
-  text_quote: "Related help:"
+  text_quote: "- Embedding-enabled `--stdout` keeps single-input omitted=`sidecar`; explicit `--format inline|sidecar|bundle` works on one existing `.ssd`, and multi-input existing `.ssd` requires an explicit `--format inline|sidecar|bundle`. `bundle` returns one line-prefixed stdout framing that carries both inline `.ssd` and generated `.ssm` payloads. Raw `.txt` embedding generation still requires `--out <output.ssd>`."
 }
 
 segment HELP_LINE_14 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "Related help:"
 }
 
 segment HELP_LINE_15 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help grammar`"
+}
+
+segment HELP_LINE_16 {
   source: HELP_TOPIC
   text_quote: "- `ssd help troubleshooting`"
 }

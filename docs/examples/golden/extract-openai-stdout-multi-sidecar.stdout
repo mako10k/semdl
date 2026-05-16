@@ -1,0 +1,109 @@
+meta R1 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "label"
+    vector: "[0.9,0.1,0.0]"
+  }
+}
+
+meta R2 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "label"
+    vector: "[0.9,0.1,0.0]"
+  }
+}
+
+meta S1 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "text_quote"
+    vector: "[0.8,0.1,0.1]"
+  }
+}
+
+meta S2 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "text_quote"
+    vector: "[0.8,0.1,0.1]"
+  }
+}
+
+meta A1 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "object"
+    vector: "[0.7,0.2,0.1]"
+  }
+}
+
+meta A2 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "object"
+    vector: "[0.7,0.2,0.1]"
+  }
+}
+
+meta H1 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "summary"
+    vector: "[0.6,0.2,0.2]"
+  }
+}
+
+meta H2 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "summary"
+    vector: "[0.6,0.2,0.2]"
+  }
+}
+
+meta ALT1 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "label"
+    vector: "[0.5,0.3,0.2]"
+  }
+}
+
+meta ALT2 {
+  embedding {
+    model: "text-embedding-3-small"
+    dimensions: 3
+    generated_at: "2026-05-16T12:00:00Z"
+    provider: "openai"
+    source_field: "label"
+    vector: "[0.5,0.3,0.2]"
+  }
+}

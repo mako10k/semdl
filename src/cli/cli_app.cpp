@@ -57,7 +57,7 @@ struct ParsedExtractArgs {
 };
 
 constexpr std::string_view kExtractUsage =
-    "ssd extract --stdout <input.ssd|input.txt>... | ssd extract --stdout --embed-provider <provider> --embed-model <model> [--format inline|sidecar] <input.ssd> | ssd extract --out <output.ssd> [--embed-provider <provider> --embed-model <model>] <input.ssd|input.txt>...";
+    "ssd extract --stdout <input.ssd|input.txt>... | ssd extract --stdout --embed-provider <provider> --embed-model <model> [--format inline|sidecar|bundle] <input.ssd> | ssd extract --stdout --embed-provider <provider> --embed-model <model> --format inline|sidecar|bundle <input.ssd> <input.ssd>... | ssd extract --out <output.ssd> [--embed-provider <provider> --embed-model <model>] <input.ssd|input.txt>...";
 
 std::string join_args(const std::vector<std::string_view>& args) {
     std::ostringstream stream;
@@ -385,6 +385,42 @@ std::string render_extract_stdout_inline_document(const semdl::core::DocumentDat
         return sidecar_text;
     }
     return inline_text + "\n" + sidecar_text;
+}
+
+void append_bundle_payload(std::ostringstream& output, const std::string& payload) {
+    if (payload.empty()) {
+        return;
+    }
+
+    std::size_t start = 0;
+    while (start <= payload.size()) {
+        const auto end = payload.find('\n', start);
+        if (end == std::string::npos) {
+            const std::string_view line(payload.data() + start, payload.size() - start);
+            output << (line.empty() ? "|" : "| " + std::string(line)) << "\n";
+            break;
+        }
+
+        const std::string_view line(payload.data() + start, end - start);
+        output << (line.empty() ? "|" : "| " + std::string(line)) << "\n";
+        start = end + 1;
+        if (start == payload.size()) {
+            output << "|\n";
+            break;
+        }
+    }
+}
+
+std::string render_extract_stdout_bundle(const std::string& inline_text, const std::string& sidecar_text) {
+    std::ostringstream output;
+    output << "stdout_profile: bundle\n";
+    output << "inline_profile: inline\n";
+    output << "sidecar_profile: sidecar\n\n";
+    output << "inline_document:\n";
+    append_bundle_payload(output, inline_text);
+    output << "\nsidecar_document:\n";
+    append_bundle_payload(output, sidecar_text);
+    return output.str();
 }
 
 bool is_raw_text_extract_input(const std::filesystem::path& input_file) {
@@ -1311,7 +1347,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` stays single-input `.ssd`, with `--format inline|sidecar` available only there, and raw embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -1415,11 +1451,12 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd extract --out <output.ssd> <input.ssd|input.txt>`\n"
                "- `ssd extract --out <output.ssd> <input.ssd|input.txt> <input.ssd|input.txt>...`\n"
                "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> <input.ssd>`\n"
-               "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar <input.ssd>`\n"
+               "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar|bundle <input.ssd>`\n"
+               "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar|bundle <input.ssd> <input.ssd>...`\n"
                "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt> <input.ssd|input.txt>...`\n\n"
                "Status:\n"
                "- This subcommand currently supports canonical inline `.ssd` stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input inline `.ssd` aggregation through `--out`, and explicit embedding generation through `ollama` or `openai` adapters.\n"
-               "- Embedding-enabled `--stdout` remains single-input `.ssd`; `--format` omitted and `--format sidecar` emit generated `.ssm`, while `--format inline` returns one `.ssd` payload without introducing stdout multiplexing. Raw `.txt` embedding generation still requires `--out <output.ssd>`.\n\n"
+               "- Embedding-enabled `--stdout` keeps single-input omitted=`sidecar`; explicit `--format inline|sidecar|bundle` works on one existing `.ssd`, and multi-input existing `.ssd` requires an explicit `--format inline|sidecar|bundle`. `bundle` returns one line-prefixed stdout framing that carries both inline `.ssd` and generated `.ssm` payloads. Raw `.txt` embedding generation still requires `--out <output.ssd>`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -2774,6 +2811,10 @@ bool is_allowed_transform_format(std::string_view format) {
     return format == "inline" || format == "sidecar";
 }
 
+bool is_allowed_extract_stdout_format(std::string_view format) {
+    return format == "inline" || format == "sidecar" || format == "bundle";
+}
+
 bool is_allowed_annotation_kind(std::string_view kind) {
     return kind == "rationale" || kind == "caveat" || kind == "todo" || kind == "status" || kind == "explanation";
 }
@@ -3295,7 +3336,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (!parsed.valid || parsed.input_files.empty()) {
             return make_invalid_extract_options_error(args);
         }
-        if (parsed.format.has_value() && !is_allowed_transform_format(*parsed.format)) {
+        if (parsed.format.has_value() && !is_allowed_extract_stdout_format(*parsed.format)) {
             return make_invalid_extract_options_error(args);
         }
         if (parsed.provider.empty() != parsed.model.empty()) {
@@ -3304,8 +3345,8 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (parsed.format.has_value() && (!parsed.use_stdout || parsed.provider.empty() || parsed.model.empty())) {
             return make_invalid_extract_options_error(args);
         }
-        if (parsed.use_stdout && !parsed.provider.empty() && parsed.input_files.size() != 1U) {
-            return make_subcommand_not_implemented_error(args);
+        if (parsed.use_stdout && !parsed.provider.empty() && parsed.input_files.size() != 1U && !parsed.format.has_value()) {
+            return make_invalid_extract_options_error(args);
         }
         if (!parsed.provider.empty() && !is_supported_extract_provider(parsed.provider)) {
             return make_unsupported_extract_provider_error(args, parsed.provider);
@@ -3399,6 +3440,10 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
 
         const std::string sidecar_text = semdl::core::render_extract_sidecar(records);
         if (parsed.use_stdout) {
+            if (parsed.format == std::optional<std::string>{"bundle"}) {
+                return make_extract_stdout_result(render_extract_stdout_bundle(render_extract_stdout_inline_document(document, records),
+                                                                              sidecar_text));
+            }
             if (parsed.format == std::optional<std::string>{"inline"}) {
                 return make_extract_stdout_result(render_extract_stdout_inline_document(document, records));
             }

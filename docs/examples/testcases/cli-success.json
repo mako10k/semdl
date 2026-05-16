@@ -575,6 +575,90 @@
       "notes": "extract inline stdout profile should keep a single `.ssd` payload while preserving non-inlineable embedding metadata as top-level meta blocks"
     },
     {
+      "id": "extract-openai-stdout-bundle",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small --format bundle docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "--format", "bundle", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T10:00:00Z"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-openai-stdout-bundle.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract bundle stdout profile should preserve both inline and sidecar payloads for a single semantic input"
+    },
+    {
+      "id": "extract-openai-stdout-multi-inline",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small --format inline docs/examples/extract-source.ssd docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "--format", "inline", "docs/examples/extract-source.ssd", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T12:00:00Z"
+      },
+      "setup_files": ["docs/examples/extract-source.ssd", "docs/examples/fixtures/fake-openai.sh", "docs/examples/fixtures/openai-embeddings.psv"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-openai-stdout-multi-inline.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract embedding stdout should return one rebased inline `.ssd` payload for multiple existing semantic inputs when `--format inline` is explicit"
+    },
+    {
+      "id": "extract-openai-stdout-multi-sidecar",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small --format sidecar docs/examples/extract-source.ssd docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "--format", "sidecar", "docs/examples/extract-source.ssd", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T12:00:00Z"
+      },
+      "setup_files": ["docs/examples/extract-source.ssd", "docs/examples/fixtures/fake-openai.sh", "docs/examples/fixtures/openai-embeddings.psv"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-openai-stdout-multi-sidecar.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract embedding stdout should return one rebased generated `.ssm` payload for multiple existing semantic inputs when `--format sidecar` is explicit"
+    },
+    {
+      "id": "extract-openai-stdout-multi-bundle",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small --format bundle docs/examples/extract-source.ssd docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "--format", "bundle", "docs/examples/extract-source.ssd", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T12:00:00Z"
+      },
+      "setup_files": ["docs/examples/extract-source.ssd", "docs/examples/fixtures/fake-openai.sh", "docs/examples/fixtures/openai-embeddings.psv"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-openai-stdout-multi-bundle.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract bundle stdout profile should preserve both rebased inline and generated sidecar payloads for multiple existing semantic inputs"
+    },
+    {
+      "id": "extract-openai-stdout-mixed-existing-bundle",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small --format bundle docs/examples/extract-source.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "--format", "bundle", "docs/examples/extract-source.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {
+        "SEMDL_OPENAI_COMMAND": "docs/examples/fixtures/fake-openai.sh",
+        "SEMDL_EXTRACT_GENERATED_AT": "2026-05-16T12:00:00Z"
+      },
+      "setup_files": ["docs/examples/extract-source.ssd", "docs/examples/minimal.ssd", "docs/examples/minimal.ssm", "docs/examples/fixtures/fake-openai.sh", "docs/examples/fixtures/openai-embeddings.psv"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/extract-openai-stdout-mixed-existing-bundle.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "extract bundle stdout should also cover heterogeneous existing semantic inputs with rebased sidecar-carrying metadata"
+    },
+    {
       "id": "extract-ollama-out",
       "command": "ssd extract --out docs/examples/extract-output.ssd --embed-provider ollama --embed-model nomic-embed-text:latest docs/examples/extract-source.ssd",
       "argv": ["ssd", "extract", "--out", "docs/examples/extract-output.ssd", "--embed-provider", "ollama", "--embed-model", "nomic-embed-text:latest", "docs/examples/extract-source.ssd"],

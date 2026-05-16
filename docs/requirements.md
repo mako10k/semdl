@@ -577,14 +577,20 @@ CLI は、少なくとも次のサイドカー運用を支援すること。
 - embedding-enabled `--stdout --format sidecar` は generated `.ssm` profile を出力できること
 - embedding-enabled `--stdout --format inline` は generated embeddings を含む single-file `.ssd` text を出力できること
 - `--format inline` では assertion / hypothesis は inline `meta` を使ってよく、inline `meta` を持てない embeddable kind は同じ stdout payload 内の top-level `meta <id>` block として出力してよいこと
+- embedding-enabled `--stdout --format bundle` は single existing `.ssd` に対して line-preserving plain-text bundle を返してよく、inline `.ssd` payload と generated `.ssm` payload を同時に含めてよいこと
+- embedding-enabled `--stdout` は existing `.ssd` input が 2 件以上でも `--format inline|sidecar|bundle` を明示した場合に限って成功してよいこと
+- multi-input embedding-enabled `--stdout --format inline` は rebased merged view の canonical inline `.ssd` を返してよいこと
+- multi-input embedding-enabled `--stdout --format sidecar` は rebased merged IDs を使う generated `.ssm` profile text を返してよいこと
+- multi-input embedding-enabled `--stdout --format bundle` は同じ rebased merged view から inline `.ssd` payload と generated `.ssm` payload を同時に返してよいこと
+- multi-input embedding-enabled `--stdout` では `--format` omitted を受け付けず、single-input compatibility default と切り分けて failure にしてよいこと
+- `--format bundle` の bundle framing は `stdout_profile` / `inline_profile` / `sidecar_profile` header、`inline_document:` / `sidecar_document:` section、payload line の `|` prefix を canonical shape として固定してよいこと
 - `--out <file>` では 1 件以上の input から出力先 inline `.ssd` を生成でき、embedding option を伴う場合は paired `.ssm` も生成できること
 - `--out <file>` は existing `.ssd` と plain `.txt` を同一 command で混在させてよいこと
 - multi-input `--out` は source order を保った resolved view を集約し、source 間の ID 衝突を deterministic rebasing で解決すること
 - rebasing は entity ID だけでなく、`alternative_group` と `alternative.group` の shared token にも適用すること
 - multi-input `--out` の output `.ssd` は canonical inline document として書かれること
 - multi-input `--out` の generated `.ssm` は rebased merged view の ID を使うこと
-- embedding-enabled `--stdout` の multi-input surface と stdout multiplexing は引き続き後続 slice に分離してよいこと
-- embedding-enabled `--stdout` の multi-input surface は引き続き後続 slice に分離してよいこと
+- no-provider `--stdout` と `extract --out` は引き続き `--format bundle` を受け付けず、bundle は embedding-enabled `--stdout` 専用 surface としてよいこと
 - `--out <file>` は non-destructive とし、任意の source input path、任意の source paired `.ssm`、または generated paired `.ssm` と alias する path を拒否すること
 - raw `.txt` の embedding target は少なくとも generated `resource.label` と generated `segment.text_quote` に限定すること
 - provider 実行失敗や unsupported provider は non-zero failure として返すこと

@@ -225,13 +225,16 @@ step S8I:
       raw `.txt` input に対する `--stdout` は generated `.ssd` だけを返し、embedding option との併用は failure とする。
       embedding-enabled `--stdout` は single existing `.ssd` に限って `--format inline|sidecar` を受け付けてよく、`--format` omitted と `--format sidecar` は generated `.ssm` profile text を返してよい。
       embedding-enabled `--stdout --format inline` は generated embeddings を含む single-file `.ssd` text を返してよく、assertion / hypothesis は inline `meta` を使い、other embeddable kinds は same payload 内の top-level `meta <id>` block を使ってよい。
-      no-provider `--stdout` と `--out <output.ssd>` はこの slice では `--format` を受け付けず、embedding-enabled `--stdout` の multi-input surface と stdout multiplexing は後続 slice に分離する。
+      embedding-enabled `--stdout --format bundle` は line-preserving plain-text bundle を返してよく、header 順序は `stdout_profile`、`inline_profile`、`sidecar_profile`、payload section は `inline_document:` と `sidecar_document:` に固定し、payload line は `|` prefix で保持する。
+      embedding-enabled `--stdout` は one or more existing `.ssd` input を受け付けてよいが、multi-input のとき omitted `--format` は失敗とし、`inline|sidecar|bundle` を明示必須とする。
+      multi-input embedding-enabled `--stdout --format inline` は rebased merged view の canonical inline `.ssd` を返し、`--format sidecar` は rebased merged `.ssm` を返し、`--format bundle` は両 payload を同じ rebased view から返してよい。
+      no-provider `--stdout` と `--out <output.ssd>` はこの slice でも `--format bundle` を受け付けず、raw `.txt` を含む embedding-enabled stdout は single/multi とも failure とする。
       raw `.txt` input の embedding generation は `--out <output.ssd>` 成功時だけ許可し、embeddable target は generated resource.label と segment.text_quote に限定し、document D1 は対象に含めない。
       後続 multi-input out slice では `ssd extract --out <output.ssd> <input>...` に限って mixed `.ssd` / `.txt` input を受け付け、resolved view を 1 つの canonical inline `.ssd` に集約してよい。
       source 間の entity ID 衝突は deterministic rebasing で解決し、`alternative_group` / `alternative.group` token も source ごとに rebased value へ書き換える。
       embedding option を伴う場合の generated `.ssm` は rebased merged view に対して 1 つだけ生成し、`--out` は source input、source sidecar、generated sidecar と alias する equivalent path を拒否する。
     annotation rationale:
-      "raw intake と non-destructive write path を最小 shape のまま保ちつつ、single-input embedding-enabled stdout にだけ profile selection を開き、stdout multiplexing を同時に設計せずに済むため"
+      "single-input omitted default を壊さずに multi-input embedding stdout と explicit bundle multiplexing を追加し、既存 aggregate/rebase path を再利用できるため"
 
 step S9:
   decision D9 based_on D7:

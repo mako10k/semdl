@@ -1,0 +1,340 @@
+stdout_profile: bundle
+inline_profile: inline
+sidecar_profile: sidecar
+
+inline_document:
+| document D1 {
+|   title: "抽出元サンプル"
+|   source_ref: "docs/examples/extract-source.txt"
+| }
+|
+| document D2 {
+|   title: "月次売上サンプル"
+|   source_ref: "docs/source/monthly-sales.txt"
+|   version: "0.1"
+|   generator: "ssd extract"
+| }
+|
+| resource R1 {
+|   type: document
+|   label: "抽出元文書"
+| }
+|
+| resource R2 {
+|   type: document
+|   label: "月次売上報告"
+| }
+|
+| segment S1 {
+|   source: R1
+|   text_quote: "4月の売上は前年同月比で増加した"
+| }
+|
+| segment S2 {
+|   source: R2
+|   text_quote: "4月の売上は前年同月比で増加した"
+| }
+|
+| assertion A1 {
+|   subject: R1
+|   predicate: reports
+|   object: "4月の売上は増加した"
+|   label: "売上増加"
+|   source_segment: S1
+|   source_presence: true
+|
+|   meta {
+|
+|     embedding {
+|       model: "text-embedding-3-small"
+|       dimensions: 3
+|       generated_at: "2026-05-16T12:00:00Z"
+|       provider: "openai"
+|       source_field: "object"
+|       vector: "[0.7,0.2,0.1]"
+|     }
+|   }
+| }
+|
+| assertion A2 {
+|   subject: R2
+|   predicate: reports
+|   object: "4月の売上は増加した"
+|   label: "売上増加"
+|   source_segment: S2
+|   source_presence: true
+|   embedding_presence: true
+|
+|   meta {
+|     confidence: 0.82
+|     provenance_kind: extracted
+|     rationale: "文中の明示表現をそのまま主張化した"
+|
+|     embedding {
+|       model: "text-embedding-3-small"
+|       dimensions: 3
+|       generated_at: "2026-05-16T12:00:00Z"
+|       provider: "openai"
+|       source_field: "object"
+|       vector: "[0.7,0.2,0.1]"
+|       vector_ref: "embeddings/A1.json"
+|     }
+|   }
+| }
+|
+| hypothesis H1 {
+|   about: A1
+|   kind: omission-completion
+|   summary: "増加の主体は国内売上である可能性が高い"
+|   alternative_group: ALTG1
+|
+|   meta {
+|
+|     embedding {
+|       model: "text-embedding-3-small"
+|       dimensions: 3
+|       generated_at: "2026-05-16T12:00:00Z"
+|       provider: "openai"
+|       source_field: "summary"
+|       vector: "[0.6,0.2,0.2]"
+|     }
+|   }
+| }
+|
+| hypothesis H2 {
+|   about: A2
+|   kind: omission-completion
+|   summary: "増加の主体は国内売上である可能性が高い"
+|   alternative_group: ALTG2
+|
+|   meta {
+|     confidence: 0.57
+|     rationale: "原文に売上区分の主語がなく、文脈補完が必要"
+|     caveat: "全売上を指す可能性も残る"
+|
+|     embedding {
+|       model: "text-embedding-3-small"
+|       dimensions: 3
+|       generated_at: "2026-05-16T12:00:00Z"
+|       provider: "openai"
+|       source_field: "summary"
+|       vector: "[0.6,0.2,0.2]"
+|     }
+|   }
+| }
+|
+| alternative ALT1 {
+|   group: ALTG1
+|   label: "国内売上が増加した"
+| }
+|
+| alternative ALT2 {
+|   group: ALTG2
+|   label: "国内売上が増加した"
+| }
+|
+| alternative ALT3 {
+|   group: ALTG2
+|   label: "全売上が増加した"
+| }
+|
+| meta R1 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.9,0.1,0.0]"
+|   }
+| }
+|
+| meta R2 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.3,0.6,0.1]"
+|   }
+| }
+|
+| meta S1 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "text_quote"
+|     vector: "[0.8,0.1,0.1]"
+|   }
+| }
+|
+| meta S2 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "text_quote"
+|     vector: "[0.8,0.1,0.1]"
+|   }
+| }
+|
+| meta ALT1 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.5,0.3,0.2]"
+|   }
+| }
+|
+| meta ALT2 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.5,0.3,0.2]"
+|   }
+| }
+|
+| meta ALT3 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.2,0.5,0.3]"
+|   }
+| }
+|
+
+sidecar_document:
+| meta R1 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.9,0.1,0.0]"
+|   }
+| }
+|
+| meta R2 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.3,0.6,0.1]"
+|   }
+| }
+|
+| meta S1 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "text_quote"
+|     vector: "[0.8,0.1,0.1]"
+|   }
+| }
+|
+| meta S2 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "text_quote"
+|     vector: "[0.8,0.1,0.1]"
+|   }
+| }
+|
+| meta A1 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "object"
+|     vector: "[0.7,0.2,0.1]"
+|   }
+| }
+|
+| meta A2 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "object"
+|     vector: "[0.7,0.2,0.1]"
+|   }
+| }
+|
+| meta H1 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "summary"
+|     vector: "[0.6,0.2,0.2]"
+|   }
+| }
+|
+| meta H2 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "summary"
+|     vector: "[0.6,0.2,0.2]"
+|   }
+| }
+|
+| meta ALT1 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.5,0.3,0.2]"
+|   }
+| }
+|
+| meta ALT2 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.5,0.3,0.2]"
+|   }
+| }
+|
+| meta ALT3 {
+|   embedding {
+|     model: "text-embedding-3-small"
+|     dimensions: 3
+|     generated_at: "2026-05-16T12:00:00Z"
+|     provider: "openai"
+|     source_field: "label"
+|     vector: "[0.2,0.5,0.3]"
+|   }
+| }
+|

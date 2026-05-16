@@ -433,6 +433,19 @@
       "notes": "raw extract stdout should reject embedding options because stdout is reserved for generated `.ssd`"
     },
     {
+      "id": "extract-raw-stdout-bundle-embed-conflict",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small --format bundle docs/examples/extract-raw-source.txt",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "--format", "bundle", "docs/examples/extract-raw-source.txt"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-raw-stdout-bundle-embed-conflict.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "raw extract stdout should also reject explicit bundle profile selection when embedding generation is requested"
+    },
+    {
       "id": "extract-stdout-multi-input",
       "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small docs/examples/extract-source.ssd docs/examples/minimal.ssd",
       "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "docs/examples/extract-source.ssd", "docs/examples/minimal.ssd"],
@@ -444,7 +457,7 @@
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/extract-stdout-multi-input.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "embedding-enabled extract --stdout should remain single-input even after no-provider stdout aggregation is added"
+      "notes": "multi-input embedding-enabled extract --stdout should require an explicit stdout profile instead of reusing the single-input omitted sidecar default"
     },
     {
       "id": "extract-stdout-inline-format-without-embedding",
@@ -471,6 +484,32 @@
       "expected_stderr": "docs/examples/golden/extract-stdout-sidecar-format-without-embedding.error.stderr",
       "expected_output_kind": "exact",
       "notes": "extract should reject explicit sidecar stdout profile selection on the no-provider path"
+    },
+    {
+      "id": "extract-stdout-bundle-format-without-embedding",
+      "command": "ssd extract --stdout --format bundle docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "--format", "bundle", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-stdout-bundle-format-without-embedding.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "extract should reject bundle stdout profile selection on the no-provider path"
+    },
+    {
+      "id": "extract-stdout-mixed-input-bundle-embed-conflict",
+      "command": "ssd extract --stdout --embed-provider openai --embed-model text-embedding-3-small --format bundle docs/examples/extract-source.ssd docs/examples/extract-raw-source.txt",
+      "argv": ["ssd", "extract", "--stdout", "--embed-provider", "openai", "--embed-model", "text-embedding-3-small", "--format", "bundle", "docs/examples/extract-source.ssd", "docs/examples/extract-raw-source.txt"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-stdout-mixed-input-bundle-embed-conflict.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "embedding-enabled extract --stdout should reject mixed `.ssd` and raw `.txt` input even when bundle output is requested"
     },
     {
       "id": "extract-out-format-inline",
@@ -501,6 +540,21 @@
       "expected_stderr": "docs/examples/golden/extract-out-format-sidecar.error.stderr",
       "expected_output_kind": "exact",
       "notes": "extract --out should reject sidecar profile selection because format stays stdout-only in this slice"
+    },
+    {
+      "id": "extract-out-format-bundle",
+      "command": "ssd extract --out docs/examples/generated/extract-format-bundle.ssd --format bundle docs/examples/extract-source.ssd",
+      "argv": ["ssd", "extract", "--out", "docs/examples/generated/extract-format-bundle.ssd", "--format", "bundle", "docs/examples/extract-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/extract-source.ssd"],
+      "expected_absent_files": ["docs/examples/generated/extract-format-bundle.ssd"],
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/extract-out-format-bundle.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "extract --out should reject bundle profile selection because bundle is stdout-only in this slice"
     },
     {
       "id": "extract-out-alias-input",

@@ -6,12 +6,13 @@ Usage:
 - `ssd extract --out <output.ssd> <input.ssd|input.txt>`
 - `ssd extract --out <output.ssd> <input.ssd|input.txt> <input.ssd|input.txt>...`
 - `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> <input.ssd>`
-- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar <input.ssd>`
+- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar|bundle <input.ssd>`
+- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> --format inline|sidecar|bundle <input.ssd> <input.ssd>...`
 - `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt> <input.ssd|input.txt>...`
 
 Status:
 - This subcommand currently supports canonical inline `.ssd` stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input inline `.ssd` aggregation through `--out`, and explicit embedding generation through `ollama` or `openai` adapters.
-- Embedding-enabled `--stdout` remains single-input `.ssd`; `--format` omitted and `--format sidecar` emit generated `.ssm`, while `--format inline` returns one `.ssd` payload without introducing stdout multiplexing. Raw `.txt` embedding generation still requires `--out <output.ssd>`.
+- Embedding-enabled `--stdout` keeps single-input omitted=`sidecar`; explicit `--format inline|sidecar|bundle` works on one existing `.ssd`, and multi-input existing `.ssd` requires an explicit `--format inline|sidecar|bundle`. `bundle` returns one line-prefixed stdout framing that carries both inline `.ssd` and generated `.ssm` payloads. Raw `.txt` embedding generation still requires `--out <output.ssd>`.
 
 Related help:
 - `ssd help grammar`
