@@ -1005,7 +1005,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, and homogeneous `and`/`or` chains without parentheses. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, and parenthesized grouping; `not` and function calls remain outside this slice. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -1093,7 +1093,7 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd search <query.ssq> <file>...`\n\n"
                "Status:\n"
                "- This subcommand currently supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`.\n"
-               "- `where` accepts presence checks, scalar equality, numeric range comparisons, and flat `and`/`or` chains; mixed operators, parentheses, and function calls remain outside this slice.\n"
+               "- `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, and parenthesized grouping; `not` and function calls remain outside this slice.\n"
                "- `similar` uses precomputed embeddings from the integrated input view and excludes the anchor target from results.\n"
                "- `similar` with `return: subgraph` reuses the grouped subgraph shape and includes top-level similarity metadata plus per-group scores.\n\n"
                "Related help:\n"
@@ -1441,7 +1441,7 @@ CommandResult make_invalid_query_filter_error(const std::vector<std::string_view
                        "\nquery_file: " + query_file.generic_string() +
                        "\n" + issue.clause + ": " + issue.expression +
                        "\nreason: " + issue.reason +
-                       "\nallowed:\n  - field\n  - field = \"value\"\n  - field = 1\n  - field = true|false\n  - field > 0.8\n  - field and other = true\n  - field > 0.8 or other\nhint: see `ssd help reference search`\n",
+                       "\nallowed:\n  - field\n  - field = \"value\"\n  - field = 1\n  - field = true|false\n  - field > 0.8\n  - field and other = true\n  - field > 0.8 or other\n  - field and other = true or third\n  - (field or other) and third > 0.8\nhint: see `ssd help reference search`\n",
     };
 }
 

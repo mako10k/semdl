@@ -267,7 +267,7 @@ segment HELP_LINE_51 {
 
 segment HELP_LINE_52 {
   source: HELP_TOPIC
-  text_quote: "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, and homogeneous `and`/`or` chains without parentheses. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`."
+  text_quote: "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, and parenthesized grouping; `not` and function calls remain outside this slice. `extract` supports skeletal raw `.txt` intake plus explicit `ollama` and `openai` embedding adapters; raw `--stdout` is `.ssd`-only and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`."
 }
 
 segment HELP_LINE_53 {

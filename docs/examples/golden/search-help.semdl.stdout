@@ -38,7 +38,7 @@ segment HELP_LINE_5 {
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- `where` accepts presence checks, scalar equality, numeric range comparisons, and flat `and`/`or` chains; mixed operators, parentheses, and function calls remain outside this slice."
+  text_quote: "- `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, and parenthesized grouping; `not` and function calls remain outside this slice."
 }
 
 segment HELP_LINE_7 {

@@ -468,15 +468,18 @@ anchor または candidate の埋め込みが欠落、malformed vector、unreada
 後続 filter slice では、`.ssq` の `where` を次まで広げてよい。
 
 - numeric field に対する `>`, `>=`, `<`, `<=` の range comparison
-- `and` または `or` のみで連結された homogeneous logical chain
-- chain の各項は presence check、equality check、numeric range comparison のいずれか
+- `and` / `or` を含む boolean expression
+- parenthesized grouping
+- 各 leaf 項は presence check、equality check、numeric range comparison のいずれか
 
 この slice では次を追加制約として固定する。
 
 - `=` は既存互換の token equality を維持し、数値右辺でも lexical equality として扱う
 - range comparison の右辺は number に限定する
 - range comparison で左辺 field が欠損または非数値の candidate は failure ではなく no-match とする
-- `and` と `or` の混在、括弧、関数呼び出しは引き続き `.ssq` grammar artifact に含めない
+- precedence は `and` が `or` より高い
+- 括弧は precedence override と nested grouping に使ってよい
+- `not`、関数呼び出し、新 predicate は引き続き `.ssq` grammar artifact に含めない
 
 workspace に concrete sample が少ない段階では、この artifact を full query language の完成版としてではなく、
 将来 semql family へつながる starting point として扱う。
@@ -954,6 +957,15 @@ test runner 定義:
 - `ssd search docs/query/valid-logical-or-filter.ssq docs/examples/minimal.ssd`
   - homogeneous `or` chain が成功し、いずれかの term を満たす candidate を返す
   - 期待出力は [docs/examples/golden/search-valid-logical-or-filter.stdout](docs/examples/golden/search-valid-logical-or-filter.stdout) と一致する
+- `ssd search docs/query/valid-mixed-logical-filter.ssq docs/examples/minimal.ssd`
+  - mixed `and` / `or` expression は `and` 優先で評価してよい
+  - 期待出力は [docs/examples/golden/search-valid-mixed-logical-filter.stdout](docs/examples/golden/search-valid-mixed-logical-filter.stdout) と一致する
+- `ssd search docs/query/valid-parenthesized-logical-filter.ssq docs/examples/minimal.ssd`
+  - parenthesized grouping は default precedence を override してよい
+  - 期待出力は [docs/examples/golden/search-valid-parenthesized-logical-filter.stdout](docs/examples/golden/search-valid-parenthesized-logical-filter.stdout) と一致する
+- `ssd search docs/query/valid-parenthesized-quoted-string-filter.ssq docs/examples/minimal.ssd`
+  - quoted string 内の parentheses は grouping token として解釈せず leaf value のまま扱う
+  - 期待出力は [docs/examples/golden/search-valid-parenthesized-quoted-string-filter.stdout](docs/examples/golden/search-valid-parenthesized-quoted-string-filter.stdout) と一致する
 - `ssd search docs/query/valid-range-nonnumeric-no-match.ssq docs/examples/minimal.ssd`
   - 非数値 field に対する range filter は failure ではなく no-match に劣化する
   - 期待出力は [docs/examples/golden/search-valid-range-nonnumeric-no-match.stdout](docs/examples/golden/search-valid-range-nonnumeric-no-match.stdout) と一致する
@@ -1049,12 +1061,18 @@ test runner 定義:
 - `ssd annotate id:H1 rationale "未完 docs/examples/minimal.ssd`
   - quoted string が閉じていないため字句段階で失敗する
   - 期待 stderr は [docs/examples/golden/annotate-unterminated-quoted-string.error.stderr](docs/examples/golden/annotate-unterminated-quoted-string.error.stderr) と一致する
-- `ssd search docs/query/invalid-mixed-logical-filter.ssq docs/examples/minimal.ssd`
-  - `and` と `or` の mixed chain はこの slice では失敗する
-  - 期待 stderr は [docs/examples/golden/search-invalid-mixed-logical-filter.error.stderr](docs/examples/golden/search-invalid-mixed-logical-filter.error.stderr) と一致する
 - `ssd search docs/query/invalid-range-quoted-number-filter.ssq docs/examples/minimal.ssd`
   - range filter の rhs が quoted number の場合は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-range-quoted-number-filter.error.stderr](docs/examples/golden/search-invalid-range-quoted-number-filter.error.stderr) と一致する
+- `ssd search docs/query/invalid-unmatched-parenthesis-filter.ssq docs/examples/minimal.ssd`
+  - closing されない grouping は失敗する
+  - 期待 stderr は [docs/examples/golden/search-invalid-unmatched-parenthesis-filter.error.stderr](docs/examples/golden/search-invalid-unmatched-parenthesis-filter.error.stderr) と一致する
+- `ssd search docs/query/invalid-empty-group-filter.ssq docs/examples/minimal.ssd`
+  - empty grouping は失敗する
+  - 期待 stderr は [docs/examples/golden/search-invalid-empty-group-filter.error.stderr](docs/examples/golden/search-invalid-empty-group-filter.error.stderr) と一致する
+- `ssd search docs/query/invalid-group-adjacency-filter.ssq docs/examples/minimal.ssd`
+  - term と group の間に operator がない式は失敗する
+  - 期待 stderr は [docs/examples/golden/search-invalid-group-adjacency-filter.error.stderr](docs/examples/golden/search-invalid-group-adjacency-filter.error.stderr) と一致する
 
 成功系と失敗系の両方は、runner から収集可能な manifest 形式で保持する。
 

@@ -326,6 +326,45 @@
       "notes": "logical or should accept either matching term in a homogeneous chain"
     },
     {
+      "id": "search-valid-mixed-logical-filter",
+      "command": "ssd search docs/query/valid-mixed-logical-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-mixed-logical-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-mixed-logical-filter.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "mixed boolean expressions should honor `and` precedence over `or`"
+    },
+    {
+      "id": "search-valid-parenthesized-logical-filter",
+      "command": "ssd search docs/query/valid-parenthesized-logical-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-parenthesized-logical-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-parenthesized-logical-filter.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "parentheses should override default boolean precedence"
+    },
+    {
+      "id": "search-valid-parenthesized-quoted-string-filter",
+      "command": "ssd search docs/query/valid-parenthesized-quoted-string-filter.ssq docs/examples/minimal.ssd",
+      "argv": ["ssd", "search", "docs/query/valid-parenthesized-quoted-string-filter.ssq", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/search-valid-parenthesized-quoted-string-filter.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "parentheses inside quoted strings should not be parsed as grouping tokens"
+    },
+    {
       "id": "search-valid-range-nonnumeric-no-match",
       "command": "ssd search docs/query/valid-range-nonnumeric-no-match.ssq docs/examples/minimal.ssd",
       "argv": ["ssd", "search", "docs/query/valid-range-nonnumeric-no-match.ssq", "docs/examples/minimal.ssd"],

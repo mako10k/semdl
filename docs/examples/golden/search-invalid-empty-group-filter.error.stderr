@@ -1,8 +1,8 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-missing-select.ssq docs/examples/minimal.ssd
-query_file: docs/query/invalid-missing-select.ssq
-select: <missing>
-reason: select is required
+command: ssd search docs/query/invalid-empty-group-filter.ssq docs/examples/minimal.ssd
+query_file: docs/query/invalid-empty-group-filter.ssq
+where: () or source_presence
+reason: parenthesized groups must contain a filter expression
 allowed:
   - field
   - field = "value"

@@ -156,12 +156,14 @@ step S8C:
 step S8J:
   decision D8J based_on D8C:
     |
-      後続 filter slice では `.ssq` の `where` に numeric range comparison と homogeneous logical chain を追加してよい。
+      後続 filter slice では `.ssq` の `where` に numeric range comparison と boolean expression を追加してよい。
       range operator は `>`, `>=`, `<`, `<=` に限定し、右辺は number に限る。
-      logical composition は `and` のみ、または `or` のみで連結された chain に限定し、mixed operator、括弧、関数呼び出しは引き続き deferred とする。
+      logical composition は `and` / `or` の mixed expression と parenthesized grouping を受け付けてよく、precedence は `and` を `or` より高く扱ってよい。
+      unmatched parenthesis、empty grouping、group adjacency の欠落は validation failure とする。
+      `not`、関数呼び出し、新 predicate は引き続き deferred とする。
       `=` は既存互換の token equality を維持し、range comparison で左辺 field が欠損または非数値の candidate は failure ではなく no-match とする。
     annotation rationale:
-      "query layer を一度に full precedence grammar へ広げず、sample-backed な比較と flat composition を最小追加で formalize するため"
+      "full expression language へは踏み込まず、sample-backed な precedence と grouping だけを先に formalize するため"
 
 step S8D:
   decision D8D based_on D8B, D4:

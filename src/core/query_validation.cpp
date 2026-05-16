@@ -230,10 +230,21 @@ struct FilterClause {
     std::string raw_value;
 };
 
+struct WhereExpressionNode {
+    enum class Kind {
+        clause,
+        conjunction,
+        disjunction,
+    };
+
+    Kind kind = Kind::clause;
+    FilterClause clause;
+    std::vector<WhereExpressionNode> children;
+};
+
 struct ParsedWhereExpression {
     QueryValidationIssue issue;
-    std::vector<FilterClause> clauses;
-    std::string logical_operator;
+    std::optional<WhereExpressionNode> root;
 };
 
 std::optional<double> parse_number_value(std::string_view value) {
@@ -372,31 +383,182 @@ ParsedWhereExpression parse_where_expression(std::string_view expression) {
         return parsed;
     }
 
-    const bool has_and = contains_unquoted_logical_keyword(parsed.issue.expression, "and");
-    const bool has_or = contains_unquoted_logical_keyword(parsed.issue.expression, "or");
-    if (has_and && has_or) {
-        parsed.issue.valid = false;
-        parsed.issue.reason = "mixing 'and' and 'or' is not supported in the current .ssq filter profile";
+    struct WhereParser {
+        std::string_view text;
+        std::size_t position = 0;
+        QueryValidationIssue& issue;
+
+        void skip_spaces() {
+            while (position < text.size() && text[position] == ' ') {
+                ++position;
+            }
+        }
+
+        static bool is_logical_keyword_at(std::string_view value, std::size_t index, std::string_view keyword) {
+            if (index + keyword.size() > value.size()) {
+                return false;
+            }
+            if (value.substr(index, keyword.size()) != keyword) {
+                return false;
+            }
+            return index + keyword.size() < value.size() && value[index + keyword.size()] == ' ';
+        }
+
+        std::size_t find_filter_term_end() const {
+            bool in_quotes = false;
+            for (std::size_t index = position; index < text.size(); ++index) {
+                if (text[index] == '"') {
+                    in_quotes = !in_quotes;
+                    continue;
+                }
+                if (in_quotes) {
+                    continue;
+                }
+                if (text[index] == ')' || text[index] == '(') {
+                    return index;
+                }
+                if (index > position && text[index - 1] == ' ' &&
+                    (is_logical_keyword_at(text, index, "and") || is_logical_keyword_at(text, index, "or"))) {
+                    return index;
+                }
+            }
+            return text.size();
+        }
+
+        bool consume_keyword(std::string_view keyword) {
+            skip_spaces();
+            if (!is_logical_keyword_at(text, position, keyword)) {
+                return false;
+            }
+            position += keyword.size();
+            skip_spaces();
+            return true;
+        }
+
+        std::optional<WhereExpressionNode> parse_primary() {
+            skip_spaces();
+            if (position >= text.size()) {
+                issue.valid = false;
+                issue.reason = "logical chains require a filter term on both sides of the operator";
+                return std::nullopt;
+            }
+
+            if (text[position] == ')') {
+                issue.valid = false;
+                issue.reason = "unexpected ')' without a matching '(' in the current .ssq filter profile";
+                return std::nullopt;
+            }
+
+            if (text[position] == '(') {
+                ++position;
+                skip_spaces();
+                if (position < text.size() && text[position] == ')') {
+                    issue.valid = false;
+                    issue.reason = "parenthesized groups must contain a filter expression";
+                    return std::nullopt;
+                }
+
+                auto grouped = parse_or_expression();
+                if (!grouped.has_value()) {
+                    return std::nullopt;
+                }
+
+                skip_spaces();
+                if (position >= text.size() || text[position] != ')') {
+                    issue.valid = false;
+                    issue.reason = "closing ')' is required for each opening '(' in the current .ssq filter profile";
+                    return std::nullopt;
+                }
+                ++position;
+                return grouped;
+            }
+
+            const std::size_t term_end = find_filter_term_end();
+            const std::string term = trim_space_copy(text.substr(position, term_end - position));
+            if (term.empty()) {
+                issue.valid = false;
+                issue.reason = "boolean terms and groups must be separated by `and` or `or`";
+                return std::nullopt;
+            }
+
+            auto clause = parse_filter_clause(term, issue);
+            if (!clause.has_value()) {
+                return std::nullopt;
+            }
+
+            position = term_end;
+            return WhereExpressionNode{
+                .kind = WhereExpressionNode::Kind::clause,
+                .clause = std::move(*clause),
+            };
+        }
+
+        std::optional<WhereExpressionNode> parse_and_expression() {
+            auto first = parse_primary();
+            if (!first.has_value()) {
+                return std::nullopt;
+            }
+
+            std::vector<WhereExpressionNode> children;
+            children.push_back(std::move(*first));
+
+            while (consume_keyword("and")) {
+                auto next = parse_primary();
+                if (!next.has_value()) {
+                    return std::nullopt;
+                }
+                children.push_back(std::move(*next));
+            }
+
+            if (children.size() == 1) {
+                return children.front();
+            }
+            return WhereExpressionNode{
+                .kind = WhereExpressionNode::Kind::conjunction,
+                .children = std::move(children),
+            };
+        }
+
+        std::optional<WhereExpressionNode> parse_or_expression() {
+            auto first = parse_and_expression();
+            if (!first.has_value()) {
+                return std::nullopt;
+            }
+
+            std::vector<WhereExpressionNode> children;
+            children.push_back(std::move(*first));
+
+            while (consume_keyword("or")) {
+                auto next = parse_and_expression();
+                if (!next.has_value()) {
+                    return std::nullopt;
+                }
+                children.push_back(std::move(*next));
+            }
+
+            if (children.size() == 1) {
+                return children.front();
+            }
+            return WhereExpressionNode{
+                .kind = WhereExpressionNode::Kind::disjunction,
+                .children = std::move(children),
+            };
+        }
+    };
+
+    WhereParser parser{.text = parsed.issue.expression, .issue = parsed.issue};
+    parsed.root = parser.parse_or_expression();
+    if (!parsed.issue.valid) {
         return parsed;
     }
 
-    std::vector<std::string> terms;
-    if (has_and) {
-        parsed.logical_operator = "and";
-        terms = split_unquoted_logical_keyword(parsed.issue.expression, "and");
-    } else if (has_or) {
-        parsed.logical_operator = "or";
-        terms = split_unquoted_logical_keyword(parsed.issue.expression, "or");
-    } else {
-        terms.push_back(parsed.issue.expression);
-    }
-
-    for (const auto& term : terms) {
-        auto clause = parse_filter_clause(term, parsed.issue);
-        if (!clause.has_value()) {
-            return parsed;
-        }
-        parsed.clauses.push_back(std::move(*clause));
+    parser.skip_spaces();
+    if (parser.position != parsed.issue.expression.size()) {
+        parsed.issue.valid = false;
+        parsed.issue.reason = parsed.issue.expression[parser.position] == ')'
+                                  ? "unexpected ')' without a matching '(' in the current .ssq filter profile"
+                                  : "boolean terms and groups must be separated by `and` or `or`";
+        return parsed;
     }
 
     return parsed;
@@ -582,21 +744,27 @@ bool matches_where_expression(const std::map<std::string, std::string>& fields, 
         return false;
     };
 
-    if (parsed.logical_operator == "or") {
-        for (const auto& clause : parsed.clauses) {
-            if (matches_clause(clause)) {
-                return true;
-            }
+    const auto matches_node = [&](const auto& self, const WhereExpressionNode& node) -> bool {
+        if (node.kind == WhereExpressionNode::Kind::clause) {
+            return matches_clause(node.clause);
         }
-        return false;
-    }
-
-    for (const auto& clause : parsed.clauses) {
-        if (!matches_clause(clause)) {
+        if (node.kind == WhereExpressionNode::Kind::disjunction) {
+            for (const auto& child : node.children) {
+                if (self(self, child)) {
+                    return true;
+                }
+            }
             return false;
         }
-    }
-    return true;
+        for (const auto& child : node.children) {
+            if (!self(self, child)) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    return parsed.root.has_value() && matches_node(matches_node, *parsed.root);
 }
 
 QueryValidationIssue validate_select_expression(std::string_view expression) {

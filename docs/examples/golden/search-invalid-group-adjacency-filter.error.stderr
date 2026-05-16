@@ -1,8 +1,8 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-missing-select.ssq docs/examples/minimal.ssd
-query_file: docs/query/invalid-missing-select.ssq
-select: <missing>
-reason: select is required
+command: ssd search docs/query/invalid-group-adjacency-filter.ssq docs/examples/minimal.ssd
+query_file: docs/query/invalid-group-adjacency-filter.ssq
+where: source_presence (confidence > 0.8)
+reason: boolean terms and groups must be separated by `and` or `or`
 allowed:
   - field
   - field = "value"

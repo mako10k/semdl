@@ -5,7 +5,7 @@ Usage:
 
 Status:
 - This subcommand currently supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`.
-- `where` accepts presence checks, scalar equality, numeric range comparisons, and flat `and`/`or` chains; mixed operators, parentheses, and function calls remain outside this slice.
+- `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, and parenthesized grouping; `not` and function calls remain outside this slice.
 - `similar` uses precomputed embeddings from the integrated input view and excludes the anchor target from results.
 - `similar` with `return: subgraph` reuses the grouped subgraph shape and includes top-level similarity metadata plus per-group scores.
 

@@ -1,0 +1,5 @@
+query {
+  select: assertion
+  where: (source_presence or confidence > 0.9) and label = "missing"
+  return: matches
+}

@@ -1,0 +1,6 @@
+# Parentheses inside quoted strings should stay leaf values, not grouping tokens
+query {
+  select: assertion
+  where: label = "(売上増加)"
+  return: matches
+}
