@@ -2,10 +2,15 @@ SEMDL Help Topic: reference add
 
 Usage:
 - `ssd add <kind> <file> [field=value ...]`
+- `ssd add <kind> <file> [field=value ...] --dry-run`
 
 Status:
-- This subcommand is planned but not implemented in the current slice.
+- The current slice supports inline structural kinds: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`.
+- `provenance`, `annotation`, and sidecar-targeted add remain deferred.
 
 Related help:
 - `ssd help grammar`
 - `ssd help troubleshooting`
+
+Sample:
+- `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --dry-run`

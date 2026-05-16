@@ -475,6 +475,37 @@
       "notes": "add help also supports SEMDL rendering"
     },
     {
+      "id": "add-resource-R2-dryrun",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --dry-run",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix", "label=月次売上補足", "--dry-run"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-resource-R2.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "add resource dry-run should preview one inline structural addition"
+    },
+    {
+      "id": "add-resource-R2-apply",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix", "label=月次売上補足"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/add-resource-R2.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-resource-R2.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "add resource apply should rewrite only the inline file"
+    },
+    {
       "id": "set-help",
       "command": "ssd set --help",
       "argv": ["ssd", "set", "--help"],

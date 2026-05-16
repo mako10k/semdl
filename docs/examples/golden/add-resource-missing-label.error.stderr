@@ -1,0 +1,6 @@
+ERROR add_missing_required_fields
+command: ssd add resource docs/examples/minimal.ssd id=R2 type=appendix
+kind: resource
+missing_fields:
+  - label
+hint: provide all required field=value pairs for the selected kind

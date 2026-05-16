@@ -23,7 +23,7 @@ normalize-cmd   = "normalize" , ws , input-file , { ws , common-opt } | "normali
 extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file ;
 extract-stdout-cmd = "extract" , ws , stdout-opt , { ws , extract-opt } , ws , input-file ;
 
-add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , { ws , common-opt } | "add" , ws , help-opt , [ ws , help-render-opt ] ;
+add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , [ ws , dry-run-opt ] | "add" , ws , help-opt , [ ws , help-render-opt ] ;
 set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;
 remove-cmd      = "remove" , ws , selector , ws , input-file , { ws , remove-opt } , { ws , common-opt } | "remove" , ws , help-opt , [ ws , help-render-opt ] ;
 annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , { ws , common-opt } , ws , input-file | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
@@ -43,8 +43,7 @@ embed-provider-opt = "--embed-provider" , ws , identifier ;
 embed-model-opt = "--embed-model" , ws , model-token ;
 model-token     = identifier , { ":" , identifier } ;
 
-add-kind        = "resource" | "segment" | "assertion" | "hypothesis"
-                | "alternative" | "provenance" | "annotation" ;
+add-kind        = "resource" | "segment" | "assertion" | "hypothesis" | "alternative" ;
 annotation-kind = "rationale" | "caveat" | "todo" | "status" | "explanation" ;
 
 common-opt      = dry-run-opt | out-opt , ws , output-file | stdout-opt | target-opt | format-opt | fail-on-conflict-opt | allow-multi-opt ;

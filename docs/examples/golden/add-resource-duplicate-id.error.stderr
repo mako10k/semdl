@@ -1,0 +1,4 @@
+ERROR add_id_conflict
+command: ssd add resource docs/examples/minimal.ssd id=R1 type=appendix label=重複ID
+id: R1
+hint: choose a new id that does not already exist in the current document set

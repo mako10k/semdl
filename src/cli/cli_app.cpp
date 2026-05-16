@@ -262,6 +262,16 @@ struct UpdatePreview {
     bool include_target_header = true;
 };
 
+struct ParsedAddArgs {
+    bool valid = true;
+    bool use_dry_run = false;
+    std::string kind;
+    std::filesystem::path input_file;
+    std::vector<std::pair<std::string, std::string>> fields;
+    std::map<std::string, std::string> field_map;
+    std::string invalid_field;
+};
+
 std::filesystem::path derive_sidecar_path(const std::filesystem::path& input_file) {
     auto sidecar = input_file;
     sidecar.replace_extension(".ssm");
@@ -293,6 +303,43 @@ ParsedHelpFormat parse_help_format_tail(const std::vector<std::string_view>& arg
             parsed.valid = false;
             parsed.invalid_value = args.back();
         }
+    }
+
+    return parsed;
+}
+
+ParsedAddArgs parse_add_args(const std::vector<std::string_view>& args) {
+    ParsedAddArgs parsed;
+    if (args.size() < 3) {
+        parsed.valid = false;
+        return parsed;
+    }
+
+    parsed.kind = std::string(args[1]);
+    parsed.input_file = std::filesystem::path(args[2]);
+
+    for (std::size_t index = 3; index < args.size(); ++index) {
+        if (args[index] == "--dry-run") {
+            parsed.use_dry_run = true;
+            continue;
+        }
+        if (args[index].starts_with("--")) {
+            parsed.valid = false;
+            parsed.invalid_field = std::string(args[index]);
+            return parsed;
+        }
+
+        const auto equals = args[index].find('=');
+        if (equals == std::string_view::npos || equals == 0 || equals + 1 >= args[index].size()) {
+            parsed.valid = false;
+            parsed.invalid_field = std::string(args[index]);
+            return parsed;
+        }
+
+        const std::string name(args[index].substr(0, equals));
+        const std::string value(args[index].substr(equals + 1));
+        parsed.fields.emplace_back(name, value);
+        parsed.field_map[name] = value;
     }
 
     return parsed;
@@ -390,6 +437,64 @@ CommandResult make_split_apply_result(const std::filesystem::path& input_file,
     return CommandResult{.exit_code = 0, .stdout_text = output.str(), .stderr_text = ""};
 }
 
+CommandResult make_invalid_add_kind_error(const std::vector<std::string_view>& args, std::string_view kind) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_add_kind\ncommand: " + join_args(args) +
+                       "\nkind: " + std::string(kind) +
+                       "\nallowed:\n  - resource\n  - segment\n  - assertion\n  - hypothesis\n  - alternative\n",
+    };
+}
+
+CommandResult make_invalid_add_field_error(const std::vector<std::string_view>& args, std::string_view field_text) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_add_field_assignment\ncommand: " + join_args(args) +
+                       "\nfield: " + std::string(field_text) +
+                       "\nexpected_form: name=value\nhint: add requires explicit field=value pairs after the input file\n",
+    };
+}
+
+CommandResult make_add_missing_required_fields_error(const std::vector<std::string_view>& args,
+                                                     std::string_view kind,
+                                                     const std::vector<std::string>& missing_fields) {
+    std::ostringstream output;
+    output << "ERROR add_missing_required_fields\n";
+    output << "command: " << join_args(args) << "\n";
+    output << "kind: " << kind << "\n";
+    output << "missing_fields:\n";
+    for (const auto& name : missing_fields) {
+        output << "  - " << name << "\n";
+    }
+    output << "hint: provide all required field=value pairs for the selected kind\n";
+    return CommandResult{.exit_code = 2, .stdout_text = "", .stderr_text = output.str()};
+}
+
+CommandResult make_add_duplicate_id_error(const std::vector<std::string_view>& args, std::string_view entity_id) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR add_id_conflict\ncommand: " + join_args(args) +
+                       "\nid: " + std::string(entity_id) +
+                       "\nhint: choose a new id that does not already exist in the current document set\n",
+    };
+}
+
+CommandResult make_add_reference_target_not_found_error(const std::vector<std::string_view>& args,
+                                                        std::string_view field_name,
+                                                        std::string_view target_id) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR add_reference_target_not_found\ncommand: " + join_args(args) +
+                       "\nfield: " + std::string(field_name) +
+                       "\ntarget: " + std::string(target_id) +
+                       "\nhint: referenced ids must already exist in the current document set\n",
+    };
+}
+
 CommandResult make_update_apply_result(const std::optional<std::filesystem::path>& ssd_file,
                                        const std::optional<std::filesystem::path>& ssm_file,
                                        int changes) {
@@ -456,7 +561,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`; `similar` with `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` remains unimplemented.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and structural `return: subgraph`; `similar` with `return: subgraph` remains unimplemented. `extract` supports explicit Ollama-backed embedding generation from an existing `.ssd` input; `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` currently supports inline structural kinds only.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -664,12 +769,16 @@ std::string reference_help_text(std::string_view target) {
     if (target == "add") {
         return "SEMDL Help Topic: reference add\n\n"
                "Usage:\n"
-               "- `ssd add <kind> <file> [field=value ...]`\n\n"
+               "- `ssd add <kind> <file> [field=value ...]`\n"
+               "- `ssd add <kind> <file> [field=value ...] --dry-run`\n\n"
                "Status:\n"
-               "- This subcommand is planned but not implemented in the current slice.\n\n"
+               "- The current slice supports inline structural kinds: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`.\n"
+               "- `provenance`, `annotation`, and sidecar-targeted add remain deferred.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
-               "- `ssd help troubleshooting`\n";
+               "- `ssd help troubleshooting`\n\n"
+               "Sample:\n"
+               "- `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --dry-run`\n";
     }
 
     return "SEMDL Help Topic: reference\n\n"
@@ -1153,6 +1262,29 @@ CommandResult make_remove_break_reference_error(const std::vector<std::string_vi
 
 std::string require_field_from_entity(const semdl::core::DocumentData& document, std::string_view entity_id, const std::string& field_name, bool metadata);
 
+std::vector<std::string> required_add_fields_for_kind(std::string_view kind) {
+    if (kind == "resource") {
+        return {"id", "type", "label"};
+    }
+    if (kind == "segment") {
+        return {"id", "source", "text_quote"};
+    }
+    if (kind == "assertion") {
+        return {"id", "subject", "predicate", "object"};
+    }
+    if (kind == "hypothesis") {
+        return {"id", "about", "kind", "summary"};
+    }
+    if (kind == "alternative") {
+        return {"id", "group", "label"};
+    }
+    return {};
+}
+
+bool is_supported_add_kind(std::string_view kind) {
+    return kind == "resource" || kind == "segment" || kind == "assertion" || kind == "hypothesis" || kind == "alternative";
+}
+
 bool looks_number_literal(std::string_view value) {
     if (value.empty()) {
         return false;
@@ -1195,6 +1327,10 @@ std::string render_scalar_argument(std::string_view value) {
         return std::string(value);
     }
     return quote_value(value);
+}
+
+std::string render_add_field_assignment(std::string_view name, std::string_view value) {
+    return std::string(name) + "=" + render_scalar_argument(value);
 }
 
 std::string metadata_kind_for_entity(const semdl::core::DocumentData& document, std::string_view entity_id) {
@@ -1263,9 +1399,76 @@ bool apply_remove_meta_change(semdl::core::DocumentData& document, const semdl::
     return removed;
 }
 
+std::optional<std::pair<std::string, std::string>> validate_add_references(const semdl::core::DocumentData& document,
+                                                                           std::string_view kind,
+                                                                           const std::map<std::string, std::string>& field_map) {
+    const auto require_existing = [&](std::string_view field_name) -> std::optional<std::pair<std::string, std::string>> {
+        const auto it = field_map.find(std::string(field_name));
+        if (it == field_map.end()) {
+            return std::nullopt;
+        }
+        if (!document.contains_entity_id(it->second)) {
+            return std::pair<std::string, std::string>{std::string(field_name), it->second};
+        }
+        return std::nullopt;
+    };
+
+    if (kind == "segment") {
+        return require_existing("source");
+    }
+    if (kind == "assertion") {
+        if (auto missing = require_existing("subject"); missing.has_value()) {
+            return missing;
+        }
+        return require_existing("source_segment");
+    }
+    if (kind == "hypothesis") {
+        return require_existing("about");
+    }
+    return std::nullopt;
+}
+
 void write_text_file(const std::filesystem::path& file_path, const std::string& content) {
     std::ofstream output(file_path, std::ios::binary);
     output << content;
+}
+
+UpdatePreview build_add_preview(const ParsedAddArgs& parsed) {
+    UpdatePreview preview;
+    preview.command_line = "ssd add " + parsed.kind + " " + parsed.input_file.generic_string();
+    for (const auto& [name, value] : parsed.fields) {
+        preview.command_line += " " + render_add_field_assignment(name, value);
+    }
+    preview.target_profile = "inline";
+    preview.target_file = parsed.input_file.generic_string();
+    preview.detail_lines.push_back("kind: " + parsed.kind);
+    preview.detail_lines.push_back("id: " + parsed.field_map.at("id"));
+    preview.detail_lines.push_back("fields:");
+    for (const auto& [name, value] : parsed.fields) {
+        if (name == "id") {
+            continue;
+        }
+        preview.detail_lines.push_back("  - " + render_add_field_assignment(name, value));
+    }
+    return preview;
+}
+
+bool apply_add_change(semdl::core::DocumentData& document, const ParsedAddArgs& parsed) {
+    const auto id_it = parsed.field_map.find("id");
+    if (id_it == parsed.field_map.end()) {
+        return false;
+    }
+
+    semdl::core::EntityData entity;
+    entity.kind = parsed.kind;
+    for (const auto& [name, value] : parsed.fields) {
+        if (name == "id") {
+            continue;
+        }
+        entity.fields[name] = render_scalar_argument(value);
+    }
+    document.entities[id_it->second] = std::move(entity);
+    return true;
 }
 
 UpdatePreview build_set_preview(const semdl::core::DocumentData& document, const semdl::core::Selector& selector, const std::vector<std::string_view>& args) {
@@ -1784,15 +1987,71 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
     }
 
-    if (args[0] == "add" || args[0] == "normalize") {
+    if (args[0] == "add") {
         if (args.size() >= 2 && args[1] == "--help") {
             const auto parsed = parse_help_format_tail(args, 2);
             if (!parsed.valid) {
                 return make_invalid_help_format_error(args, parsed.invalid_value);
             }
-            return make_help_result(args, "reference", args[0], parsed.format);
+            return make_help_result(args, "reference", "add", parsed.format);
         }
-        if (args[0] == "normalize" && args.size() >= 3 && args[2] == "--stdout") {
+
+        const auto parsed = parse_add_args(args);
+        if (!parsed.valid) {
+            if (args.size() < 3) {
+                return make_missing_required_argument_error(args, "ssd add <kind> <file> [field=value ...]", "add");
+            }
+            return make_invalid_add_field_error(args, parsed.invalid_field);
+        }
+        if (!is_supported_add_kind(parsed.kind)) {
+            return make_invalid_add_kind_error(args, parsed.kind);
+        }
+
+        std::vector<std::string> missing_fields;
+        for (const auto& field_name : required_add_fields_for_kind(parsed.kind)) {
+            if (!parsed.field_map.contains(field_name)) {
+                missing_fields.push_back(field_name);
+            }
+        }
+        if (!missing_fields.empty()) {
+            return make_add_missing_required_fields_error(args, parsed.kind, missing_fields);
+        }
+
+        semdl::core::DocumentStore store;
+        auto document = store.load_document(parsed.input_file);
+        const auto& entity_id = parsed.field_map.at("id");
+        if (document.contains_entity_id(entity_id)) {
+            return make_add_duplicate_id_error(args, entity_id);
+        }
+        if (const auto reference_error = validate_add_references(document, parsed.kind, parsed.field_map); reference_error.has_value()) {
+            return make_add_reference_target_not_found_error(args, reference_error->first, reference_error->second);
+        }
+        if (parsed.use_dry_run) {
+            return make_dry_run_result(build_add_preview(parsed));
+        }
+        if (!apply_add_change(document, parsed)) {
+            return make_subcommand_not_implemented_error(args);
+        }
+
+        if (document.has_sidecar) {
+            const auto rendered = semdl::core::render_split_document(document);
+            write_text_file(parsed.input_file, rendered.inline_document);
+        } else {
+            write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
+        }
+
+        return make_update_apply_result(parsed.input_file, std::nullopt, 1);
+    }
+
+    if (args[0] == "normalize") {
+        if (args.size() >= 2 && args[1] == "--help") {
+            const auto parsed = parse_help_format_tail(args, 2);
+            if (!parsed.valid) {
+                return make_invalid_help_format_error(args, parsed.invalid_value);
+            }
+            return make_help_result(args, "reference", "normalize", parsed.format);
+        }
+        if (args.size() >= 3 && args[2] == "--stdout") {
             semdl::core::DocumentStore store;
             const auto document = store.load_document(std::filesystem::path(args[1]));
             return CommandResult{

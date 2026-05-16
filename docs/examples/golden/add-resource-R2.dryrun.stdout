@@ -1,0 +1,10 @@
+DRY-RUN
+command: ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label="月次売上補足"
+target_profile: inline
+target_file: docs/examples/minimal.ssd
+kind: resource
+id: R2
+fields:
+  - type=appendix
+  - label="月次売上補足"
+changes: 1

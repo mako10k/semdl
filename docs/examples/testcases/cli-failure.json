@@ -1,6 +1,32 @@
 {
   "cases": [
     {
+      "id": "add-resource-missing-label",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-resource-missing-label.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "missing required field should fail before writing"
+    },
+    {
+      "id": "add-resource-duplicate-id",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R1 type=appendix label=重複ID",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R1", "type=appendix", "label=重複ID"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-resource-duplicate-id.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "existing ids cannot be reused"
+    },
+    {
       "id": "similarity-missing-args-help",
       "command": "ssd similarity A1 ALT1A",
       "argv": ["ssd", "similarity", "A1", "ALT1A"],

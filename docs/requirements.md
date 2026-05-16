@@ -684,18 +684,29 @@ CLI は、少なくとも以下の 2 用途を支援すること。
 
 ## 8.6.2 add の対象種別
 
-ssd add <kind> は、少なくとも以下の kind を扱えることを推奨する。
+初期 add slice の `ssd add <kind>` は、少なくとも以下の inline structural kind を扱うこと。
 
 - resource
 - segment
 - assertion
 - hypothesis
 - alternative
-- provenance
-- annotation
+
+`provenance` と `annotation` は後続 slice に分離してよい。
 
 各 kind は、最低限 required field を持つこと。
 required field が不足する場合は対話補完ではなく失敗を返し、明示入力を促す。
+
+初期 add slice の required field は次を最小とする。
+
+- resource: id, type, label
+- segment: id, source, text_quote
+- assertion: id, subject, predicate, object
+- hypothesis: id, about, kind, summary
+- alternative: id, group, label
+
+初期 add slice は `.ssd` 本体への inline add と `--dry-run` を先に実装し、
+sidecar-only add と `--out` / `--stdout` / `--target` は後続 slice に分離してよい。
 
 ## 8.6.3 set と annotate の責務差分
 

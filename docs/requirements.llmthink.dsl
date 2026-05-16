@@ -45,6 +45,15 @@ step S2:
     annotation caveat:
       "条件式ベース更新や複数対象一括更新は初期必須要件に含めない"
 
+step S2A:
+  decision D2A based_on D2:
+    |
+      初期 `ssd add` slice は inline structural kind に限定し、
+      resource、segment、assertion、hypothesis、alternative を対象にする。
+      `provenance`、`annotation`、sidecar-targeted add、`--out`、`--stdout` は後続 slice に分離する。
+    annotation rationale:
+      "既存 renderer と acceptance fixture に乗る構造追加を先に実装すると、更新系最小集合の入口を小さく閉じられる"
+
 problem P2:
   "初期更新 CLI において、更新対象 selector と各レイヤの責務をどの粒度まで固定するか"
   annotation rationale:
