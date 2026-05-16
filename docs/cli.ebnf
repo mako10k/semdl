@@ -23,7 +23,10 @@ normalize-cmd   = "normalize" , ws , input-file , [ ws , stdout-opt | ws , dry-r
 merge-surface   = stdout-opt | dry-run-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
 
 extract-out-cmd = "extract" , ws , out-opt , ws , output-file , { ws , extract-opt } , ws , input-file , { ws , input-file } ;
-extract-stdout-cmd = "extract" , ws , stdout-opt , { ws , extract-opt } , ws , input-file ;
+extract-stdout-cmd = extract-stdout-inline-cmd | extract-stdout-embed-cmd ;
+extract-stdout-inline-cmd = "extract" , ws , stdout-opt , ws , input-file , { ws , input-file } ;
+extract-stdout-embed-cmd = "extract" , ws , stdout-opt , ws , extract-embed-pair , ws , input-file ;
+extract-embed-pair = embed-provider-opt , ws , embed-model-opt | embed-model-opt , ws , embed-provider-opt ;
 
 add-cmd         = "add" , ws , add-kind , ws , input-file , { ws , add-field } , [ ws , target-sidecar-opt ] , [ ws , dry-run-opt ] | "add" , ws , help-opt , [ ws , help-render-opt ] ;
 set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;

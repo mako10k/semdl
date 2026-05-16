@@ -431,7 +431,7 @@
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/extract-stdout-multi-input.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "extract --stdout should remain single-input even when embeddings are enabled"
+      "notes": "embedding-enabled extract --stdout should remain single-input even after no-provider stdout aggregation is added"
     },
     {
       "id": "extract-out-alias-input",

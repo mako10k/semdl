@@ -1253,7 +1253,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports skeletal raw `.txt` intake, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; raw `--stdout` stays single-input and embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` stays single-input `.ssd`, and raw embedding generation requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -1352,14 +1352,15 @@ std::string reference_help_text(std::string_view target) {
     if (target == "extract") {
         return "SEMDL Help Topic: reference extract\n\n"
                "Usage:\n"
-               "- `ssd extract --stdout <input.txt>`\n"
+               "- `ssd extract --stdout <input.ssd|input.txt>`\n"
+               "- `ssd extract --stdout <input.ssd|input.txt> <input.ssd|input.txt>...`\n"
                "- `ssd extract --out <output.ssd> <input.ssd|input.txt>`\n"
                "- `ssd extract --out <output.ssd> <input.ssd|input.txt> <input.ssd|input.txt>...`\n"
                "- `ssd extract --stdout --embed-provider ollama|openai --embed-model <model> <input.ssd>`\n"
                "- `ssd extract --out <output.ssd> --embed-provider ollama|openai --embed-model <model> <input.ssd|input.txt> <input.ssd|input.txt>...`\n\n"
                "Status:\n"
-               "- This subcommand currently supports skeletal raw `.txt` to `.ssd` extraction, multi-input inline `.ssd` aggregation through `--out`, and explicit embedding generation through `ollama` or `openai` adapters.\n"
-               "- Raw `.txt` with `--stdout` emits only generated `.ssd`; `--stdout` remains single-input, and embedding generation for raw inputs requires `--out <output.ssd>`.\n\n"
+               "- This subcommand currently supports canonical inline `.ssd` stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input inline `.ssd` aggregation through `--out`, and explicit embedding generation through `ollama` or `openai` adapters.\n"
+               "- Embedding-enabled `--stdout` remains single-input `.ssd` and emits generated `.ssm`; raw `.txt` embedding generation still requires `--out <output.ssd>`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help troubleshooting`\n";
@@ -1699,7 +1700,7 @@ CommandResult make_missing_extract_embedding_args_error(const std::vector<std::s
         .exit_code = 2,
         .stdout_text = "",
         .stderr_text = "ERROR missing_required_argument\ncommand: " + join_args(args) +
-                       "\nusage: ssd extract --stdout <input.txt> | ssd extract --stdout --embed-provider <provider> --embed-model <model> <input.ssd> | ssd extract --out <output.ssd> [--embed-provider <provider> --embed-model <model>] <input.ssd|input.txt>...\nsubcommand: extract\nhint: see `ssd help reference extract`\n",
+                       "\nusage: ssd extract --stdout <input.ssd|input.txt>... | ssd extract --stdout --embed-provider <provider> --embed-model <model> <input.ssd> | ssd extract --out <output.ssd> [--embed-provider <provider> --embed-model <model>] <input.ssd|input.txt>...\nsubcommand: extract\nhint: see `ssd help reference extract`\n",
     };
 }
 
@@ -3226,7 +3227,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (!parsed.valid || parsed.input_files.empty()) {
             return make_subcommand_not_implemented_error(args);
         }
-        if (parsed.use_stdout && parsed.input_files.size() != 1U) {
+        if (parsed.use_stdout && !parsed.provider.empty() && parsed.input_files.size() != 1U) {
             return make_subcommand_not_implemented_error(args);
         }
         if (parsed.provider.empty() != parsed.model.empty()) {
@@ -3239,7 +3240,6 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         semdl::core::DocumentStore store;
         std::vector<semdl::core::DocumentData> source_documents;
         source_documents.reserve(parsed.input_files.size());
-        bool raw_stdout_input = false;
 
         for (const auto& input_file : parsed.input_files) {
             const bool raw_text_input = is_raw_text_extract_input(input_file);
@@ -3252,10 +3252,6 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             } else {
                 source_documents.push_back(store.load_document(input_file));
             }
-
-            if (parsed.use_stdout && raw_text_input) {
-                raw_stdout_input = true;
-            }
         }
 
         auto document = source_documents.size() == 1U
@@ -3263,9 +3259,6 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             : aggregate_extract_documents(source_documents);
 
         if (parsed.provider.empty()) {
-            if (parsed.use_stdout && !raw_stdout_input) {
-                return make_missing_extract_embedding_args_error(args);
-            }
             const std::string inline_text = semdl::core::render_canonical_inline_document(document);
             if (parsed.use_stdout) {
                 return make_extract_stdout_result(inline_text);

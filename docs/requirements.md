@@ -570,14 +570,17 @@ CLI は、少なくとも次のサイドカー運用を支援すること。
 - provider は少なくとも `ollama` と `openai` を受け付けること
 - raw `.txt` に対する `--stdout` は skeletal `.ssd` を出力できること
 - raw `.txt` に対する `--stdout` では embedding option を拒否すること
-- 既存 `.ssd` に対する `--stdout` では generated `.ssm` profile を出力できること
+- no-provider の `--stdout` は 1 件以上の existing `.ssd` / plain `.txt` input から canonical inline `.ssd` を出力できること
+- single existing `.ssd` without provider も resolved canonical inline `.ssd` stdout として成功してよいこと
+- embedding-enabled `--stdout` は single existing `.ssd` に限って generated `.ssm` profile を出力できること
 - `--out <file>` では 1 件以上の input から出力先 inline `.ssd` を生成でき、embedding option を伴う場合は paired `.ssm` も生成できること
 - `--out <file>` は existing `.ssd` と plain `.txt` を同一 command で混在させてよいこと
 - multi-input `--out` は source order を保った resolved view を集約し、source 間の ID 衝突を deterministic rebasing で解決すること
 - rebasing は entity ID だけでなく、`alternative_group` と `alternative.group` の shared token にも適用すること
 - multi-input `--out` の output `.ssd` は canonical inline document として書かれること
 - multi-input `--out` の generated `.ssm` は rebased merged view の ID を使うこと
-- `--stdout` の multi-input surface、profile selection、stdout multiplexing は引き続き後続 slice に分離してよいこと
+- `--stdout` の profile selection と stdout multiplexing は引き続き後続 slice に分離してよいこと
+- embedding-enabled `--stdout` の multi-input surface は引き続き後続 slice に分離してよいこと
 - `--out <file>` は non-destructive とし、任意の source input path、任意の source paired `.ssm`、または generated paired `.ssm` と alias する path を拒否すること
 - raw `.txt` の embedding target は少なくとも generated `resource.label` と generated `segment.text_quote` に限定すること
 - provider 実行失敗や unsupported provider は non-zero failure として返すこと
