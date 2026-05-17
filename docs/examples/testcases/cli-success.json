@@ -2682,6 +2682,97 @@
       "notes": "annotate id-list out should write canonical sidecar text without mutating the source pair"
     },
     {
+      "id": "annotate-type-alternative-rationale-sidecar-dryrun",
+      "command": "ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "type:alternative", "rationale", "候補を再確認する", "--target", "sidecar", "--allow-multi", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-type-alternative-rationale-sidecar.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate type allow-multi dry-run should preview a matched sidecar annotate set without mutating the source pair"
+    },
+    {
+      "id": "annotate-type-alternative-rationale-sidecar-apply",
+      "command": "ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "type:alternative", "rationale", "候補を再確認する", "--target", "sidecar", "--allow-multi", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/annotate-type-alternative-rationale.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-type-alternative-rationale-sidecar.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate type allow-multi apply should rewrite the paired sidecar once after validating the matched set"
+    },
+    {
+      "id": "annotate-type-alternative-rationale-sidecar-stdout",
+      "command": "ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "type:alternative", "rationale", "候補を再確認する", "--target", "sidecar", "--allow-multi", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/annotate-type-alternative-rationale.expected.ssm",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate type allow-multi stdout should return canonical sidecar text without mutating the source pair"
+    },
+    {
+      "id": "annotate-type-alternative-rationale-sidecar-out",
+      "command": "ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi --out docs/examples/annotate-type-output.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "type:alternative", "rationale", "候補を再確認する", "--target", "sidecar", "--allow-multi", "--out", "docs/examples/annotate-type-output.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/annotate-type-output.ssm": "docs/examples/fixtures/annotate-type-alternative-rationale.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate type allow-multi out should write canonical sidecar text without mutating the source pair"
+    },
+    {
+      "id": "annotate-type-alternative-rationale-sidecar-out-dryrun",
+      "command": "ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi --out docs/examples/annotate-type-output.ssm --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "type:alternative", "rationale", "候補を再確認する", "--target", "sidecar", "--allow-multi", "--out", "docs/examples/annotate-type-output.ssm", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/annotate-type-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate type allow-multi out dry-run should preview a non-destructive sidecar output target"
+    },
+    {
       "id": "remove-A1-embedding-apply",
       "command": "ssd remove meta:A1.embedding docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "meta:A1.embedding", "docs/examples/minimal.ssd"],

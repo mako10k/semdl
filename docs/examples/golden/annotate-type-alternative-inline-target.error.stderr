@@ -1,0 +1,6 @@
+ERROR invalid_annotate_type_target
+command: ssd annotate type:alternative rationale bad --target inline --allow-multi docs/examples/minimal.ssd
+target: inline
+allowed:
+  - sidecar
+hint: type selector annotate currently supports only `--target sidecar --allow-multi`

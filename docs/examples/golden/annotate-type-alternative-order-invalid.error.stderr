@@ -1,0 +1,4 @@
+ERROR invalid_annotate_options
+command: ssd annotate type:alternative rationale bad --target sidecar --dry-run --allow-multi docs/examples/minimal.ssd
+usage: ssd annotate <selector> <kind> <text> --target inline|sidecar|auto [--stdout|--dry-run|--out <output-file> [--dry-run]] <file>
+hint: annotate output options must follow `--target`, and `--stdout` cannot be combined with `--dry-run` or `--out`; for `type:` annotate, `--allow-multi` must appear before `--stdout`, `--dry-run`, or `--out`, and the target is currently limited to `sidecar`

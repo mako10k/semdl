@@ -915,6 +915,17 @@ annotate は、説明、注意、根拠、TODO などの付加注記を追加す
 - duplicate id は first-seen order で dedup してよく、preview / apply / output の `changes` は dedup 後 target 数に一致してよい
 - result payload は current annotate output surface をそのまま再利用し、`--target inline` は canonical inline `.ssd`、`--target sidecar` は canonical sidecar `.ssm` に固定してよい
 
+次の annotate type allow-multi sidecar slice では、current annotate sidecar ownership を保ったまま `type:<kind>` selector による opt-in multi-target annotate を追加してよい。
+
+- syntax は `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi ... <file>` に限定してよい
+- `type:<kind>` annotate では matched target 数に関わらず `--allow-multi` を常に必須としてよい
+- apply / `--dry-run` / `--stdout` / `--out` / `--out --dry-run` のいずれでも mutation 前に matched target 全件を解決・検証し、0 件一致なら missing-target failure としてよい
+- matched target order は matched id の ascending order に固定してよく、preview / apply / output の `changes` はその順序で確定した target 数に一致してよい
+- target profile は `sidecar` のみに固定してよく、paired input / standalone input のどちらでも current sidecar annotate と同じ sibling `.ssm` write contract を再利用してよい
+- `--target inline` と `--target auto` はこの slice では failure としてよい
+- result payload は current annotate sidecar output surface をそのまま再利用し、canonical sidecar `.ssm` に固定してよい
+- generic selector list、type selector の inline / auto multi-target routing、mixed target profile resolution は引き続き後続 slice に分離してよい
+
 field-map から create-only に sidecar metadata を起こす経路が必要な場合は、
 `ssd add annotation --target sidecar` を別経路として追加してよい。
 この場合でも annotate 自体は shorthand command として残し、既存注記の更新責務は annotate または set に残す。
@@ -1071,6 +1082,11 @@ test runner 定義:
 - [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.stdout)
 - [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.dryrun.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.dryrun.stdout)
 - [docs/examples/golden/annotate-id-list-A1-H1-status-inline.stdout](docs/examples/golden/annotate-id-list-A1-H1-status-inline.stdout)
+- [docs/examples/golden/annotate-type-alternative-rationale-sidecar.dryrun.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.dryrun.stdout)
+- [docs/examples/golden/annotate-type-alternative-rationale-sidecar.apply.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.apply.stdout)
+- [docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.stdout)
+- [docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.dryrun.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.dryrun.stdout)
+- [docs/examples/golden/annotate-type-alternative-rationale-sidecar.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.stdout)
 - [docs/examples/golden/split-minimal.dryrun.stdout](docs/examples/golden/split-minimal.dryrun.stdout)
 - [docs/examples/golden/split-minimal.apply.stdout](docs/examples/golden/split-minimal.apply.stdout)
 - [docs/examples/golden/remove-A1-embedding.apply.stdout](docs/examples/golden/remove-A1-embedding.apply.stdout)
@@ -1114,6 +1130,13 @@ test runner 定義:
 - [docs/examples/golden/annotate-out-alias-input.error.stderr](docs/examples/golden/annotate-out-alias-input.error.stderr)
 - [docs/examples/golden/annotate-out-alias-sidecar.error.stderr](docs/examples/golden/annotate-out-alias-sidecar.error.stderr)
 - [docs/examples/golden/annotate-auto-out-alias-standalone-sidecar.error.stderr](docs/examples/golden/annotate-auto-out-alias-standalone-sidecar.error.stderr)
+- [docs/examples/golden/annotate-type-alternative-missing-allow-multi.error.stderr](docs/examples/golden/annotate-type-alternative-missing-allow-multi.error.stderr)
+- [docs/examples/golden/annotate-type-alternative-inline-target.error.stderr](docs/examples/golden/annotate-type-alternative-inline-target.error.stderr)
+- [docs/examples/golden/annotate-type-alternative-auto-target.error.stderr](docs/examples/golden/annotate-type-alternative-auto-target.error.stderr)
+- [docs/examples/golden/annotate-type-alternative-order-invalid.error.stderr](docs/examples/golden/annotate-type-alternative-order-invalid.error.stderr)
+- [docs/examples/golden/annotate-type-alternative-dryrun-out-invalid.error.stderr](docs/examples/golden/annotate-type-alternative-dryrun-out-invalid.error.stderr)
+- [docs/examples/golden/annotate-type-claim-missing-target.error.stderr](docs/examples/golden/annotate-type-claim-missing-target.error.stderr)
+- [docs/examples/golden/annotate-type-alternative-out-alias-sidecar.error.stderr](docs/examples/golden/annotate-type-alternative-out-alias-sidecar.error.stderr)
 - [docs/examples/golden/set-stdout-dryrun-invalid.error.stderr](docs/examples/golden/set-stdout-dryrun-invalid.error.stderr)
 - [docs/examples/golden/set-stdout-out-invalid.error.stderr](docs/examples/golden/set-stdout-out-invalid.error.stderr)
 - [docs/examples/golden/set-dryrun-out-order-invalid.error.stderr](docs/examples/golden/set-dryrun-out-order-invalid.error.stderr)
@@ -1413,6 +1436,21 @@ test runner 定義:
 - `ssd annotate id:A1,id:H1 status 検証待ち --target inline --stdout docs/examples/minimal.inline.ssd`
   - explicit id-list inline annotate stdout は standalone inline document を変更せず canonical inline `.ssd` を返す
   - 期待 stdout は [docs/examples/golden/annotate-id-list-A1-H1-status-inline.stdout](docs/examples/golden/annotate-id-list-A1-H1-status-inline.stdout) と一致する
+- `ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi --dry-run docs/examples/minimal.ssd`
+  - type allow-multi sidecar annotate は matched id の ascending order を current sidecar preview surface に載せて扱う
+  - 期待 stdout は [docs/examples/golden/annotate-type-alternative-rationale-sidecar.dryrun.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.dryrun.stdout) と一致する
+- `ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi docs/examples/minimal.ssd`
+  - type allow-multi sidecar annotate apply は matched kind set の metadata を一括更新し、source pair では `.ssm` だけを書き換える
+  - 期待 stdout は [docs/examples/golden/annotate-type-alternative-rationale-sidecar.apply.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.apply.stdout) と一致する
+- `ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi --stdout docs/examples/minimal.ssd`
+  - type allow-multi sidecar annotate stdout は source pair を変更せず canonical sidecar `.ssm` を返す
+  - 期待 stdout は [docs/examples/golden/annotate-type-alternative-rationale-sidecar.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.stdout) と一致する
+- `ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi --out docs/examples/annotate-type-output.ssm docs/examples/minimal.ssd`
+  - type allow-multi sidecar annotate out は source pair を保持したまま canonical sidecar `.ssm` を別ファイルへ書く
+  - 期待 stdout は [docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.stdout) と一致する
+- `ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi --out docs/examples/annotate-type-output.ssm --dry-run docs/examples/minimal.ssd`
+  - type allow-multi sidecar annotate out-dry-run は target file を output path に向けた preview として扱う
+  - 期待 stdout は [docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.dryrun.stdout](docs/examples/golden/annotate-type-alternative-rationale-sidecar.out.dryrun.stdout) と一致する
 - `ssd annotate id:A1,path:H1.summary todo bad --target sidecar docs/examples/minimal.ssd`
   - annotate id-list slice は comma-separated `id:` atoms だけを許可し、mixed selector list は failure とする
   - 期待 stderr は [docs/examples/golden/annotate-id-list-invalid-selector.error.stderr](docs/examples/golden/annotate-id-list-invalid-selector.error.stderr) と一致する
@@ -1425,6 +1463,27 @@ test runner 定義:
 - `ssd annotate id:A1,id:R1 status bad --target inline docs/examples/minimal.inline.ssd`
   - annotate id-list inline は 1 件でも inline unsupported target を含めば全体 failure とする
   - 期待 stderr は [docs/examples/golden/annotate-id-list-inline-unsupported.error.stderr](docs/examples/golden/annotate-id-list-inline-unsupported.error.stderr) と一致する
+- `ssd annotate type:alternative rationale bad --target sidecar docs/examples/minimal.ssd`
+  - type allow-multi annotate は matched target 数に関わらず `--allow-multi` を必須とする
+  - 期待 stderr は [docs/examples/golden/annotate-type-alternative-missing-allow-multi.error.stderr](docs/examples/golden/annotate-type-alternative-missing-allow-multi.error.stderr) と一致する
+- `ssd annotate type:alternative rationale bad --target inline --allow-multi docs/examples/minimal.ssd`
+  - type allow-multi annotate slice は `--target sidecar` のみに固定し、inline は failure とする
+  - 期待 stderr は [docs/examples/golden/annotate-type-alternative-inline-target.error.stderr](docs/examples/golden/annotate-type-alternative-inline-target.error.stderr) と一致する
+- `ssd annotate type:alternative rationale bad --target auto --allow-multi docs/examples/minimal.ssd`
+  - type allow-multi annotate slice は `--target auto` を許可しない
+  - 期待 stderr は [docs/examples/golden/annotate-type-alternative-auto-target.error.stderr](docs/examples/golden/annotate-type-alternative-auto-target.error.stderr) と一致する
+- `ssd annotate type:alternative rationale bad --target sidecar --dry-run --allow-multi docs/examples/minimal.ssd`
+  - type allow-multi annotate surface では `--allow-multi` は output options より前に固定され、reorder は failure とする
+  - 期待 stderr は [docs/examples/golden/annotate-type-alternative-order-invalid.error.stderr](docs/examples/golden/annotate-type-alternative-order-invalid.error.stderr) と一致する
+- `ssd annotate type:alternative rationale bad --target sidecar --allow-multi --dry-run --out docs/examples/annotate-type-output.ssm docs/examples/minimal.ssd`
+  - type allow-multi annotate surface では `--dry-run` 後に `--out` を続ける順序を許可しない
+  - 期待 stderr は [docs/examples/golden/annotate-type-alternative-dryrun-out-invalid.error.stderr](docs/examples/golden/annotate-type-alternative-dryrun-out-invalid.error.stderr) と一致する
+- `ssd annotate type:claim rationale bad --target sidecar --allow-multi docs/examples/minimal.ssd`
+  - type allow-multi annotate は matched set が空なら missing-target failure とする
+  - 期待 stderr は [docs/examples/golden/annotate-type-claim-missing-target.error.stderr](docs/examples/golden/annotate-type-claim-missing-target.error.stderr) と一致する
+- `ssd annotate type:alternative rationale bad --target sidecar --allow-multi --out docs/examples/minimal.ssm docs/examples/minimal.ssd`
+  - type allow-multi sidecar annotate の `--out` が source sibling `.ssm` を alias する場合は failure とする
+  - 期待 stderr は [docs/examples/golden/annotate-type-alternative-out-alias-sidecar.error.stderr](docs/examples/golden/annotate-type-alternative-out-alias-sidecar.error.stderr) と一致する
 - `ssd remove id:A1 docs/examples/minimal.ssd`
   - 参照されている構造要素のため既定で失敗する
   - 期待 stderr は [docs/examples/golden/remove-id-A1.error.stderr](docs/examples/golden/remove-id-A1.error.stderr) と一致する

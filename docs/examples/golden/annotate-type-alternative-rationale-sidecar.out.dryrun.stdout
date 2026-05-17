@@ -1,0 +1,10 @@
+DRY-RUN
+command: ssd annotate type:alternative rationale "候補を再確認する" --target sidecar --allow-multi --out docs/examples/annotate-type-output.ssm docs/examples/minimal.ssd
+target_profile: sidecar
+target_file: docs/examples/annotate-type-output.ssm
+selector: type:alternative
+annotation_kind: rationale
+write: "候補を再確認する"
+preserve_source_ssd: docs/examples/minimal.ssd
+preserve_source_ssm: docs/examples/minimal.ssm
+changes: 2

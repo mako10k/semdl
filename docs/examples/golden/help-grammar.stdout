@@ -25,6 +25,7 @@ Key syntax forms:
 - `ssd remove <selector[,selector...]> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
 - `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
 - `ssd annotate id:<id>,id:<id>,... <kind> <text> --target inline|sidecar [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
+- `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
 - `ssd split <input.ssd> [--dry-run]`
 - `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--warn-on-conflict] [--fail-on-conflict]`
 - `ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <file> [--format inline|sidecar] [--dry-run]]`
@@ -47,7 +48,7 @@ Common options:
 - `--dry-run` previews update-oriented commands
 - `--stdout` is currently used by `add`, `set`, `annotate`, `remove`, `merge`, `normalize`, and `extract`
 - `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`
-- `annotate` accepts `--target inline|sidecar|auto`; explicit annotate id lists currently require `--target inline|sidecar`; metadata-only `add` still requires `--target sidecar`
+- `annotate` accepts `--target inline|sidecar|auto`; explicit annotate id lists currently require `--target inline|sidecar`; type selector annotate currently requires `--target sidecar --allow-multi`; metadata-only `add` still requires `--target sidecar`
 - `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar`, `--warn-on-conflict`, and `--fail-on-conflict` are currently merge-only trailing options
 
 This topic is the canonical user-facing operational syntax summary.

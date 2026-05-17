@@ -1,0 +1,4 @@
+ERROR missing_annotate_allow_multi
+command: ssd annotate type:alternative rationale "bad" --target sidecar docs/examples/minimal.ssd
+selector: type:alternative
+hint: type selector annotate currently requires `--allow-multi` even when one target matches

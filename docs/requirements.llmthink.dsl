@@ -525,6 +525,18 @@ step S18O:
     annotation rationale:
       "annotate の current target ownership を保ったまま explicit id intent だけを複数 target に lift すると、heterogeneous routing を導入せず tractable な multi-target slice に保てるため"
 
+step S18P:
+  decision D18P based_on D18O, D18N:
+    |
+      次の annotate type allow-multi sidecar slice では、current annotate sidecar ownership を維持したまま `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi ... <file>` だけを追加してよい。
+      `type:<kind>` を使う annotate surface では matched target 数に関わらず `--allow-multi` を常に必須としてよい。
+      apply、dry-run、stdout、out、out-dry-run のいずれでも matched target 全件を mutation 前に検証し、0 件一致なら missing-target failure としてよい。
+      matched target order は matched id の ascending order に固定してよく、preview / apply / output の changes はその順序で確定した target 数に一致してよい。
+      target profile は `sidecar` に固定してよく、paired input / standalone input のどちらでも current sidecar annotate と同じ sibling `.ssm` write contract を再利用してよい。
+      `--target inline`、`--target auto`、generic selector list、mixed target profile resolution は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "annotate の current sidecar ownership だけを type selector の opt-in matched set に lift すると、inline / auto routing を reopen せず tractable な next multi-target slice に保てるため"
+
 step S18J:
   decision D18J based_on D18, D18H, D18I:
     |

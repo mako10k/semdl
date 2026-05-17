@@ -40,12 +40,14 @@ annotate-cmd    = annotate-apply-cmd | annotate-output-cmd | "annotate" , ws , h
 remove-apply-cmd = "remove" , ws , remove-selector , ws , [ allow-multi-opt , [ ws , cascade-opt ] , ws | cascade-opt , ws ] , input-file ;
 remove-output-cmd = "remove" , ws , remove-selector , ws , [ allow-multi-opt , [ ws , cascade-opt ] , ws | cascade-opt , ws ] , remove-surface , ws , input-file ;
 remove-surface  = dry-run-opt | stdout-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
-annotate-apply-cmd = annotate-single-apply-cmd | annotate-id-list-apply-cmd ;
-annotate-output-cmd = annotate-single-output-cmd | annotate-id-list-output-cmd ;
+annotate-apply-cmd = annotate-single-apply-cmd | annotate-id-list-apply-cmd | annotate-type-apply-cmd ;
+annotate-output-cmd = annotate-single-output-cmd | annotate-id-list-output-cmd | annotate-type-output-cmd ;
 annotate-single-apply-cmd = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , target-opt , ws , input-file ;
 annotate-single-output-cmd = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , target-opt , ws , annotate-surface , ws , input-file ;
 annotate-id-list-apply-cmd = "annotate" , ws , annotate-id-list-selector , ws , annotation-kind , ws , text-value , ws , target-explicit-opt , ws , input-file ;
 annotate-id-list-output-cmd = "annotate" , ws , annotate-id-list-selector , ws , annotation-kind , ws , text-value , ws , target-explicit-opt , ws , annotate-surface , ws , input-file ;
+annotate-type-apply-cmd = "annotate" , ws , type-selector , ws , annotation-kind , ws , text-value , ws , target-sidecar-opt , ws , allow-multi-opt , ws , input-file ;
+annotate-type-output-cmd = "annotate" , ws , type-selector , ws , annotation-kind , ws , text-value , ws , target-sidecar-opt , ws , allow-multi-opt , ws , annotate-surface , ws , input-file ;
 annotate-surface = dry-run-opt | stdout-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
 
 add-structural-cmd = "add" , ws , structural-add-kind , ws , input-file , { ws , add-field }

@@ -17,12 +17,18 @@ Usage:
 - `ssd annotate id:<id>,id:<id>,... <kind> <text> --target sidecar --stdout <file>`
 - `ssd annotate id:<id>,id:<id>,... <kind> <text> --target sidecar --out <output-file> <file>`
 - `ssd annotate id:<id>,id:<id>,... <kind> <text> --target sidecar --out <output-file> --dry-run <file>`
+- `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi <file>`
+- `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi --dry-run <file>`
+- `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi --stdout <file>`
+- `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi --out <output-file> <file>`
+- `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi --out <output-file> --dry-run <file>`
 
 Purpose:
 - Write, preview, or emit one rationale, caveat, todo, status, or explanation field in inline or sidecar metadata.
 - `--target inline` is currently limited to standalone input and `assertion` / `hypothesis` targets.
 - `--target auto` uses sidecar on paired input and otherwise prefers inline only where that standalone inline form is supported.
 - explicit annotate id lists are limited to comma-separated `id:` atoms and currently require `--target inline` or `--target sidecar`.
+- `type:<kind>` annotate is currently limited to sidecar output and requires `--allow-multi` even when one target matches.
 - `--stdout` and `--out` return the canonical text for the resolved target profile.
 - Use `ssd add annotation ... --target sidecar` when you need create-only field-map semantics.
 
@@ -34,3 +40,4 @@ Sample:
 - `ssd annotate id:H1 todo 追加入力で主体を確認する --target inline docs/examples/minimal.inline.ssd`
 - `ssd annotate id:H1 status 検証待ち --target inline --stdout docs/examples/minimal.inline.ssd`
 - `ssd annotate id:R1 rationale 参照元を追記する --target auto docs/examples/minimal.ssd`
+- `ssd annotate type:alternative rationale 候補を再確認する --target sidecar --allow-multi docs/examples/minimal.ssd`
