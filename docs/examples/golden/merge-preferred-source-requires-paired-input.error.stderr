@@ -1,0 +1,4 @@
+ERROR merge_preferred_source_requires_paired_input
+command: ssd merge docs/examples/normalize-standalone-source.ssd --stdout --prefer-source inline
+input: docs/examples/normalize-standalone-source.ssd
+hint: `--prefer-source` currently requires a paired `.ssm` on the merge input

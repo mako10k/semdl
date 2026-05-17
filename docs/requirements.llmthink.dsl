@@ -407,6 +407,18 @@ step S18E:
     annotation rationale:
       "既存 merge 出力互換を保ったまま、source-aware な safety option を merge にだけ狭く追加できるため"
 
+step S18F:
+  decision D18F based_on D18E:
+    |
+      次の merge precedence slice では `ssd merge` に限って trailing `--prefer-source inline|sidecar` を追加してよい。
+      `--prefer-source` は sidecar-owned duplicate field に対する merged inline view の優先元だけを切り替え、`inline` は inline source、`sidecar` は paired `.ssm` を優先してよい。
+      scope は D18E と同じく document body の `version` / `generator`、inline `meta {}`、paired `meta`、paired `document_meta`、`embedding.*` leaf field に限定してよい。
+      duplicate でない field は current merged result のままとし、stdout、dry-run、out、apply はすべて selected precedence の同じ merged inline view を使ってよい。
+      `--fail-on-conflict` と併用した場合は differing duplicate があれば precedence 選択より前に failure してよく、warning mode は引き続き後続 slice に分離してよい。
+      `--prefer-source` は paired `.ssm` がある input に対してのみ許可してよい。
+    annotation rationale:
+      "warning mode を持ち込まずに precedence だけを opt-in で切り替えると、既存 default 契約を壊さずに merge policy matrix を小さく広げられる"
+
 step S27A:
   decision D27A based_on D27, D8A:
     |

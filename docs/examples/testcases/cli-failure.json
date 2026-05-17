@@ -1180,6 +1180,45 @@
       "notes": "merge out should reject aliasing the paired sidecar path"
     },
     {
+      "id": "merge-invalid-preferred-source",
+      "command": "ssd merge docs/examples/minimal.ssd --stdout --prefer-source auto",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--stdout", "--prefer-source", "auto"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-invalid-preferred-source.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge preferred-source should accept only inline or sidecar"
+    },
+    {
+      "id": "merge-standalone-preferred-source-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --stdout --prefer-source inline",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--stdout", "--prefer-source", "inline"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-preferred-source-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "preferred-source is only available for paired merge inputs in this slice"
+    },
+    {
+      "id": "merge-preferred-source-nontrailing",
+      "command": "ssd merge docs/examples/minimal.ssd --prefer-source inline --stdout",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--prefer-source", "inline", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-preferred-source-nontrailing.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "preferred-source remains trailing-only on merge in this slice"
+    },
+    {
       "id": "merge-conflict-stdout-fail-on-conflict",
       "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --fail-on-conflict",
       "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--fail-on-conflict"],
@@ -1196,6 +1235,37 @@
       "expected_stderr": "docs/examples/golden/merge-conflict-stdout.error.stderr",
       "expected_output_kind": "exact",
       "notes": "merge stdout should fail on differing duplicate sidecar-owned fields when fail-on-conflict is requested"
+    },
+    {
+      "id": "merge-conflict-stdout-prefer-inline-fail-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --prefer-source inline --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--prefer-source", "inline", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-conflict-prefer-inline-fail-on-conflict.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "fail-on-conflict should still win over preferred-source on a conflicting merge input"
+    },
+    {
+      "id": "normalize-preferred-source-invalid",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --dry-run --prefer-source inline",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--dry-run", "--prefer-source", "inline"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-preferred-source-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "preferred-source remains merge-only in this slice"
     },
     {
       "id": "merge-conflict-dryrun-fail-on-conflict",

@@ -308,6 +308,7 @@ struct ParsedTransformArgs {
     std::filesystem::path input_file;
     std::optional<std::filesystem::path> output_file;
     std::optional<std::string> format;
+    std::optional<std::string> preferred_source;
     std::string invalid_option;
 };
 
@@ -851,6 +852,10 @@ ParsedTransformArgs parse_transform_args(const std::vector<std::string_view>& ar
         parsed.fail_on_conflict = true;
         option_end = args.size() - 1;
     }
+    if (option_end >= 4 && args[option_end - 2] == "--prefer-source") {
+        parsed.preferred_source = std::string(args[option_end - 1]);
+        option_end -= 2;
+    }
 
     if (option_end == 2) {
         return parsed;
@@ -1202,6 +1207,26 @@ CommandResult make_merge_requires_paired_input_error(const std::vector<std::stri
     };
 }
 
+CommandResult make_merge_preferred_source_requires_paired_input_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 3,
+        .stdout_text = "",
+        .stderr_text = "ERROR merge_preferred_source_requires_paired_input\ncommand: " + join_args(args) +
+                       "\ninput: " + std::string(args[1]) +
+                       "\nhint: `--prefer-source` currently requires a paired `.ssm` on the merge input\n",
+    };
+}
+
+CommandResult make_invalid_merge_preferred_source_error(const std::vector<std::string_view>& args, std::string_view source) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_merge_preferred_source\ncommand: " + join_args(args) +
+                       "\npreferred_source: " + std::string(source) +
+                       "\nallowed:\n  - inline\n  - sidecar\n",
+    };
+}
+
 CommandResult make_merge_conflict_error(const std::vector<std::string_view>& args,
                                         const std::filesystem::path& input_file,
                                         std::string_view entity_id,
@@ -1321,6 +1346,51 @@ std::optional<MergeConflictDetail> find_merge_sidecar_conflict(const semdl::core
     return std::nullopt;
 }
 
+bool inline_source_has_sidecar_owned_field(const semdl::core::DocumentSourceViews& source_views,
+                                           const std::string& id,
+                                           std::string_view field_name) {
+    if (const auto* entity = source_views.inline_source.find_entity(id); entity != nullptr) {
+        const bool is_sidecar_owned = entity->kind == "document"
+                                          ? semdl::core::is_document_sidecar_field(field_name)
+                                          : semdl::core::is_entity_sidecar_field(field_name);
+        if (is_sidecar_owned && entity->fields.contains(std::string(field_name))) {
+            return true;
+        }
+    }
+
+    if (const auto* metadata = source_views.inline_source.find_metadata(id); metadata != nullptr &&
+        metadata->fields.contains(std::string(field_name))) {
+        return true;
+    }
+
+    return false;
+}
+
+semdl::core::DocumentData build_merge_document(const semdl::core::DocumentSourceViews& source_views,
+                                              const std::optional<std::string>& preferred_source) {
+    auto document = source_views.inline_source;
+    if (!document.has_sidecar) {
+        return document;
+    }
+
+    const bool prefer_inline = preferred_source.has_value() && *preferred_source == "inline";
+    for (const auto& [id, sidecar_metadata] : source_views.sidecar_source.metadata_entities) {
+        auto& metadata = document.metadata_entities[id];
+        if (metadata.kind.empty()) {
+            metadata.kind = sidecar_metadata.kind;
+        }
+
+        for (const auto& [field_name, value] : sidecar_metadata.fields) {
+            if (prefer_inline && inline_source_has_sidecar_owned_field(source_views, id, field_name)) {
+                continue;
+            }
+            metadata.fields[field_name] = value;
+        }
+    }
+
+    return document;
+}
+
 std::string root_help_text() {
     return "SEMDL CLI Help\n\n"
            "1. Overview\n"
@@ -1403,7 +1473,7 @@ std::string grammar_help_text() {
            "- `ssd remove <selector> <file>`\n"
            "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
            "- `ssd split <input.ssd> [--dry-run]`\n"
-           "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--fail-on-conflict]`\n"
+           "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--fail-on-conflict]`\n"
            "- `ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <file> [--format inline|sidecar] [--dry-run]]`\n"
            "- `ssd help grammar --format semdl`\n\n"
            "Selectors:\n"
@@ -1421,7 +1491,7 @@ std::string grammar_help_text() {
            "- `--stdout` is currently used by `add`, `merge`, `normalize`, and `extract`\n"
            "- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`\n"
            "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`\n"
-           "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--fail-on-conflict` is currently merge-only and must trail the merge surface\n\n"
+           "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar` and `--fail-on-conflict` are currently merge-only trailing options\n\n"
            "This topic is the canonical user-facing operational syntax summary.\n"
            "Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details.\n"
            "Use `--format semdl` for line-preserving SEMDL help output.\n"
@@ -1576,18 +1646,21 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd merge <input.ssd>`\n"
                "- `ssd merge <input.ssd> --dry-run`\n"
                "- `ssd merge <input.ssd> --out <output.ssd> [--dry-run]`\n"
-               "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] --fail-on-conflict`\n\n"
+               "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] --prefer-source inline|sidecar`\n"
+               "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--prefer-source inline|sidecar] --fail-on-conflict`\n\n"
                "Status:\n"
                "- `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`.\n"
                "- Bare apply and `--dry-run` require a paired `.ssm`; in-place apply removes that sidecar after writing inline output.\n"
                "- `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`.\n"
-               "- `--fail-on-conflict` fails before output or mutation when inline source and paired sidecar disagree on the same sidecar-owned field; without it, paired `.ssm` keeps precedence.\n\n"
+               "- `--prefer-source inline|sidecar` changes which source wins for sidecar-owned duplicate field conflicts; without it, paired `.ssm` keeps precedence.\n"
+               "- `--fail-on-conflict` fails before output or mutation when inline source and paired sidecar disagree on the same sidecar-owned field.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help samples`\n\n"
                "Sample:\n"
                "- `ssd merge docs/examples/minimal.ssd --stdout`\n"
                "- `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`\n"
+               "- `ssd merge docs/examples/merge-conflict-source.ssd --stdout --prefer-source inline`\n"
                "- `ssd merge docs/examples/merge-conflict-source.ssd --stdout --fail-on-conflict`\n";
     }
 
@@ -2766,16 +2839,23 @@ UpdatePreview build_split_preview(const semdl::core::DocumentData& document, con
 
 UpdatePreview build_merge_preview(const semdl::core::DocumentData& document,
                                   const std::filesystem::path& input_file,
-                                  const std::optional<std::filesystem::path>& output_file) {
+                                  const std::optional<std::filesystem::path>& output_file,
+                                  const std::optional<std::string>& preferred_source) {
     UpdatePreview preview;
     preview.command_line = "ssd merge " + input_file.generic_string();
     if (output_file.has_value()) {
         preview.command_line += " --out " + output_file->generic_string();
     }
+    if (preferred_source.has_value()) {
+        preview.command_line += " --prefer-source " + *preferred_source;
+    }
     preview.target_profile = "inline";
     preview.target_file = output_file.has_value() ? output_file->generic_string() : input_file.generic_string();
     preview.detail_lines.push_back("source_profile: sidecar");
     preview.detail_lines.push_back("result_profile: inline");
+    if (preferred_source.has_value()) {
+        preview.detail_lines.push_back("preferred_source: " + *preferred_source);
+    }
     if (output_file.has_value()) {
         preview.detail_lines.push_back("preserve_source_ssd: " + input_file.generic_string());
         preview.detail_lines.push_back("preserve_source_ssm: " + document.sidecar_file.generic_string());
@@ -2859,6 +2939,10 @@ bool transform_out_aliases_source(const semdl::core::DocumentData& document,
 
 bool is_allowed_transform_format(std::string_view format) {
     return format == "inline" || format == "sidecar";
+}
+
+bool is_allowed_merge_preferred_source(std::string_view source) {
+    return source == "inline" || source == "sidecar";
 }
 
 bool is_allowed_extract_stdout_format(std::string_view format) {
@@ -3281,17 +3365,28 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         if (!parsed.valid) {
             return make_invalid_transform_options_error(args,
                                                         "merge",
-                                                        "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--fail-on-conflict]");
+                                                        "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--prefer-source inline|sidecar] [--fail-on-conflict]");
         }
 
         semdl::core::DocumentStore store;
+        std::optional<semdl::core::DocumentSourceViews> source_views;
+        if (parsed.fail_on_conflict || parsed.preferred_source.has_value()) {
+            source_views = store.load_document_source_views(parsed.input_file);
+        }
+        if (parsed.preferred_source.has_value() && !is_allowed_merge_preferred_source(*parsed.preferred_source)) {
+            return make_invalid_merge_preferred_source_error(args, *parsed.preferred_source);
+        }
         if (parsed.fail_on_conflict) {
-            const auto source_views = store.load_document_source_views(parsed.input_file);
-            if (const auto conflict = find_merge_sidecar_conflict(source_views); conflict.has_value()) {
+            if (const auto conflict = find_merge_sidecar_conflict(*source_views); conflict.has_value()) {
                 return make_merge_conflict_error(args, parsed.input_file, conflict->id, conflict->field_name);
             }
         }
-        const auto document = store.load_document(parsed.input_file);
+        semdl::core::DocumentData document = parsed.preferred_source.has_value()
+            ? build_merge_document(*source_views, parsed.preferred_source)
+            : store.load_document(parsed.input_file);
+        if (parsed.preferred_source.has_value() && !document.has_sidecar) {
+            return make_merge_preferred_source_requires_paired_input_error(args);
+        }
         if (parsed.use_stdout) {
             return CommandResult{
                 .exit_code = 0,
@@ -3305,7 +3400,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
 
         if (parsed.use_dry_run) {
-            return make_dry_run_result(build_merge_preview(document, parsed.input_file, parsed.output_file));
+            return make_dry_run_result(build_merge_preview(document, parsed.input_file, parsed.output_file, parsed.preferred_source));
         }
 
         if (parsed.output_file.has_value()) {
@@ -3324,7 +3419,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
         return make_invalid_transform_options_error(args,
                                                     "merge",
-                                                    "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--fail-on-conflict]");
+                                                    "ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--prefer-source inline|sidecar] [--fail-on-conflict]");
     }
 
     if (args[0] == "search") {
@@ -3680,7 +3775,7 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                                                         "normalize",
                                                         "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");
         }
-        if (parsed.fail_on_conflict) {
+        if (parsed.fail_on_conflict || parsed.preferred_source.has_value()) {
             return make_invalid_transform_options_error(args,
                                                         "normalize",
                                                         "ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <output.ssd> [--format inline|sidecar] [--dry-run]]");

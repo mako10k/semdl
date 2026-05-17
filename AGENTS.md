@@ -16,6 +16,7 @@ This repository is currently specification-first. Default to updating or reading
 - Follow the repo's test-first policy. For new CLI or format behavior, define or update acceptance examples, golden files, and manifests before proposing code.
 - Keep requirements, ADRs, EBNF, manifests, and golden files aligned in the same change when behavior changes.
 - Do not invent CLI syntax, runner behavior, or selector semantics when the answer exists in the docs above.
+- For pilot-scoped spec/process docs, maintain the `.md` source and paired `.ssd` companion together using [docs/documentation-pairing-workflow.md](docs/documentation-pairing-workflow.md). During the pilot, `.md` remains authoritative and the `.ssd` companion is used to test expressiveness and record loss explicitly.
 - For non-trivial multi-artifact work, consult [docs/pitfall-prevention.md](docs/pitfall-prevention.md) before finalizing the change. Prefer `search_pitfall_precautions` and related pitfall tools when available; if the tool domain is unavailable, use the repo-local fallback documented there.
 - When a meaningful failure exposes an authoritative-artifact update miss, record it as a pitfall. Prefer the pitfall tools; if unavailable, add or refine a local case in [docs/pitfall-prevention.md](docs/pitfall-prevention.md) and keep the concrete fix anchored in existing authoritative docs, manifests, and goldens.
 

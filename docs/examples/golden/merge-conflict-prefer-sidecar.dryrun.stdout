@@ -1,0 +1,9 @@
+DRY-RUN
+command: ssd merge docs/examples/merge-conflict-source.ssd --prefer-source sidecar
+target_profile: inline
+target_file: docs/examples/merge-conflict-source.ssd
+source_profile: sidecar
+result_profile: inline
+preferred_source: sidecar
+remove: docs/examples/merge-conflict-source.ssm
+changes: 1

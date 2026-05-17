@@ -23,7 +23,7 @@ Key syntax forms:
 - `ssd remove <selector> <file>`
 - `ssd annotate <selector> <kind> <text> ... <file>`
 - `ssd split <input.ssd> [--dry-run]`
-- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--fail-on-conflict]`
+- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--fail-on-conflict]`
 - `ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <file> [--format inline|sidecar] [--dry-run]]`
 - `ssd help grammar --format semdl`
 
@@ -44,7 +44,7 @@ Common options:
 - `--stdout` is currently used by `add`, `merge`, `normalize`, and `extract`
 - `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`
 - `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`
-- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--fail-on-conflict` is currently merge-only and must trail the merge surface
+- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar` and `--fail-on-conflict` are currently merge-only trailing options
 
 This topic is the canonical user-facing operational syntax summary.
 Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details.

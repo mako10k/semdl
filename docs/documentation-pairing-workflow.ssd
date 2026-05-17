@@ -1,0 +1,63 @@
+document DOC_PAIRING_WORKFLOW {
+  title: "Documentation Pairing Workflow"
+  source_ref: "docs/documentation-pairing-workflow.md"
+}
+
+resource WORKFLOW_DOC {
+  type: process-doc
+  label: "documentation pairing workflow"
+}
+
+assertion A1 {
+  subject: WORKFLOW_DOC
+  predicate: status
+  object: "pilot"
+}
+
+assertion A2 {
+  subject: WORKFLOW_DOC
+  predicate: authority
+  object: ".md remains authoritative during the pilot"
+}
+
+assertion A3 {
+  subject: WORKFLOW_DOC
+  predicate: scope
+  object: "touched spec-grade docs should add or update a paired .ssd companion when practical"
+}
+
+assertion A4 {
+  subject: WORKFLOW_DOC
+  predicate: authoring_order
+  object: "draft md first, update ssd companion second, then run an expressiveness check"
+}
+
+assertion A5 {
+  subject: WORKFLOW_DOC
+  predicate: expressiveness_check
+  object: "the ssd companion should preserve main decisions, constraints, deferred boundaries, and examples without silent loss"
+}
+
+assertion A6 {
+  subject: WORKFLOW_DOC
+  predicate: review_gate
+  object: "review must confirm pair coverage, drift visibility, and explicit notes for any loss"
+}
+
+assertion A7 {
+  subject: WORKFLOW_DOC
+  predicate: rollout
+  object: "start with a pilot and expand only after several slices validate the workflow"
+}
+
+hypothesis H1 {
+  about: A5
+  kind: modeling-limit
+  summary: "Some md content may require approximate ssd encoding, so the workflow records explicit loss notes instead of forcing false precision."
+}
+
+assertion A8 {
+  subject: WORKFLOW_DOC
+  predicate: pilot_note
+  object: "This companion is intentionally compressed relative to the md source and serves as the first pilot pair for the workflow itself."
+}

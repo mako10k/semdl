@@ -1,4 +1,4 @@
 ERROR invalid_transform_options
-command: ssd merge docs/examples/minimal.ssd --fail-on-conflict --stdout
+command: ssd merge docs/examples/minimal.ssd --prefer-source inline --stdout
 subcommand: merge
 usage: ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--prefer-source inline|sidecar] [--fail-on-conflict]

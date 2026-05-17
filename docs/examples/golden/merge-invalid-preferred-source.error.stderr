@@ -1,0 +1,6 @@
+ERROR invalid_merge_preferred_source
+command: ssd merge docs/examples/minimal.ssd --stdout --prefer-source auto
+preferred_source: auto
+allowed:
+  - inline
+  - sidecar

@@ -122,7 +122,7 @@ segment HELP_LINE_22 {
 
 segment HELP_LINE_23 {
   source: HELP_TOPIC
-  text_quote: "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--fail-on-conflict]`"
+  text_quote: "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--fail-on-conflict]`"
 }
 
 segment HELP_LINE_24 {
@@ -212,7 +212,7 @@ segment HELP_LINE_40 {
 
 segment HELP_LINE_41 {
   source: HELP_TOPIC
-  text_quote: "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--fail-on-conflict` is currently merge-only and must trail the merge surface"
+  text_quote: "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar` and `--fail-on-conflict` are currently merge-only trailing options"
 }
 
 segment HELP_LINE_42 {

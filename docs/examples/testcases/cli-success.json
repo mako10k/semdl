@@ -1323,6 +1323,107 @@
       "notes": "merge out should write merged inline output without mutating the source pair"
     },
     {
+      "id": "merge-conflict-stdout-prefer-inline",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --prefer-source inline",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--prefer-source", "inline"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/merge-conflict-inline.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "merge stdout should prefer inline duplicate fields when requested"
+    },
+    {
+      "id": "merge-conflict-dryrun-prefer-inline",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --dry-run --prefer-source inline",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--dry-run", "--prefer-source", "inline"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-prefer-inline.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "merge dry-run should show the selected precedence without mutating files"
+    },
+    {
+      "id": "merge-conflict-out-prefer-inline",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --out docs/examples/merge-conflict-inline-output.ssd --prefer-source inline",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--out", "docs/examples/merge-conflict-inline-output.ssd", "--prefer-source", "inline"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm",
+        "docs/examples/merge-conflict-inline-output.ssd": "docs/examples/fixtures/merge-conflict-inline.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-prefer-inline.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "merge out should write the precedence-selected inline result without mutating the source pair"
+    },
+    {
+      "id": "merge-conflict-apply-prefer-inline",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --prefer-source inline",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--prefer-source", "inline"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/fixtures/merge-conflict-inline.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/merge-conflict-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-prefer-inline.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "merge apply should write the precedence-selected inline result and remove the sidecar"
+    },
+    {
+      "id": "merge-conflict-stdout-explicit-sidecar",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --prefer-source sidecar",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--prefer-source", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/merge-conflict-default.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "merge stdout may spell the default sidecar precedence explicitly"
+    },
+    {
+      "id": "merge-conflict-dryrun-explicit-sidecar",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --dry-run --prefer-source sidecar",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--dry-run", "--prefer-source", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-prefer-sidecar.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "merge dry-run may also spell the default sidecar precedence explicitly"
+    },
+    {
       "id": "merge-standalone-stdout-fail-on-conflict",
       "command": "ssd merge docs/examples/normalize-standalone-source.ssd --stdout --fail-on-conflict",
       "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--stdout", "--fail-on-conflict"],

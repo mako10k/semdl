@@ -43,65 +43,80 @@ segment HELP_LINE_6 {
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] --fail-on-conflict`"
+  text_quote: "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] --prefer-source inline|sidecar"
 }
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "Status:"
+  text_quote: "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--prefer-source inline|sidecar] --fail-on-conflict`"
 }
 
 segment HELP_LINE_9 {
   source: HELP_TOPIC
-  text_quote: "- `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`."
+  text_quote: "Status:"
 }
 
 segment HELP_LINE_10 {
   source: HELP_TOPIC
-  text_quote: "- Bare apply and `--dry-run` require a paired `.ssm`; in-place apply removes that sidecar after writing inline output."
+  text_quote: "- `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`."
 }
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`."
+  text_quote: "- Bare apply and `--dry-run` require a paired `.ssm`; in-place apply removes that sidecar after writing inline output."
 }
 
 segment HELP_LINE_12 {
   source: HELP_TOPIC
-  text_quote: "- `--fail-on-conflict` fails before output or mutation when inline source and paired sidecar disagree on the same sidecar-owned field; without it, paired `.ssm` keeps precedence."
+  text_quote: "- `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`."
 }
 
 segment HELP_LINE_13 {
   source: HELP_TOPIC
-  text_quote: "Related help:"
+  text_quote: "- `--prefer-source inline|sidecar` changes which source wins for sidecar-owned duplicate field conflicts; without it, paired `.ssm` keeps precedence."
 }
 
 segment HELP_LINE_14 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "- `--fail-on-conflict` fails before output or mutation when inline source and paired sidecar disagree on the same sidecar-owned field."
 }
 
 segment HELP_LINE_15 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help samples`"
+  text_quote: "Related help:"
 }
 
 segment HELP_LINE_16 {
   source: HELP_TOPIC
-  text_quote: "Sample:"
+  text_quote: "- `ssd help grammar`"
 }
 
 segment HELP_LINE_17 {
   source: HELP_TOPIC
-  text_quote: "- `ssd merge docs/examples/minimal.ssd --stdout`"
+  text_quote: "- `ssd help samples`"
 }
 
 segment HELP_LINE_18 {
   source: HELP_TOPIC
-  text_quote: "- `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`"
+  text_quote: "Sample:"
 }
 
 segment HELP_LINE_19 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd merge docs/examples/minimal.ssd --stdout`"
+}
+
+segment HELP_LINE_20 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`"
+}
+
+segment HELP_LINE_21 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd merge docs/examples/merge-conflict-source.ssd --stdout --prefer-source inline`"
+}
+
+segment HELP_LINE_22 {
   source: HELP_TOPIC
   text_quote: "- `ssd merge docs/examples/merge-conflict-source.ssd --stdout --fail-on-conflict`"
 }
