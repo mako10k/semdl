@@ -33,7 +33,7 @@ extract-stdout-embed-cmd = "extract" , ws , stdout-opt , ws , extract-embed-pair
 extract-embed-pair = embed-provider-opt , ws , embed-model-opt | embed-model-opt , ws , embed-provider-opt ;
 
 add-cmd         = add-structural-cmd | add-metadata-cmd | "add" , ws , help-opt , [ ws , help-render-opt ] ;
-set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;
+set-cmd         = set-apply-cmd | set-output-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;
 remove-cmd      = remove-apply-cmd | remove-output-cmd | "remove" , ws , help-opt , [ ws , help-render-opt ] ;
 annotate-cmd    = annotate-apply-cmd | annotate-output-cmd | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
 
@@ -49,8 +49,13 @@ add-structural-cmd = "add" , ws , structural-add-kind , ws , input-file , { ws ,
 add-metadata-cmd = "add" , ws , metadata-add-kind , ws , input-file , { ws , add-field } , ws , target-sidecar-opt
                  , [ ws , stdout-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] | ws , dry-run-opt ] ;
 
-set-id-cmd      = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , input-file , { ws , common-opt } ;
-set-path-meta-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , { ws , common-opt } , ws , input-file ;
+set-apply-cmd   = set-id-apply-cmd | set-path-meta-apply-cmd ;
+set-output-cmd  = set-id-output-cmd | set-path-meta-output-cmd ;
+set-id-apply-cmd = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , input-file ;
+set-id-output-cmd = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , set-surface , ws , input-file ;
+set-path-meta-apply-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , ws , input-file ;
+set-path-meta-output-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , ws , set-surface , ws , input-file ;
+set-surface     = dry-run-opt | stdout-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
 
 selector        = id-selector | type-selector | path-selector | meta-selector | doc-selector ;
 remove-selector = selector | structural-selector-list ;

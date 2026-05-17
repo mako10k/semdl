@@ -1995,6 +1995,174 @@
       "notes": "id selector update preview should resolve one inline field update"
     },
     {
+      "id": "set-path-A1-label-stdout",
+      "command": "ssd set path:A1.label 売上報告書 --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:A1.label", "売上報告書", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/set-path-A1-label.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "inline set stdout should return canonical inline text without mutating the source pair"
+    },
+    {
+      "id": "set-path-A1-label-out",
+      "command": "ssd set path:A1.label 売上報告書 --out docs/examples/set-inline-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:A1.label", "売上報告書", "--out", "docs/examples/set-inline-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/set-inline-output.ssd": "docs/examples/fixtures/set-id-A1-label.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-path-A1-label.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "path-selector inline set out should write canonical inline text without mutating the source pair"
+    },
+    {
+      "id": "set-path-A1-label-out-dryrun",
+      "command": "ssd set path:A1.label 売上報告書 --out docs/examples/set-inline-output.ssd --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:A1.label", "売上報告書", "--out", "docs/examples/set-inline-output.ssd", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/set-inline-output.ssd"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-path-A1-label.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "path-selector inline set out dry-run should preview a non-destructive inline output target"
+    },
+    {
+      "id": "set-id-A1-label-stdout",
+      "command": "ssd set id:A1 label 売上報告書 --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1", "label", "売上報告書", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/set-id-A1-label.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id-selector inline set stdout should return canonical inline text without mutating the source pair"
+    },
+    {
+      "id": "set-id-A1-label-out",
+      "command": "ssd set id:A1 label 売上報告書 --out docs/examples/set-inline-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1", "label", "売上報告書", "--out", "docs/examples/set-inline-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/set-inline-output.ssd": "docs/examples/fixtures/set-id-A1-label.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-id-A1-label.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id-selector inline set out should write canonical inline text without mutating the source pair"
+    },
+    {
+      "id": "set-id-A1-label-out-dryrun",
+      "command": "ssd set id:A1 label 売上報告書 --out docs/examples/set-inline-output.ssd --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1", "label", "売上報告書", "--out", "docs/examples/set-inline-output.ssd", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/set-inline-output.ssd"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-id-A1-label.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id-selector inline set out dry-run should preview a non-destructive inline output target"
+    },
+    {
+      "id": "set-meta-A1-confidence-stdout",
+      "command": "ssd set meta:A1.confidence 0.91 --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "meta:A1.confidence", "0.91", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/set-meta-A1-confidence.expected.ssm",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "sidecar set stdout should return canonical sidecar text without mutating the source pair"
+    },
+    {
+      "id": "set-meta-A1-confidence-out",
+      "command": "ssd set meta:A1.confidence 0.91 --out docs/examples/set-meta-output.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "meta:A1.confidence", "0.91", "--out", "docs/examples/set-meta-output.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/set-meta-output.ssm": "docs/examples/fixtures/set-meta-A1-confidence.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-meta-A1-confidence.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "sidecar set out should write canonical sidecar text without mutating the source pair"
+    },
+    {
+      "id": "set-meta-A1-confidence-out-dryrun",
+      "command": "ssd set meta:A1.confidence 0.91 --out docs/examples/set-meta-output.ssm --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "meta:A1.confidence", "0.91", "--out", "docs/examples/set-meta-output.ssm", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/set-meta-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-meta-A1-confidence.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "sidecar set out dry-run should preview a non-destructive sidecar output target"
+    },
+    {
       "id": "annotate-H1-rationale-dryrun",
       "command": "ssd annotate id:H1 rationale \"原文に主語がないため補完\" --target sidecar --dry-run docs/examples/minimal.ssd",
       "argv": ["ssd", "annotate", "id:H1", "rationale", "原文に主語がないため補完", "--target", "sidecar", "--dry-run", "docs/examples/minimal.ssd"],

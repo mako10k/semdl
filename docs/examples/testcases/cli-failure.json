@@ -1329,6 +1329,96 @@
       "notes": "inline annotate should reject paired input because the inline write-path is standalone-only in this slice"
     },
     {
+      "id": "set-stdout-dryrun-invalid",
+      "command": "ssd set path:A1.label bad --stdout --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:A1.label", "bad", "--stdout", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-stdout-dryrun-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "set stdout and dry-run cannot be combined"
+    },
+    {
+      "id": "set-stdout-out-invalid",
+      "command": "ssd set meta:A1.confidence 0.91 --stdout --out docs/examples/set-meta-output.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "meta:A1.confidence", "0.91", "--stdout", "--out", "docs/examples/set-meta-output.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-stdout-out-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "set stdout and out cannot be combined"
+    },
+    {
+      "id": "set-dryrun-out-order-invalid",
+      "command": "ssd set path:A1.label bad --dry-run --out docs/examples/set-inline-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:A1.label", "bad", "--dry-run", "--out", "docs/examples/set-inline-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-dryrun-out-order-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "set out cannot appear after dry-run because that ordering is outside the accepted argv surface"
+    },
+    {
+      "id": "set-out-alias-input",
+      "command": "ssd set path:A1.label bad --out docs/examples/minimal.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "path:A1.label", "bad", "--out", "docs/examples/minimal.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-out-alias-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "set out must not alias the source inline file"
+    },
+    {
+      "id": "set-out-alias-sidecar",
+      "command": "ssd set meta:A1.confidence 0.91 --out docs/examples/minimal.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "meta:A1.confidence", "0.91", "--out", "docs/examples/minimal.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-out-alias-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "sidecar set out must not alias the paired sidecar"
+    },
+    {
+      "id": "set-out-alias-standalone-sidecar",
+      "command": "ssd set meta:A1.confidence 0.91 --out docs/examples/minimal.inline.ssm docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "set", "meta:A1.confidence", "0.91", "--out", "docs/examples/minimal.inline.ssm", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.inline.ssd"],
+      "expected_absent_files": ["docs/examples/minimal.inline.ssm"],
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/set-out-alias-standalone-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "sidecar set out must reserve the sibling sidecar path even on standalone input"
+    },
+    {
       "id": "annotate-stdout-dryrun-invalid",
       "command": "ssd annotate id:H1 todo bad --target sidecar --stdout --dry-run docs/examples/minimal.ssd",
       "argv": ["ssd", "annotate", "id:H1", "todo", "bad", "--target", "sidecar", "--stdout", "--dry-run", "docs/examples/minimal.ssd"],

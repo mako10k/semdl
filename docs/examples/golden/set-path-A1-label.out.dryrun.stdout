@@ -1,0 +1,10 @@
+DRY-RUN
+command: ssd set path:A1.label "売上報告書" --out docs/examples/set-inline-output.ssd docs/examples/minimal.ssd
+target_profile: inline
+target_file: docs/examples/set-inline-output.ssd
+selector: path:A1.label
+old: "売上増加"
+new: "売上報告書"
+preserve_source_ssd: docs/examples/minimal.ssd
+preserve_source_ssm: docs/examples/minimal.ssm
+changes: 1

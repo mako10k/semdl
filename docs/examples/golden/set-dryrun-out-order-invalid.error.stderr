@@ -1,0 +1,4 @@
+ERROR invalid_set_options
+command: ssd set path:A1.label bad --dry-run --out docs/examples/set-inline-output.ssd docs/examples/minimal.ssd
+usage: ssd set <selector> <value-or-field> ... [--stdout|--dry-run|--out <output-file> [--dry-run]] <file>
+hint: set output options must appear before the input file, and `--stdout` cannot be combined with `--dry-run` or `--out`

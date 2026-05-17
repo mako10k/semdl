@@ -3,12 +3,24 @@ SEMDL Help Topic: reference set
 Usage:
 - `ssd set path:<id>.<field> <value> <file>`
 - `ssd set path:<id>.<field> <value> --dry-run <file>`
+- `ssd set path:<id>.<field> <value> --stdout <file>`
+- `ssd set path:<id>.<field> <value> --out <output-file> <file>`
+- `ssd set path:<id>.<field> <value> --out <output-file> --dry-run <file>`
 - `ssd set meta:<id>.<field> <value> <file>`
 - `ssd set meta:<id>.<field> <value> --dry-run <file>`
+- `ssd set meta:<id>.<field> <value> --stdout <file>`
+- `ssd set meta:<id>.<field> <value> --out <output-file> <file>`
+- `ssd set meta:<id>.<field> <value> --out <output-file> --dry-run <file>`
 - `ssd set id:<id> <field> <value> <file>`
+- `ssd set id:<id> <field> <value> --dry-run <file>`
+- `ssd set id:<id> <field> <value> --stdout <file>`
+- `ssd set id:<id> <field> <value> --out <output-file> <file>`
+- `ssd set id:<id> <field> <value> --out <output-file> --dry-run <file>`
 
 Purpose:
-- Apply or preview one target field update in inline structure or sidecar metadata.
+- Apply, preview, or emit one target field update in inline structure or sidecar metadata.
+- `path:` and current `id:` updates use canonical inline `.ssd` for `--stdout` and `--out`.
+- `meta:` updates use canonical sidecar `.ssm` for `--stdout` and `--out`.
 
 Related help:
 - `ssd help grammar`
@@ -16,3 +28,4 @@ Related help:
 
 Sample:
 - `ssd set meta:A1.confidence 0.91 docs/examples/minimal.ssd`
+- `ssd set path:A1.label 売上報告書 --stdout docs/examples/minimal.ssd`

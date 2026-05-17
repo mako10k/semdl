@@ -102,7 +102,7 @@ segment HELP_LINE_18 {
 
 segment HELP_LINE_19 {
   source: HELP_TOPIC
-  text_quote: "- `ssd set <selector> <value-or-field> ... <file>`"
+  text_quote: "- `ssd set <selector> <value-or-field> ... [--stdout|--dry-run|--out <file> [--dry-run]] <file>`"
 }
 
 segment HELP_LINE_20 {
@@ -202,7 +202,7 @@ segment HELP_LINE_38 {
 
 segment HELP_LINE_39 {
   source: HELP_TOPIC
-  text_quote: "- `--stdout` is currently used by `add`, `annotate`, `remove`, `merge`, `normalize`, and `extract`"
+  text_quote: "- `--stdout` is currently used by `add`, `set`, `annotate`, `remove`, `merge`, `normalize`, and `extract`"
 }
 
 segment HELP_LINE_40 {

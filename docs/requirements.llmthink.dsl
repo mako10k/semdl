@@ -478,6 +478,19 @@ step S18K:
     annotation rationale:
       "annotate の既存 routing contract を保ったまま resolved-profile output だけを追加すると、inline と sidecar の ownership boundary を崩さずに non-destructive parity を回収できるため"
 
+step S18L:
+  decision D18L based_on D18K:
+    |
+      次の set output slice では、existing single-target selector semantics を維持したまま `ssd set` に `--stdout`、`--out <output-file>`、`--out <output-file> --dry-run` を追加してよい。
+      inline write profile のとき、`--stdout` と `--out` は canonical inline `.ssd` を扱ってよく、sidecar write profile のときは canonical sidecar `.ssm` を扱ってよい。
+      `--out --dry-run` は existing set preview format を再利用しつつ target file を output path に向けてよい。
+      accepted option order は `--stdout`、`--dry-run`、または `--out <output-file> [--dry-run]` に限ってよく、未規定順序は failure としてよい。
+      `--stdout` は `--dry-run` や `--out` と併用してはならず、`--out` は source `.ssd` を alias してはならない。
+      sidecar write profile のときは source sibling `.ssm` も alias してはならず、paired input だけでなく standalone input の reserved sibling sidecar path にも同じ保護を適用してよい。
+      selector language の拡張、multi-target set、`--target`、`--format` は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "set の current field-layer ownership を保ったまま output-only verification を追加すると、update command 間の parity を広げつつ selector semantics を reopen せずに済むため"
+
 step S18J:
   decision D18J based_on D18, D18H, D18I:
     |

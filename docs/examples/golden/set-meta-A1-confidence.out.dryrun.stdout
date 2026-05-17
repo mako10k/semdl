@@ -1,0 +1,10 @@
+DRY-RUN
+command: ssd set meta:A1.confidence 0.91 --out docs/examples/set-meta-output.ssm docs/examples/minimal.ssd
+target_profile: sidecar
+target_file: docs/examples/set-meta-output.ssm
+selector: meta:A1.confidence
+old: 0.91
+new: 0.91
+preserve_source_ssd: docs/examples/minimal.ssd
+preserve_source_ssm: docs/examples/minimal.ssm
+changes: 1

@@ -1,0 +1,63 @@
+document D1 {
+  title: "月次売上サンプル"
+  source_ref: "docs/source/monthly-sales.txt"
+  version: "0.1"
+  generator: "ssd extract"
+}
+
+resource R1 {
+  type: document
+  label: "月次売上報告"
+}
+
+segment S1 {
+  source: R1
+  text_quote: "4月の売上は前年同月比で増加した"
+}
+
+assertion A1 {
+  subject: R1
+  predicate: reports
+  object: "4月の売上は増加した"
+  label: "売上報告書"
+  source_segment: S1
+  source_presence: true
+  embedding_presence: true
+
+  meta {
+    confidence: 0.91
+    provenance_kind: extracted
+    rationale: "文中の明示表現をそのまま主張化した"
+
+    embedding {
+      model: "text-embedding-3-large"
+      dimensions: 3072
+      generated_at: "2026-05-14T00:00:00Z"
+      provider: "openai"
+      vector_ref: "embeddings/A1.json"
+    }
+  }
+}
+
+hypothesis H1 {
+  about: A1
+  kind: omission-completion
+  summary: "増加の主体は国内売上である可能性が高い"
+  alternative_group: ALT1
+
+  meta {
+    confidence: 0.57
+    rationale: "原文に売上区分の主語がなく、文脈補完が必要"
+    caveat: "全売上を指す可能性も残る"
+  }
+}
+
+alternative ALT1A {
+  group: ALT1
+  label: "国内売上が増加した"
+}
+
+alternative ALT1B {
+  group: ALT1
+  label: "全売上が増加した"
+}
