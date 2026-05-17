@@ -963,6 +963,168 @@
       "notes": "allow-multi should be rejected outside type selectors"
     },
     {
+      "id": "remove-ALT1B-stdout-dryrun-invalid",
+      "command": "ssd remove id:ALT1B --stdout --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--stdout", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-ALT1B-stdout-dryrun-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "remove stdout cannot be combined with dry-run"
+    },
+    {
+      "id": "remove-ALT1B-stdout-out-invalid",
+      "command": "ssd remove id:ALT1B --stdout --out docs/examples/remove-ALT1B-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--stdout", "--out", "docs/examples/remove-ALT1B-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-ALT1B-stdout-out-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "remove stdout cannot be combined with out"
+    },
+    {
+      "id": "remove-type-hypothesis-stdout-before-allow-multi-invalid",
+      "command": "ssd remove type:hypothesis --stdout --allow-multi docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--stdout", "--allow-multi", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/remove-multi-cascade-source.ssd", "docs/examples/remove-multi-cascade-source.ssm"],
+      "expected_files": {
+        "docs/examples/remove-multi-cascade-source.ssd": "docs/examples/remove-multi-cascade-source.ssd",
+        "docs/examples/remove-multi-cascade-source.ssm": "docs/examples/remove-multi-cascade-source.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-type-hypothesis-stdout-before-allow-multi.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "output options must remain after the remove safety options"
+    },
+    {
+      "id": "remove-type-hypothesis-out-before-allow-multi-invalid",
+      "command": "ssd remove type:hypothesis --out docs/examples/remove-multi-cascade-output.ssd --allow-multi docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--out", "docs/examples/remove-multi-cascade-output.ssd", "--allow-multi", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/remove-multi-cascade-source.ssd", "docs/examples/remove-multi-cascade-source.ssm"],
+      "expected_files": {
+        "docs/examples/remove-multi-cascade-source.ssd": "docs/examples/remove-multi-cascade-source.ssd",
+        "docs/examples/remove-multi-cascade-source.ssm": "docs/examples/remove-multi-cascade-source.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-type-hypothesis-out-before-allow-multi.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "out must also remain after the remove safety options"
+    },
+    {
+      "id": "remove-ALT1B-out-alias-source",
+      "command": "ssd remove id:ALT1B --out docs/examples/minimal.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--out", "docs/examples/minimal.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-ALT1B-out-alias-source.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "remove out must not alias the source ssd"
+    },
+    {
+      "id": "remove-ALT1B-out-alias-source-equivalent",
+      "command": "ssd remove id:ALT1B --out docs/examples/../examples/minimal.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--out", "docs/examples/../examples/minimal.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-ALT1B-out-alias-source-equivalent.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "remove out alias protection should use normalized equivalent paths"
+    },
+    {
+      "id": "remove-ALT1B-out-alias-sidecar",
+      "command": "ssd remove id:ALT1B --out docs/examples/minimal.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--out", "docs/examples/minimal.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-ALT1B-out-alias-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "remove out must not alias the paired sidecar"
+    },
+    {
+      "id": "remove-ALT1B-out-alias-sidecar-equivalent",
+      "command": "ssd remove id:ALT1B --out docs/examples/../examples/minimal.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--out", "docs/examples/../examples/minimal.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-ALT1B-out-alias-sidecar-equivalent.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "remove out alias protection should use normalized equivalent sidecar paths"
+    },
+    {
+      "id": "remove-meta-missing-dryrun",
+      "command": "ssd remove meta:A1.missing --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "meta:A1.missing", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-meta-missing-dryrun.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata remove dry-run should fail when the selected metadata field does not exist"
+    },
+    {
       "id": "remove-referenced-assertion-A1",
       "command": "ssd remove id:A1 docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "id:A1", "docs/examples/minimal.ssd"],

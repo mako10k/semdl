@@ -107,7 +107,7 @@ segment HELP_LINE_19 {
 
 segment HELP_LINE_20 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>`"
+  text_quote: "- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`"
 }
 
 segment HELP_LINE_21 {
@@ -197,7 +197,7 @@ segment HELP_LINE_37 {
 
 segment HELP_LINE_38 {
   source: HELP_TOPIC
-  text_quote: "- `--stdout` is currently used by `add`, `merge`, `normalize`, and `extract`"
+  text_quote: "- `--stdout` is currently used by `add`, `remove`, `merge`, `normalize`, and `extract`"
 }
 
 segment HELP_LINE_39 {

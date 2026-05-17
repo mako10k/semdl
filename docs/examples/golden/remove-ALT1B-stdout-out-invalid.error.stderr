@@ -1,4 +1,4 @@
 ERROR invalid_remove_options
-command: ssd remove id:ALT1B --allow-multi docs/examples/minimal.ssd
+command: ssd remove id:ALT1B --stdout --out docs/examples/remove-ALT1B-output.ssd docs/examples/minimal.ssd
 usage: ssd remove <selector> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>
 hint: `--allow-multi` is currently limited to `type:<kind>` selectors, and output options must follow the safety options

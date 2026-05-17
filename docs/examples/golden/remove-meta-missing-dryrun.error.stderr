@@ -1,0 +1,4 @@
+ERROR selector_target_not_found
+command: ssd remove meta:A1.missing "--dry-run" docs/examples/minimal.ssd
+selector: meta:A1.missing
+hint: the selector did not resolve to any resource in the current document set

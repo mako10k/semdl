@@ -20,7 +20,7 @@ Key syntax forms:
 - `ssd explain <id> <file>`
 - `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`
 - `ssd set <selector> <value-or-field> ... <file>`
-- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>`
+- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
 - `ssd annotate <selector> <kind> <text> ... <file>`
 - `ssd split <input.ssd> [--dry-run]`
 - `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--warn-on-conflict] [--fail-on-conflict]`
@@ -41,7 +41,7 @@ Value forms:
 
 Common options:
 - `--dry-run` previews update-oriented commands
-- `--stdout` is currently used by `add`, `merge`, `normalize`, and `extract`
+- `--stdout` is currently used by `add`, `remove`, `merge`, `normalize`, and `extract`
 - `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`
 - `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`
 - `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar`, `--warn-on-conflict`, and `--fail-on-conflict` are currently merge-only trailing options

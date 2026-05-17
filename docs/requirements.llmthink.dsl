@@ -442,6 +442,18 @@ step S18H:
     annotation rationale:
       "existing type selector surface を保ったまま dependent-aware multi-remove を追加すると、selector language や output policy を広げずに remove の safety matrix を一段進められるため"
 
+step S18I:
+  decision D18I based_on D18, D18H:
+    |
+      次の remove output slice では、existing selector semantics を維持したまま `ssd remove` に `--dry-run`、`--stdout`、`--out <output.ssd>` を追加してよい。
+      `--stdout` と `--out` は metadata remove と structural remove のどちらでも post-remove canonical inline `.ssd` を扱ってよく、paired input でも sidecar pair や `--format` は導入しない。
+      `--dry-run` は apply と同じ validation と remove target resolution を通した preview として扱ってよく、`--out <output.ssd> --dry-run` は output path preview として扱ってよい。
+      `type:<kind> --allow-multi` および `--cascade` surface にも同じ non-destructive options を末尾追加してよい。
+      `--stdout` は `--dry-run` や `--out` と併用してはならず、`--out` は source `.ssd` と paired `.ssm` を alias してはならない。
+      broader multi-target selector semantics と sidecar output profile selection は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "remove も inline-only non-destructive path を持たせると、selector safety を広げずに update command 間の parity を回収できるため"
+
 step S27A:
   decision D27A based_on D27, D8A:
     |

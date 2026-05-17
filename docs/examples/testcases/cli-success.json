@@ -2110,6 +2110,193 @@
       "notes": "type selector remove can delete all matched structural targets when --allow-multi is explicit"
     },
     {
+      "id": "remove-type-alternative-allow-multi-dryrun",
+      "command": "ssd remove type:alternative --allow-multi --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "type:alternative", "--allow-multi", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-type-alternative-allow-multi.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector allow-multi should support dry-run when no dependents remain"
+    },
+    {
+      "id": "remove-type-alternative-allow-multi-stdout",
+      "command": "ssd remove type:alternative --allow-multi --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "type:alternative", "--allow-multi", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/remove-type-alternative-allow-multi-inline-output.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector allow-multi should support stdout when no dependents remain"
+    },
+    {
+      "id": "remove-type-alternative-allow-multi-out",
+      "command": "ssd remove type:alternative --allow-multi --out docs/examples/remove-type-alternative-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "type:alternative", "--allow-multi", "--out", "docs/examples/remove-type-alternative-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/remove-type-alternative-output.ssd": "docs/examples/fixtures/remove-type-alternative-allow-multi-inline-output.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/remove-type-alternative-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-type-alternative-allow-multi.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector allow-multi should support out when no dependents remain"
+    },
+    {
+      "id": "remove-ALT1B-dryrun",
+      "command": "ssd remove id:ALT1B --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-ALT1B.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "single-target structural remove should support a dry-run preview without mutating source files"
+    },
+    {
+      "id": "remove-ALT1B-stdout",
+      "command": "ssd remove id:ALT1B --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/remove-ALT1B-inline-output.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "single-target structural remove stdout should return the canonical inline result without mutating source files"
+    },
+    {
+      "id": "remove-ALT1B-out",
+      "command": "ssd remove id:ALT1B --out docs/examples/remove-ALT1B-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--out", "docs/examples/remove-ALT1B-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/remove-ALT1B-output.ssd": "docs/examples/fixtures/remove-ALT1B-inline-output.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/remove-ALT1B-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-ALT1B.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "single-target structural remove out should write the canonical inline result to a separate file"
+    },
+    {
+      "id": "remove-ALT1B-out-dryrun",
+      "command": "ssd remove id:ALT1B --out docs/examples/remove-ALT1B-output.ssd --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--out", "docs/examples/remove-ALT1B-output.ssd", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/remove-ALT1B-output.ssd", "docs/examples/remove-ALT1B-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-ALT1B-out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "single-target structural remove should preview a non-destructive output target"
+    },
+    {
+      "id": "remove-A1-embedding-stdout",
+      "command": "ssd remove meta:A1.embedding --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "meta:A1.embedding", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/remove-A1-embedding-inline-output.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata remove stdout should return the canonical inline result without mutating source files"
+    },
+    {
+      "id": "remove-A1-embedding-dryrun",
+      "command": "ssd remove meta:A1.embedding --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "meta:A1.embedding", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-A1-embedding.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata remove should support dry-run preview"
+    },
+    {
+      "id": "remove-A1-embedding-out",
+      "command": "ssd remove meta:A1.embedding --out docs/examples/remove-A1-embedding-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "meta:A1.embedding", "--out", "docs/examples/remove-A1-embedding-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/remove-A1-embedding-output.ssd": "docs/examples/fixtures/remove-A1-embedding-inline-output.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/remove-A1-embedding-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-A1-embedding.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata remove out should write the canonical inline result to a separate file"
+    },
+    {
       "id": "remove-type-hypothesis-allow-multi-cascade-apply",
       "command": "ssd remove type:hypothesis --allow-multi --cascade docs/examples/remove-multi-cascade-source.ssd",
       "argv": ["ssd", "remove", "type:hypothesis", "--allow-multi", "--cascade", "docs/examples/remove-multi-cascade-source.ssd"],
@@ -2128,6 +2315,81 @@
       "notes": "type selector remove can cascade across each matched hypothesis and remove dependent alternatives in one step"
     },
     {
+      "id": "remove-type-hypothesis-allow-multi-cascade-dryrun",
+      "command": "ssd remove type:hypothesis --allow-multi --cascade --dry-run docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--allow-multi", "--cascade", "--dry-run", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/remove-multi-cascade-source.ssd", "docs/examples/remove-multi-cascade-source.ssm"],
+      "expected_files": {
+        "docs/examples/remove-multi-cascade-source.ssd": "docs/examples/remove-multi-cascade-source.ssd",
+        "docs/examples/remove-multi-cascade-source.ssm": "docs/examples/remove-multi-cascade-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "multi-target cascade remove should support dry-run without mutating source files"
+    },
+    {
+      "id": "remove-type-hypothesis-allow-multi-cascade-stdout",
+      "command": "ssd remove type:hypothesis --allow-multi --cascade --stdout docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--allow-multi", "--cascade", "--stdout", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/remove-multi-cascade-source.ssd", "docs/examples/remove-multi-cascade-source.ssm"],
+      "expected_files": {
+        "docs/examples/remove-multi-cascade-source.ssd": "docs/examples/remove-multi-cascade-source.ssd",
+        "docs/examples/remove-multi-cascade-source.ssm": "docs/examples/remove-multi-cascade-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/remove-type-hypothesis-allow-multi-cascade-inline-output.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "multi-target cascade remove should support stdout without mutating source files"
+    },
+    {
+      "id": "remove-type-hypothesis-allow-multi-cascade-out",
+      "command": "ssd remove type:hypothesis --allow-multi --cascade --out docs/examples/remove-multi-cascade-output.ssd docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--allow-multi", "--cascade", "--out", "docs/examples/remove-multi-cascade-output.ssd", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/remove-multi-cascade-source.ssd", "docs/examples/remove-multi-cascade-source.ssm"],
+      "expected_files": {
+        "docs/examples/remove-multi-cascade-source.ssd": "docs/examples/remove-multi-cascade-source.ssd",
+        "docs/examples/remove-multi-cascade-source.ssm": "docs/examples/remove-multi-cascade-source.ssm",
+        "docs/examples/remove-multi-cascade-output.ssd": "docs/examples/fixtures/remove-type-hypothesis-allow-multi-cascade-inline-output.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/remove-multi-cascade-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "multi-target cascade remove should support out without mutating source files"
+    },
+    {
+      "id": "remove-type-hypothesis-allow-multi-cascade-out-dryrun",
+      "command": "ssd remove type:hypothesis --allow-multi --cascade --out docs/examples/remove-multi-cascade-output.ssd --dry-run docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--allow-multi", "--cascade", "--out", "docs/examples/remove-multi-cascade-output.ssd", "--dry-run", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/remove-multi-cascade-source.ssd", "docs/examples/remove-multi-cascade-source.ssm"],
+      "expected_files": {
+        "docs/examples/remove-multi-cascade-source.ssd": "docs/examples/remove-multi-cascade-source.ssd",
+        "docs/examples/remove-multi-cascade-source.ssm": "docs/examples/remove-multi-cascade-source.ssm"
+      },
+      "expected_absent_files": ["docs/examples/remove-multi-cascade-output.ssd", "docs/examples/remove-multi-cascade-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-type-hypothesis-allow-multi-cascade-out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "multi-target cascade remove should preview a non-destructive output file target"
+    },
+    {
       "id": "remove-H1-cascade-apply",
       "command": "ssd remove id:H1 --cascade docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "id:H1", "--cascade", "docs/examples/minimal.ssd"],
@@ -2144,6 +2406,62 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "cascade remove should delete the hypothesis and its dependent alternatives in one step"
+    },
+    {
+      "id": "remove-H1-cascade-dryrun",
+      "command": "ssd remove id:H1 --cascade --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:H1", "--cascade", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-H1-cascade.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "cascade remove should support dry-run without mutating source files"
+    },
+    {
+      "id": "remove-H1-cascade-stdout",
+      "command": "ssd remove id:H1 --cascade --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:H1", "--cascade", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/remove-H1-cascade-inline-output.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "cascade remove should support stdout without mutating source files"
+    },
+    {
+      "id": "remove-H1-cascade-out",
+      "command": "ssd remove id:H1 --cascade --out docs/examples/remove-H1-cascade-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:H1", "--cascade", "--out", "docs/examples/remove-H1-cascade-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/remove-H1-cascade-output.ssd": "docs/examples/fixtures/remove-H1-cascade-inline-output.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/remove-H1-cascade-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-H1-cascade.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "cascade remove should support out without mutating source files"
     },
     {
       "id": "remove-A1-cascade-apply",

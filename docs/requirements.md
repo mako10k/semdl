@@ -882,7 +882,17 @@ remove は、初期仕様では以下の制約を持つことを推奨する。
   - resource <- segment.source
 - `--cascade` は direct / transitive dependents を同時削除し、target だけを残す部分削除はしない
 
-現行 slice では `--allow-multi` は引き続き `type:<kind>` に限定してよく、broader multi-target selector semantics や remove の non-destructive output surface は後続 slice に分離してよい。
+現行 slice では `--allow-multi` は引き続き `type:<kind>` に限定してよく、broader multi-target selector semantics は後続 slice に分離してよい。
+
+次の remove output slice では、selector semantics を広げずに `--dry-run`、`--stdout`、`--out <output.ssd>` を追加してよい。
+
+- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] --dry-run <file>` は apply と同じ validation を通した preview を返してよい
+- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] --stdout <file>` は source file を変更せず、remove 後の canonical inline `.ssd` を stdout へ返してよい
+- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] --out <output.ssd> <file>` は source `.ssd` と paired `.ssm` を変更せず、remove 後の canonical inline `.ssd` を output file へ書いてよい
+- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] --out <output.ssd> --dry-run <file>` は target file を output path に向けた preview として扱ってよい
+- `--stdout` は `--dry-run` や `--out` と併用してはならない
+- `--out` は source `.ssd` や paired `.ssm` を alias してはならない
+- paired input でも non-destructive output は inline canonical `.ssd` に固定してよく、sidecar pair や `--format` はこの slice に含めない
 
 注記: これにより remove を最小限に保ちつつ、誤削除を避ける。
 
@@ -976,13 +986,33 @@ test runner 定義:
 - [docs/examples/golden/split-minimal.dryrun.stdout](docs/examples/golden/split-minimal.dryrun.stdout)
 - [docs/examples/golden/split-minimal.apply.stdout](docs/examples/golden/split-minimal.apply.stdout)
 - [docs/examples/golden/remove-A1-embedding.apply.stdout](docs/examples/golden/remove-A1-embedding.apply.stdout)
+- [docs/examples/golden/remove-A1-embedding.dryrun.stdout](docs/examples/golden/remove-A1-embedding.dryrun.stdout)
+- [docs/examples/golden/remove-A1-embedding.out.stdout](docs/examples/golden/remove-A1-embedding.out.stdout)
 - [docs/examples/golden/remove-ALT1B.apply.stdout](docs/examples/golden/remove-ALT1B.apply.stdout)
+- [docs/examples/golden/remove-ALT1B.dryrun.stdout](docs/examples/golden/remove-ALT1B.dryrun.stdout)
+- [docs/examples/golden/remove-ALT1B.out.stdout](docs/examples/golden/remove-ALT1B.out.stdout)
 - [docs/examples/golden/remove-type-alternative-allow-multi.apply.stdout](docs/examples/golden/remove-type-alternative-allow-multi.apply.stdout)
+- [docs/examples/golden/remove-type-alternative-allow-multi.dryrun.stdout](docs/examples/golden/remove-type-alternative-allow-multi.dryrun.stdout)
+- [docs/examples/golden/remove-type-alternative-allow-multi.out.stdout](docs/examples/golden/remove-type-alternative-allow-multi.out.stdout)
 - [docs/examples/golden/remove-H1-cascade.apply.stdout](docs/examples/golden/remove-H1-cascade.apply.stdout)
+- [docs/examples/golden/remove-H1-cascade.dryrun.stdout](docs/examples/golden/remove-H1-cascade.dryrun.stdout)
+- [docs/examples/golden/remove-H1-cascade.out.stdout](docs/examples/golden/remove-H1-cascade.out.stdout)
+- [docs/examples/golden/remove-type-hypothesis-allow-multi-cascade-out.dryrun.stdout](docs/examples/golden/remove-type-hypothesis-allow-multi-cascade-out.dryrun.stdout)
+- [docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.dryrun.stdout](docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.dryrun.stdout)
+- [docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.out.stdout](docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.out.stdout)
 - [docs/examples/golden/remove-A1-cascade.apply.stdout](docs/examples/golden/remove-A1-cascade.apply.stdout)
 - [docs/examples/golden/remove-type-alternative.error.stderr](docs/examples/golden/remove-type-alternative.error.stderr)
+- [docs/examples/golden/remove-ALT1B-stdout-dryrun-invalid.error.stderr](docs/examples/golden/remove-ALT1B-stdout-dryrun-invalid.error.stderr)
+- [docs/examples/golden/remove-ALT1B-stdout-out-invalid.error.stderr](docs/examples/golden/remove-ALT1B-stdout-out-invalid.error.stderr)
+- [docs/examples/golden/remove-type-hypothesis-stdout-before-allow-multi.error.stderr](docs/examples/golden/remove-type-hypothesis-stdout-before-allow-multi.error.stderr)
+- [docs/examples/golden/remove-type-hypothesis-out-before-allow-multi.error.stderr](docs/examples/golden/remove-type-hypothesis-out-before-allow-multi.error.stderr)
+- [docs/examples/golden/remove-ALT1B-out-alias-source.error.stderr](docs/examples/golden/remove-ALT1B-out-alias-source.error.stderr)
+- [docs/examples/golden/remove-ALT1B-out-alias-sidecar.error.stderr](docs/examples/golden/remove-ALT1B-out-alias-sidecar.error.stderr)
+- [docs/examples/golden/remove-ALT1B-out-alias-source-equivalent.error.stderr](docs/examples/golden/remove-ALT1B-out-alias-source-equivalent.error.stderr)
+- [docs/examples/golden/remove-ALT1B-out-alias-sidecar-equivalent.error.stderr](docs/examples/golden/remove-ALT1B-out-alias-sidecar-equivalent.error.stderr)
 - [docs/examples/golden/remove-id-A1.error.stderr](docs/examples/golden/remove-id-A1.error.stderr)
 - [docs/examples/golden/remove-H1-references.error.stderr](docs/examples/golden/remove-H1-references.error.stderr)
+- [docs/examples/golden/remove-meta-missing-dryrun.error.stderr](docs/examples/golden/remove-meta-missing-dryrun.error.stderr)
 - [docs/examples/golden/remove-R1-references.error.stderr](docs/examples/golden/remove-R1-references.error.stderr)
 - [docs/examples/golden/annotate-invalid-kind.error.stderr](docs/examples/golden/annotate-invalid-kind.error.stderr)
 - [docs/examples/golden/annotate-inline-unsupported-resource.error.stderr](docs/examples/golden/annotate-inline-unsupported-resource.error.stderr)
@@ -1090,9 +1120,19 @@ test runner 定義:
 - `ssd remove type:alternative --allow-multi docs/examples/minimal.ssd`
   - type selector の複数一致は `--allow-multi` 明示時だけ一括削除してよい
   - 期待出力は [docs/examples/golden/remove-type-alternative-allow-multi.apply.stdout](docs/examples/golden/remove-type-alternative-allow-multi.apply.stdout) と一致する
+- `ssd remove id:ALT1B --dry-run docs/examples/minimal.ssd`
+  - single-target structural remove は source file を変えずに preview できる
+- `ssd remove id:ALT1B --stdout docs/examples/minimal.ssd`
+  - structural remove の non-destructive stdout は canonical inline `.ssd` を返してよい
+- `ssd remove id:ALT1B --out docs/examples/remove-ALT1B-output.ssd docs/examples/minimal.ssd`
+  - structural remove の `--out` は source pair を保持したまま output file へ inline result を書いてよい
+- `ssd remove meta:A1.embedding --stdout docs/examples/minimal.ssd`
+  - metadata remove の non-destructive stdout も post-remove canonical inline view を返してよい
 - `ssd remove type:hypothesis --allow-multi --cascade docs/examples/remove-multi-cascade-source.ssd`
   - matched hypotheses とその dependent alternatives を union closure ごと削除してよい
   - 期待出力は [docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.apply.stdout](docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.apply.stdout) と一致する
+- `ssd remove type:hypothesis --allow-multi --cascade --out docs/examples/remove-multi-cascade-output.ssd --dry-run docs/examples/remove-multi-cascade-source.ssd`
+  - multi-target cascade remove も output path preview を返してよい
 - `ssd remove id:H1 --cascade docs/examples/minimal.ssd`
   - 仮説 H1 とその dependent alternatives を closure ごと削除する
   - 期待出力は [docs/examples/golden/remove-H1-cascade.apply.stdout](docs/examples/golden/remove-H1-cascade.apply.stdout) と一致する
@@ -1113,6 +1153,12 @@ test runner 定義:
 - `ssd remove id:H1 docs/examples/minimal.ssd`
   - dependent alternative が残るため `--cascade` なしでは失敗する
   - 期待 stderr は [docs/examples/golden/remove-H1-references.error.stderr](docs/examples/golden/remove-H1-references.error.stderr) と一致する
+- `ssd remove id:ALT1B --stdout --dry-run docs/examples/minimal.ssd`
+  - `--stdout` と `--dry-run` の併用は失敗する
+- `ssd remove id:ALT1B --out docs/examples/minimal.ssd docs/examples/minimal.ssd`
+  - `--out` が source `.ssd` を alias する場合は失敗する
+- `ssd remove id:ALT1B --out docs/examples/minimal.ssm docs/examples/minimal.ssd`
+  - paired input の `--out` が source `.ssm` を alias する場合も失敗する
 - `ssd remove id:R1 docs/examples/minimal.ssd`
   - resource に対する source edge が残るため `--cascade` なしでは失敗する
   - 期待 stderr は [docs/examples/golden/remove-R1-references.error.stderr](docs/examples/golden/remove-R1-references.error.stderr) と一致する

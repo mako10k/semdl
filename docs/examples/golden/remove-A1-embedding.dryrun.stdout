@@ -1,0 +1,8 @@
+DRY-RUN
+command: ssd remove meta:A1.embedding --dry-run docs/examples/minimal.ssd
+target_profile: sidecar
+target_file: docs/examples/minimal.ssm
+selector: meta:A1.embedding
+source_profile: sidecar
+result_profile: sidecar
+changes: 1

@@ -1,0 +1,9 @@
+DRY-RUN
+command: ssd remove id:H1 --cascade --dry-run docs/examples/minimal.ssd
+target_profile: inline
+target_file: docs/examples/minimal.ssd
+selector: id:H1
+source_profile: sidecar
+result_profile: inline
+write_ssm: docs/examples/minimal.ssm
+changes: 3

@@ -330,10 +330,13 @@ struct ParsedAnnotateArgs {
 
 struct ParsedRemoveArgs {
     bool valid = true;
+    bool use_stdout = false;
+    bool use_dry_run = false;
     bool use_cascade = false;
     bool allow_multi = false;
     std::string selector;
     std::filesystem::path input_file;
+    std::optional<std::filesystem::path> output_file;
     std::string invalid_option;
 };
 
@@ -937,29 +940,49 @@ ParsedRemoveArgs parse_remove_args(const std::vector<std::string_view>& args) {
         parsed.valid = false;
         return parsed;
     }
+
     parsed.selector = std::string(args[1]);
-    if (args.size() == 3) {
-        parsed.input_file = std::filesystem::path(args[2]);
-        return parsed;
-    }
-    if (args.size() == 4 && args[2] == "--cascade") {
-        parsed.use_cascade = true;
-        parsed.input_file = std::filesystem::path(args[3]);
-        return parsed;
-    }
-    if (args.size() == 4 && args[2] == "--allow-multi") {
+
+    std::size_t index = 2;
+    if (index < args.size() && args[index] == "--allow-multi") {
         parsed.allow_multi = true;
-        parsed.input_file = std::filesystem::path(args[3]);
-        return parsed;
-    }
-    if (args.size() == 5 && args[2] == "--allow-multi" && args[3] == "--cascade") {
-        parsed.allow_multi = true;
+        ++index;
+        if (index < args.size() && args[index] == "--cascade") {
+            parsed.use_cascade = true;
+            ++index;
+        }
+    } else if (index < args.size() && args[index] == "--cascade") {
         parsed.use_cascade = true;
-        parsed.input_file = std::filesystem::path(args[4]);
+        ++index;
+    }
+
+    if (index < args.size() && args[index] == "--stdout") {
+        parsed.use_stdout = true;
+        ++index;
+    } else if (index < args.size() && args[index] == "--dry-run") {
+        parsed.use_dry_run = true;
+        ++index;
+    } else if (index < args.size() && args[index] == "--out") {
+        if (index + 1 >= args.size()) {
+            parsed.valid = false;
+            parsed.invalid_option = "--out";
+            return parsed;
+        }
+        parsed.output_file = std::filesystem::path(args[index + 1]);
+        index += 2;
+        if (index < args.size() && args[index] == "--dry-run") {
+            parsed.use_dry_run = true;
+            ++index;
+        }
+    }
+
+    if (index + 1 != args.size()) {
+        parsed.valid = false;
+        parsed.invalid_option = index < args.size() ? std::string(args[index]) : std::string{};
         return parsed;
     }
-    parsed.valid = false;
-    parsed.invalid_option = args.size() >= 3 ? std::string(args[2]) : std::string{};
+
+    parsed.input_file = std::filesystem::path(args[index]);
     return parsed;
 }
 
@@ -1469,7 +1492,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds, including structural `--stdout` and `--out`, plus create-only sidecar `annotation` and `provenance`.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds, including structural `--stdout` and `--out`, plus create-only sidecar `annotation` and `provenance`; `remove` supports apply, `--dry-run`, `--stdout`, and inline `--out`.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -1496,7 +1519,7 @@ std::string grammar_help_text() {
            "- `ssd explain <id> <file>`\n"
            "- `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`\n"
            "- `ssd set <selector> <value-or-field> ... <file>`\n"
-           "- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>`\n"
+           "- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`\n"
            "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
            "- `ssd split <input.ssd> [--dry-run]`\n"
            "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--warn-on-conflict] [--fail-on-conflict]`\n"
@@ -1514,7 +1537,7 @@ std::string grammar_help_text() {
            "- update-oriented scalar values accept quoted-string, number, boolean, or identifier forms\n\n"
            "Common options:\n"
            "- `--dry-run` previews update-oriented commands\n"
-           "- `--stdout` is currently used by `add`, `merge`, `normalize`, and `extract`\n"
+           "- `--stdout` is currently used by `add`, `remove`, `merge`, `normalize`, and `extract`\n"
            "- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`\n"
            "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`\n"
            "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar`, `--warn-on-conflict`, and `--fail-on-conflict` are currently merge-only trailing options\n\n"
@@ -1619,19 +1642,25 @@ std::string reference_help_text(std::string_view target) {
                "Usage:\n"
                "- `ssd remove <selector> <file>`\n"
                "- `ssd remove <selector> --cascade <file>`\n"
-                "- `ssd remove type:<kind> --allow-multi <file>`\n"
-                "- `ssd remove type:<kind> --allow-multi --cascade <file>`\n\n"
+               "- `ssd remove <selector> --dry-run <file>`\n"
+               "- `ssd remove <selector> --stdout <file>`\n"
+               "- `ssd remove <selector> --out <output.ssd> [--dry-run] <file>`\n"
+               "- `ssd remove type:<kind> --allow-multi [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>`\n"
+               "- `ssd remove type:<kind> --allow-multi --cascade [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>`\n\n"
                "Purpose:\n"
                "- Remove one sidecar metadata field or one structural target when the selector resolves safely.\n"
                "- Structural removals fail on inbound references unless `--cascade` removes dependent targets in the same step.\n"
-                "- `type:<kind> --allow-multi --cascade` expands the same cascade edge list across the matched root set; broader multi-target remove remains deferred.\n\n"
+               "- `--stdout` and `--out` return the post-remove canonical inline `.ssd` without mutating the source files.\n"
+               "- `type:<kind> --allow-multi` keeps existing selector limits and also accepts the same non-destructive output surface.\n"
+               "- `type:<kind> --allow-multi --cascade` expands the same cascade edge list across the matched root set; broader multi-target remove remains deferred.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help recipes wrong-layer`\n\n"
                "Sample:\n"
                "- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`\n"
-                "- `ssd remove id:H1 --cascade docs/examples/minimal.ssd`\n"
-                "- `ssd remove type:hypothesis --allow-multi --cascade docs/examples/remove-multi-cascade-source.ssd`\n";
+               "- `ssd remove id:ALT1B --stdout docs/examples/minimal.ssd`\n"
+               "- `ssd remove id:H1 --cascade docs/examples/minimal.ssd`\n"
+               "- `ssd remove type:hypothesis --allow-multi --cascade --out docs/examples/remove-multi-cascade-output.ssd --dry-run docs/examples/remove-multi-cascade-source.ssd`\n";
     }
 
     if (target == "annotate") {
@@ -2249,8 +2278,8 @@ CommandResult make_invalid_remove_options_error(const std::vector<std::string_vi
         .exit_code = 2,
         .stdout_text = "",
         .stderr_text = "ERROR invalid_remove_options\ncommand: " + join_args(args) +
-                       "\nusage: ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>\n"
-                       "hint: `--allow-multi` is currently limited to `type:<kind>` selectors\n",
+                       "\nusage: ssd remove <selector> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>\n"
+                       "hint: `--allow-multi` is currently limited to `type:<kind>` selectors, and output options must follow the safety options\n",
     };
 }
 
@@ -2869,6 +2898,43 @@ UpdatePreview build_annotate_preview(const ParsedAnnotateArgs& parsed, std::stri
     return preview;
 }
 
+UpdatePreview build_remove_preview(const semdl::core::DocumentData& document,
+                                   const ParsedRemoveArgs& parsed,
+                                   bool metadata_remove,
+                                   int changes) {
+    UpdatePreview preview;
+    preview.command_line = "ssd remove " + parsed.selector;
+    if (parsed.allow_multi) {
+        preview.command_line += " --allow-multi";
+    }
+    if (parsed.use_cascade) {
+        preview.command_line += " --cascade";
+    }
+    if (parsed.output_file.has_value()) {
+        preview.command_line += " --out " + parsed.output_file->generic_string();
+    }
+    preview.command_line += " --dry-run " + parsed.input_file.generic_string();
+
+    const auto sidecar_path = derive_sidecar_path(parsed.input_file);
+    preview.target_profile = parsed.output_file.has_value() ? "inline" : (metadata_remove ? "sidecar" : "inline");
+    preview.target_file = parsed.output_file.has_value()
+                              ? parsed.output_file->generic_string()
+                              : (metadata_remove ? sidecar_path.generic_string() : parsed.input_file.generic_string());
+    preview.detail_lines.push_back("selector: " + parsed.selector);
+    preview.detail_lines.push_back(std::string("source_profile: ") + (document.has_sidecar ? "sidecar" : "standalone"));
+    preview.detail_lines.push_back(std::string("result_profile: ") + (parsed.output_file.has_value() ? "inline" : preview.target_profile));
+    if (parsed.output_file.has_value()) {
+        preview.detail_lines.push_back("preserve_source_ssd: " + parsed.input_file.generic_string());
+        if (document.has_sidecar) {
+            preview.detail_lines.push_back("preserve_source_ssm: " + document.sidecar_file.generic_string());
+        }
+    } else if (!metadata_remove && document.has_sidecar) {
+        preview.detail_lines.push_back("write_ssm: " + document.sidecar_file.generic_string());
+    }
+    preview.changes = changes;
+    return preview;
+}
+
 UpdatePreview build_split_preview(const semdl::core::DocumentData& document, const std::vector<std::string_view>& args) {
     const auto input_file = std::filesystem::path(args[1]);
     const auto sidecar_path = derive_sidecar_path(input_file);
@@ -3300,16 +3366,30 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
         const auto parsed = parse_remove_args(args);
         if (!parsed.valid) {
+            if (!parsed.invalid_option.empty()) {
+                return make_invalid_remove_options_error(args);
+            }
             return make_missing_required_argument_error(args,
-                                                        "ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>",
+                                                        "ssd remove <selector> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>",
                                                         "remove");
         }
         semdl::core::DocumentStore store;
         auto document = store.load_document(parsed.input_file);
         const auto selector = semdl::core::parse_selector(parsed.selector);
 
+        if (parsed.use_stdout && (parsed.use_dry_run || parsed.output_file.has_value())) {
+            return make_invalid_remove_options_error(args);
+        }
+
         if (parsed.allow_multi && selector.kind != semdl::core::SelectorKind::type) {
             return make_invalid_remove_options_error(args);
+        }
+
+        if (parsed.output_file.has_value()) {
+            std::filesystem::path aliased_file;
+            if (transform_out_aliases_source(document, parsed.input_file, *parsed.output_file, aliased_file)) {
+                return make_transform_out_alias_error(args, *parsed.output_file, aliased_file);
+            }
         }
 
         if (selector.kind == semdl::core::SelectorKind::meta) {
@@ -3320,12 +3400,34 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             if (resolution.error == semdl::core::ResolveError::wrong_layer) {
                 return make_wrong_layer_error(args);
             }
-            if (!apply_remove_meta_change(document, selector)) {
+            if (parsed.use_dry_run) {
+                auto preview_document = document;
+                if (!apply_remove_meta_change(preview_document, selector)) {
+                    return make_missing_target_error(args);
+                }
+                return make_dry_run_result(build_remove_preview(document, parsed, true, 1));
+            }
+
+            auto updated_document = document;
+            if (!apply_remove_meta_change(updated_document, selector)) {
                 return make_missing_target_error(args);
             }
 
+            if (parsed.use_stdout) {
+                return CommandResult{
+                    .exit_code = 0,
+                    .stdout_text = semdl::core::render_canonical_inline_document(updated_document),
+                    .stderr_text = "",
+                };
+            }
+
+            if (parsed.output_file.has_value()) {
+                write_text_file(*parsed.output_file, semdl::core::render_canonical_inline_document(updated_document));
+                return make_transform_out_result(*parsed.output_file, 1);
+            }
+
             const auto sidecar_file = derive_sidecar_path(parsed.input_file);
-            const auto rendered = semdl::core::render_split_document(document);
+            const auto rendered = semdl::core::render_split_document(updated_document);
             write_text_file(sidecar_file, rendered.sidecar_document);
             return make_update_apply_result(std::nullopt, sidecar_file, 1);
         }
@@ -3345,19 +3447,38 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 if (!referenced_by.empty()) {
                     return make_remove_break_reference_error(args, referenced_by);
                 }
-                if (!apply_remove_structural_change(document, removed_ids)) {
+
+                if (parsed.use_dry_run) {
+                    return make_dry_run_result(build_remove_preview(document, parsed, false, static_cast<int>(removed_ids.size())));
+                }
+
+                auto updated_document = document;
+                if (!apply_remove_structural_change(updated_document, removed_ids)) {
                     return make_apply_not_implemented_error(args, "remove");
                 }
 
-                if (document.has_sidecar) {
-                    const auto rendered = semdl::core::render_split_document(document);
+                if (parsed.use_stdout) {
+                    return CommandResult{
+                        .exit_code = 0,
+                        .stdout_text = semdl::core::render_canonical_inline_document(updated_document),
+                        .stderr_text = "",
+                    };
+                }
+
+                if (parsed.output_file.has_value()) {
+                    write_text_file(*parsed.output_file, semdl::core::render_canonical_inline_document(updated_document));
+                    return make_transform_out_result(*parsed.output_file, static_cast<int>(removed_ids.size()));
+                }
+
+                if (updated_document.has_sidecar) {
+                    const auto rendered = semdl::core::render_split_document(updated_document);
                     write_text_file(parsed.input_file, rendered.inline_document);
                     const auto sidecar_file = derive_sidecar_path(parsed.input_file);
                     write_text_file(sidecar_file, rendered.sidecar_document);
                     return make_update_apply_result(parsed.input_file, sidecar_file, static_cast<int>(removed_ids.size()));
                 }
 
-                write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
+                write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(updated_document));
                 return make_update_apply_result(parsed.input_file, std::nullopt, static_cast<int>(removed_ids.size()));
             }
             return make_remove_multiple_targets_error(args, resolution.matched_count);
@@ -3371,19 +3492,38 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             }
             const auto removed_ids = parsed.use_cascade ? collect_remove_closure(document, resolution.target_id)
                                                         : std::vector<std::string>{resolution.target_id};
-            if (!apply_remove_structural_change(document, removed_ids)) {
+
+            if (parsed.use_dry_run) {
+                return make_dry_run_result(build_remove_preview(document, parsed, false, static_cast<int>(removed_ids.size())));
+            }
+
+            auto updated_document = document;
+            if (!apply_remove_structural_change(updated_document, removed_ids)) {
                 return make_apply_not_implemented_error(args, "remove");
             }
 
-            if (document.has_sidecar) {
-                const auto rendered = semdl::core::render_split_document(document);
+            if (parsed.use_stdout) {
+                return CommandResult{
+                    .exit_code = 0,
+                    .stdout_text = semdl::core::render_canonical_inline_document(updated_document),
+                    .stderr_text = "",
+                };
+            }
+
+            if (parsed.output_file.has_value()) {
+                write_text_file(*parsed.output_file, semdl::core::render_canonical_inline_document(updated_document));
+                return make_transform_out_result(*parsed.output_file, static_cast<int>(removed_ids.size()));
+            }
+
+            if (updated_document.has_sidecar) {
+                const auto rendered = semdl::core::render_split_document(updated_document);
                 write_text_file(parsed.input_file, rendered.inline_document);
                 const auto sidecar_file = derive_sidecar_path(parsed.input_file);
                 write_text_file(sidecar_file, rendered.sidecar_document);
                 return make_update_apply_result(parsed.input_file, sidecar_file, static_cast<int>(removed_ids.size()));
             }
 
-            write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
+            write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(updated_document));
             return make_update_apply_result(parsed.input_file, std::nullopt, static_cast<int>(removed_ids.size()));
         }
         return make_apply_not_implemented_error(args, "remove");
