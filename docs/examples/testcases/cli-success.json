@@ -1000,6 +1000,56 @@
       "notes": "add resource apply should rewrite only the inline file"
     },
     {
+      "id": "add-resource-R2-stdout",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --stdout",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix", "label=月次売上補足", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/add-resource-R2-inline-output.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "structural add stdout should return the canonical inline result without mutating source files"
+    },
+    {
+      "id": "add-resource-R2-out-dryrun",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --out docs/examples/add-resource-R2-output.ssd --dry-run",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix", "label=月次売上補足", "--out", "docs/examples/add-resource-R2-output.ssd", "--dry-run"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-resource-R2-out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "structural add out dry-run should preview a non-destructive output file target"
+    },
+    {
+      "id": "add-resource-R2-out",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --out docs/examples/add-resource-R2-output.ssd",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix", "label=月次売上補足", "--out", "docs/examples/add-resource-R2-output.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/add-resource-R2-output.ssd": "docs/examples/fixtures/add-resource-R2-inline-output.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-resource-R2.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "structural add out should write the canonical inline result to a separate file"
+    },
+    {
       "id": "add-annotation-todo-dryrun",
       "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --dry-run",
       "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=追加入力で主体を確認する", "--target", "sidecar", "--dry-run"],

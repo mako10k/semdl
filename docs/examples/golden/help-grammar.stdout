@@ -18,7 +18,7 @@ Key syntax forms:
 - `ssd extract --out <output.ssd> <input>...`
 - `ssd similarity <id> <id> <file>`
 - `ssd explain <id> <file>`
-- `ssd add <kind> <file> [field=value ...] [--target sidecar] [--dry-run]`
+- `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`
 - `ssd set <selector> <value-or-field> ... <file>`
 - `ssd remove <selector> <file>`
 - `ssd annotate <selector> <kind> <text> ... <file>`
@@ -41,7 +41,7 @@ Value forms:
 
 Common options:
 - `--dry-run` previews update-oriented commands
-- `--stdout` is currently used by `merge`, `normalize`, and `extract`
+- `--stdout` is currently used by `add`, `merge`, `normalize`, and `extract`
 - `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`
 - `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`
 - `--allow-multi` and `--cascade` are safety controls on specific update forms; `--fail-on-conflict` is currently merge-only and must trail the merge surface

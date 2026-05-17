@@ -79,6 +79,81 @@
       "notes": "metadata-only add still requires an existing semantic target id"
     },
     {
+      "id": "add-resource-target-sidecar-invalid",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --target sidecar",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix", "label=月次売上補足", "--target", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-resource-target-sidecar-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "structural add should not accept sidecar target selection in this slice"
+    },
+    {
+      "id": "add-resource-out-alias-input",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --out docs/examples/minimal.ssd",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix", "label=月次売上補足", "--out", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-resource-out-alias-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "structural add out must not alias the source ssd"
+    },
+    {
+      "id": "add-resource-out-alias-sidecar",
+      "command": "ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --out docs/examples/minimal.ssm",
+      "argv": ["ssd", "add", "resource", "docs/examples/minimal.ssd", "id=R2", "type=appendix", "label=月次売上補足", "--out", "docs/examples/minimal.ssm"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-resource-out-alias-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "structural add out must not alias the paired sidecar"
+    },
+    {
+      "id": "add-annotation-stdout-unsupported",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --stdout",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=bad", "--target", "sidecar", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-annotation-stdout-unsupported.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add remains sidecar-apply-only and does not support stdout in this slice"
+    },
+    {
+      "id": "add-annotation-out-unsupported",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --out docs/examples/annotation-output.ssd",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=bad", "--target", "sidecar", "--out", "docs/examples/annotation-output.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-annotation-out-unsupported.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add remains sidecar-apply-only and does not support out in this slice"
+    },
+    {
       "id": "similarity-missing-args-help",
       "command": "ssd similarity A1 ALT1A",
       "argv": ["ssd", "similarity", "A1", "ALT1A"],

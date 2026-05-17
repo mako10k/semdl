@@ -1,0 +1,5 @@
+ERROR transform_out_alias_conflict
+command: ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --out docs/examples/minimal.ssd
+out: docs/examples/minimal.ssd
+aliases: docs/examples/minimal.ssd
+hint: `--out` must not overwrite the source `.ssd` or paired `.ssm` in this slice

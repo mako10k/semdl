@@ -1,0 +1,3 @@
+ERROR invalid_add_options
+command: ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --out docs/examples/annotation-output.ssd
+usage: ssd add <kind> <file> [field=value ...] [--stdout|--out <output.ssd> [--dry-run]|--target sidecar|--dry-run]

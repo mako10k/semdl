@@ -288,12 +288,15 @@ struct UpdatePreview {
 
 struct ParsedAddArgs {
     bool valid = true;
+    bool use_stdout = false;
     bool use_dry_run = false;
     std::string kind;
     std::filesystem::path input_file;
+    std::optional<std::filesystem::path> output_file;
     std::optional<std::string> target;
     std::vector<std::pair<std::string, std::string>> fields;
     std::map<std::string, std::string> field_map;
+    std::string invalid_option;
     std::string invalid_field;
 };
 
@@ -785,14 +788,28 @@ ParsedAddArgs parse_add_args(const std::vector<std::string_view>& args) {
     parsed.input_file = std::filesystem::path(args[2]);
 
     for (std::size_t index = 3; index < args.size(); ++index) {
+        if (args[index] == "--stdout") {
+            parsed.use_stdout = true;
+            continue;
+        }
         if (args[index] == "--dry-run") {
             parsed.use_dry_run = true;
+            continue;
+        }
+        if (args[index] == "--out") {
+            if (index + 1 >= args.size()) {
+                parsed.valid = false;
+                parsed.invalid_option = "--out";
+                return parsed;
+            }
+            parsed.output_file = std::filesystem::path(args[index + 1]);
+            ++index;
             continue;
         }
         if (args[index] == "--target") {
             if (index + 1 >= args.size()) {
                 parsed.valid = false;
-                parsed.invalid_field = "--target";
+                parsed.invalid_option = "--target";
                 return parsed;
             }
             parsed.target = std::string(args[index + 1]);
@@ -801,7 +818,7 @@ ParsedAddArgs parse_add_args(const std::vector<std::string_view>& args) {
         }
         if (args[index].starts_with("--")) {
             parsed.valid = false;
-            parsed.invalid_field = std::string(args[index]);
+            parsed.invalid_option = std::string(args[index]);
             return parsed;
         }
 
@@ -1039,6 +1056,15 @@ CommandResult make_invalid_add_field_error(const std::vector<std::string_view>& 
         .stderr_text = "ERROR invalid_add_field_assignment\ncommand: " + join_args(args) +
                        "\nfield: " + std::string(field_text) +
                        "\nexpected_form: name=value\nhint: add requires explicit field=value pairs after the input file\n",
+    };
+}
+
+CommandResult make_invalid_add_options_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_add_options\ncommand: " + join_args(args) +
+                       "\nusage: ssd add <kind> <file> [field=value ...] [--stdout|--out <output.ssd> [--dry-run]|--target sidecar|--dry-run]\n",
     };
 }
 
@@ -1347,7 +1373,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds plus create-only sidecar `annotation` and `provenance`.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds, including structural `--stdout` and `--out`, plus create-only sidecar `annotation` and `provenance`.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -1372,7 +1398,7 @@ std::string grammar_help_text() {
            "- `ssd extract --out <output.ssd> <input>...`\n"
            "- `ssd similarity <id> <id> <file>`\n"
            "- `ssd explain <id> <file>`\n"
-           "- `ssd add <kind> <file> [field=value ...] [--target sidecar] [--dry-run]`\n"
+           "- `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`\n"
            "- `ssd set <selector> <value-or-field> ... <file>`\n"
            "- `ssd remove <selector> <file>`\n"
            "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
@@ -1392,7 +1418,7 @@ std::string grammar_help_text() {
            "- update-oriented scalar values accept quoted-string, number, boolean, or identifier forms\n\n"
            "Common options:\n"
            "- `--dry-run` previews update-oriented commands\n"
-           "- `--stdout` is currently used by `merge`, `normalize`, and `extract`\n"
+           "- `--stdout` is currently used by `add`, `merge`, `normalize`, and `extract`\n"
            "- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`\n"
            "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`\n"
            "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--fail-on-conflict` is currently merge-only and must trail the merge surface\n\n"
@@ -1585,13 +1611,15 @@ std::string reference_help_text(std::string_view target) {
     }
 
     if (target == "add") {
-        return "SEMDL Help Topic: reference add\n\n"
-               "Usage:\n"
-               "- `ssd add <kind> <file> [field=value ...]`\n"
-               "- `ssd add <kind> <file> [field=value ...] --dry-run`\n"
-               "- `ssd add <kind> <file> [field=value ...] --target sidecar [--dry-run]`\n\n"
+         return "SEMDL Help Topic: reference add\n\n"
+             "Usage:\n"
+             "- `ssd add <kind> <file> [field=value ...]`\n"
+             "- `ssd add <kind> <file> [field=value ...] --stdout`\n"
+             "- `ssd add <kind> <file> [field=value ...] --out <output.ssd> [--dry-run]`\n"
+             "- `ssd add <kind> <file> [field=value ...] --dry-run`\n"
+             "- `ssd add <kind> <file> [field=value ...] --target sidecar [--dry-run]`\n\n"
                "Status:\n"
-               "- Inline structural add supports: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`.\n"
+             "- Inline structural add supports: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`. Structural add also supports canonical inline `--stdout` and `--out <output.ssd>`.\n"
                "- Metadata-only add supports `annotation` and `provenance` with `--target sidecar` only.\n"
                "- Metadata-only add is create-only: it creates missing sidecar fields, creates a paired `.ssm` when absent, and fails on existing field conflicts.\n\n"
                "Related help:\n"
@@ -1599,6 +1627,7 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd help troubleshooting`\n\n"
                "Sample:\n"
                "- `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --dry-run`\n"
+               "- `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --stdout`\n"
                "- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --dry-run`\n";
     }
 
@@ -2370,6 +2399,10 @@ bool is_metadata_add_kind(std::string_view kind) {
     return kind == "annotation" || kind == "provenance";
 }
 
+bool is_structural_add_kind(std::string_view kind) {
+    return !is_metadata_add_kind(kind);
+}
+
 bool is_supported_add_kind(std::string_view kind) {
     return kind == "resource" || kind == "segment" || kind == "assertion" || kind == "hypothesis" || kind == "alternative" ||
            is_metadata_add_kind(kind);
@@ -2555,18 +2588,29 @@ void write_text_file(const std::filesystem::path& file_path, const std::string& 
     output << content;
 }
 
-UpdatePreview build_add_preview(const ParsedAddArgs& parsed) {
+UpdatePreview build_add_preview(const semdl::core::DocumentData& document, const ParsedAddArgs& parsed) {
     UpdatePreview preview;
     preview.command_line = "ssd add " + parsed.kind + " " + parsed.input_file.generic_string();
     for (const auto& [name, value] : parsed.fields) {
         preview.command_line += " " + render_add_field_assignment(name, value);
     }
+    if (parsed.use_stdout) {
+        preview.command_line += " --stdout";
+    }
+    if (parsed.output_file.has_value()) {
+        preview.command_line += " --out " + parsed.output_file->generic_string();
+    }
     if (parsed.target.has_value()) {
         preview.command_line += " --target " + *parsed.target;
     }
     preview.target_profile = is_metadata_add_kind(parsed.kind) ? "sidecar" : "inline";
-    preview.target_file = is_metadata_add_kind(parsed.kind) ? derive_sidecar_path(parsed.input_file).generic_string()
-                                                            : parsed.input_file.generic_string();
+    preview.target_file = is_metadata_add_kind(parsed.kind)
+        ? derive_sidecar_path(parsed.input_file).generic_string()
+        : (parsed.output_file.has_value() ? parsed.output_file->generic_string() : parsed.input_file.generic_string());
+    if (parsed.output_file.has_value() && is_structural_add_kind(parsed.kind)) {
+        preview.detail_lines.push_back(std::string("source_profile: ") + (document.has_sidecar ? "sidecar" : "standalone"));
+        preview.detail_lines.push_back("result_profile: inline");
+    }
     preview.detail_lines.push_back("kind: " + parsed.kind);
     preview.detail_lines.push_back((is_metadata_add_kind(parsed.kind) ? "target_id: " : "id: ") + parsed.field_map.at("id"));
     preview.detail_lines.push_back("fields:");
@@ -2575,6 +2619,12 @@ UpdatePreview build_add_preview(const ParsedAddArgs& parsed) {
             continue;
         }
         preview.detail_lines.push_back("  - " + render_add_field_assignment(name, value));
+    }
+    if (parsed.output_file.has_value() && is_structural_add_kind(parsed.kind)) {
+        preview.detail_lines.push_back("preserve_source_ssd: " + parsed.input_file.generic_string());
+        if (document.has_sidecar) {
+            preview.detail_lines.push_back("preserve_source_ssm: " + document.sidecar_file.generic_string());
+        }
     }
     return preview;
 }
@@ -3513,14 +3563,30 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             if (args.size() < 3) {
                 return make_missing_required_argument_error(args, "ssd add <kind> <file> [field=value ...]", "add");
             }
+            if (!parsed.invalid_option.empty()) {
+                return make_invalid_add_options_error(args);
+            }
             return make_invalid_add_field_error(args, parsed.invalid_field);
         }
         if (!is_supported_add_kind(parsed.kind)) {
             return make_invalid_add_kind_error(args, parsed.kind);
         }
 
-        if (parsed.target.has_value() && *parsed.target != "sidecar") {
-            return make_invalid_add_target_error(args, *parsed.target);
+        if (parsed.use_stdout && (parsed.use_dry_run || parsed.output_file.has_value())) {
+            return make_invalid_add_options_error(args);
+        }
+
+        if (is_metadata_add_kind(parsed.kind) && (parsed.use_stdout || parsed.output_file.has_value())) {
+            return make_invalid_add_options_error(args);
+        }
+
+        if (parsed.target.has_value()) {
+            if (is_structural_add_kind(parsed.kind)) {
+                return make_invalid_add_options_error(args);
+            }
+            if (*parsed.target != "sidecar") {
+                return make_invalid_add_target_error(args, *parsed.target);
+            }
         }
 
         if (is_metadata_add_kind(parsed.kind) && (!parsed.target.has_value() || *parsed.target != "sidecar")) {
@@ -3540,6 +3606,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         semdl::core::DocumentStore store;
         auto document = store.load_document(parsed.input_file);
         const auto& entity_id = parsed.field_map.at("id");
+        if (parsed.output_file.has_value() && is_structural_add_kind(parsed.kind)) {
+            std::filesystem::path aliased_file;
+            if (transform_out_aliases_source(document, parsed.input_file, *parsed.output_file, aliased_file)) {
+                return make_transform_out_alias_error(args, *parsed.output_file, aliased_file);
+            }
+        }
         if (!is_metadata_add_kind(parsed.kind) && document.contains_entity_id(entity_id)) {
             return make_add_duplicate_id_error(args, entity_id);
         }
@@ -3558,10 +3630,23 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             return make_add_reference_target_not_found_error(args, reference_error->first, reference_error->second);
         }
         if (parsed.use_dry_run) {
-            return make_dry_run_result(build_add_preview(parsed));
+            return make_dry_run_result(build_add_preview(document, parsed));
         }
         if (!apply_add_change(document, parsed)) {
             return make_subcommand_not_implemented_error(args);
+        }
+
+        if (parsed.use_stdout) {
+            return CommandResult{
+                .exit_code = 0,
+                .stdout_text = semdl::core::render_canonical_inline_document(document),
+                .stderr_text = "",
+            };
+        }
+
+        if (parsed.output_file.has_value()) {
+            write_text_file(*parsed.output_file, semdl::core::render_canonical_inline_document(document));
+            return make_transform_out_result(*parsed.output_file, 1);
         }
 
         if (is_metadata_add_kind(parsed.kind)) {

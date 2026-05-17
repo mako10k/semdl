@@ -97,7 +97,7 @@ segment HELP_LINE_17 {
 
 segment HELP_LINE_18 {
   source: HELP_TOPIC
-  text_quote: "- `ssd add <kind> <file> [field=value ...] [--target sidecar] [--dry-run]`"
+  text_quote: "- `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`"
 }
 
 segment HELP_LINE_19 {
@@ -197,7 +197,7 @@ segment HELP_LINE_37 {
 
 segment HELP_LINE_38 {
   source: HELP_TOPIC
-  text_quote: "- `--stdout` is currently used by `merge`, `normalize`, and `extract`"
+  text_quote: "- `--stdout` is currently used by `add`, `merge`, `normalize`, and `extract`"
 }
 
 segment HELP_LINE_39 {

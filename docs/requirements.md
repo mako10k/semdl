@@ -822,7 +822,16 @@ sidecar-only add と `--out` / `--stdout` / `--target` は後続 slice に分離
 - metadata-only add は create-only とし、対象 id の sidecar metadata field が未存在のときだけ成功する
 - paired `.ssm` が存在しない場合は、新規作成してよい
 - 既存 field の更新は `ssd set` または `ssd annotate` の責務に残す
-- `--out` と `--stdout` は引き続き後続 slice に分離してよい
+
+さらに後続 structural add output slice では、inline structural kind に限って `--stdout` と `--out <output.ssd>` を追加してよい。
+
+- 対象 kind は resource / segment / assertion / hypothesis / alternative に限定してよい
+- `ssd add <structural-kind> <file> [field=value ...] --stdout` は source file を変更せず、追加後の canonical inline `.ssd` を stdout へ返してよい
+- `ssd add <structural-kind> <file> [field=value ...] --out <output.ssd>` は source `.ssd` と paired `.ssm` を変更せず、追加後の canonical inline `.ssd` を output file へ書いてよい
+- `ssd add <structural-kind> <file> [field=value ...] --out <output.ssd> --dry-run` は target file を output path に向けた preview として扱ってよい
+- `--stdout` と `--out` は metadata-only add には広げず、`annotation` / `provenance` では failure のままにしてよい
+- `--stdout` は `--dry-run` や `--out` と併用してはならない
+- `--out` は source `.ssd` や paired `.ssm` を alias してはならない
 
 ## 8.6.3 set と annotate の責務差分
 

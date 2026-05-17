@@ -65,6 +65,18 @@ step S2B:
     annotation rationale:
       "metadata add を create-only に限定すると、新規作成と既存値更新の責務が分離され、`add` と `set` と `annotate` の重なりを最小化できる"
 
+step S2C:
+  decision D2C based_on D2A, D2B, D18B:
+    |
+      次の structural `ssd add` output slice では、inline structural kind に限って `--stdout` と `--out <output.ssd>` を追加してよい。
+      対象 kind は resource、segment、assertion、hypothesis、alternative に限定し、result は canonical inline `.ssd` に固定してよい。
+      `--stdout` は source file を変更せず stdout を返し、`--out` は source `.ssd` と paired `.ssm` を保護したまま output file へ結果を書いてよい。
+      `--out <output.ssd> --dry-run` は target file を output path に向けた preview として扱ってよく、`--stdout` は `--dry-run` や `--out` と併用してはならない。
+      metadata-only `annotation` / `provenance` はこの slice でも `--target sidecar` create-only のままとし、`--stdout` と `--out` は引き続き failure としてよい。
+      `--out` は source `.ssd` や paired `.ssm` を alias してはならない。
+    annotation rationale:
+      "metadata add の sidecar ownership を広げずに、structural add だけへ non-destructive output surface を追加すると update command 間の対称性を小さく回収できる"
+
 problem P2:
   "初期更新 CLI において、更新対象 selector と各レイヤの責務をどの粒度まで固定するか"
   annotation rationale:
