@@ -107,7 +107,7 @@ segment HELP_LINE_19 {
 
 segment HELP_LINE_20 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove <selector> <file>`"
+  text_quote: "- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>`"
 }
 
 segment HELP_LINE_21 {

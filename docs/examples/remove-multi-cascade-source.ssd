@@ -1,0 +1,56 @@
+document D1 {
+  title: "複数仮説削除サンプル"
+  source_ref: "docs/source/remove-multi-cascade.txt"
+}
+
+resource R1 {
+  type: document
+  label: "複数仮説資料"
+}
+
+segment S1 {
+  source: R1
+  text_quote: "売上増加の理由には複数の解釈がある"
+}
+
+assertion A1 {
+  subject: R1
+  predicate: reports
+  object: "売上増加には複数の仮説がある"
+  label: "複数仮説"
+  source_segment: S1
+}
+
+hypothesis H1 {
+  about: A1
+  kind: omission-completion
+  summary: "国内売上が主体だった可能性"
+  alternative_group: ALT1
+}
+
+hypothesis H2 {
+  about: A1
+  kind: causal-explanation
+  summary: "販促施策が寄与した可能性"
+  alternative_group: ALT2
+}
+
+alternative ALT1A {
+  group: ALT1
+  label: "国内売上が増加した"
+}
+
+alternative ALT1B {
+  group: ALT1
+  label: "法人売上が増加した"
+}
+
+alternative ALT2A {
+  group: ALT2
+  label: "販促施策が効果を持った"
+}
+
+alternative ALT2B {
+  group: ALT2
+  label: "季節要因が主因だった"
+}

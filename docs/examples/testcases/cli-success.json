@@ -2110,6 +2110,24 @@
       "notes": "type selector remove can delete all matched structural targets when --allow-multi is explicit"
     },
     {
+      "id": "remove-type-hypothesis-allow-multi-cascade-apply",
+      "command": "ssd remove type:hypothesis --allow-multi --cascade docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--allow-multi", "--cascade", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/remove-multi-cascade-source.ssd", "docs/examples/remove-multi-cascade-source.ssm"],
+      "expected_files": {
+        "docs/examples/remove-multi-cascade-source.ssd": "docs/examples/fixtures/remove-type-hypothesis-allow-multi-cascade.expected.ssd",
+        "docs/examples/remove-multi-cascade-source.ssm": "docs/examples/fixtures/remove-type-hypothesis-allow-multi-cascade.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector remove can cascade across each matched hypothesis and remove dependent alternatives in one step"
+    },
+    {
       "id": "remove-H1-cascade-apply",
       "command": "ssd remove id:H1 --cascade docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "id:H1", "--cascade", "docs/examples/minimal.ssd"],

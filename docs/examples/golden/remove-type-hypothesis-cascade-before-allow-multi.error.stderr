@@ -1,0 +1,4 @@
+ERROR missing_required_argument
+command: ssd remove type:hypothesis --cascade --allow-multi docs/examples/remove-multi-cascade-source.ssd
+usage: ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>
+hint: see `ssd help reference remove`

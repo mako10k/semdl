@@ -1,0 +1,19 @@
+document_meta D1 {
+  version: "0.1"
+  generator: "ssd extract"
+}
+
+meta A1 {
+  confidence: 0.71
+  rationale: "複数仮説を比較するための fixture"
+}
+
+meta H1 {
+  confidence: 0.58
+  rationale: "国内売上仮説"
+}
+
+meta H2 {
+  confidence: 0.49
+  rationale: "販促施策仮説"
+}

@@ -1,0 +1,9 @@
+document_meta D1 {
+  version: "0.1"
+  generator: "ssd extract"
+}
+
+meta A1 {
+  confidence: 0.71
+  rationale: "複数仮説を比較するための fixture"
+}

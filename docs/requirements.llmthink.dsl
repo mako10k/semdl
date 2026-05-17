@@ -431,6 +431,17 @@ step S18G:
     annotation rationale:
       "success-with-warning を narrow に追加すると、default output compatibility を保ったまま merge policy matrix を完了できるため"
 
+step S18H:
+  decision D18H based_on D18, D18A:
+    |
+      次の remove expansion slice では、existing `type:<kind> --allow-multi` surface に限って trailing `--cascade` を追加してよい。
+      `ssd remove type:<kind> --allow-multi --cascade <file>` は、matched root set ごとの existing cascade closure を union した structural remove として扱ってよい。
+      dependency edge は D18 と同じ assertion <- hypothesis.about、hypothesis <- alternative.group、resource <- segment.source を再利用してよい。
+      `--allow-multi` without `--cascade` は current behavior を維持し、closure の外に dependent が残るなら failure してよい。
+      broader multi-target selector semantics と remove の non-destructive output surface は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "existing type selector surface を保ったまま dependent-aware multi-remove を追加すると、selector language や output policy を広げずに remove の safety matrix を一段進められるため"
+
 step S27A:
   decision D27A based_on D27, D8A:
     |

@@ -1,0 +1,9 @@
+ERROR remove_would_break_references
+command: ssd remove type:hypothesis --allow-multi docs/examples/remove-multi-cascade-source.ssd
+selector: type:hypothesis
+referenced_by:
+  - ALT1A.group
+  - ALT1B.group
+  - ALT2A.group
+  - ALT2B.group
+hint: referenced structural elements cannot be removed without an explicit safe strategy

@@ -1,0 +1,4 @@
+ERROR invalid_remove_options
+command: ssd remove id:ALT1B --allow-multi docs/examples/minimal.ssd
+usage: ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>
+hint: `--allow-multi` is currently limited to `type:<kind>` selectors

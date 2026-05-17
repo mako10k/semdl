@@ -952,6 +952,12 @@ ParsedRemoveArgs parse_remove_args(const std::vector<std::string_view>& args) {
         parsed.input_file = std::filesystem::path(args[3]);
         return parsed;
     }
+    if (args.size() == 5 && args[2] == "--allow-multi" && args[3] == "--cascade") {
+        parsed.allow_multi = true;
+        parsed.use_cascade = true;
+        parsed.input_file = std::filesystem::path(args[4]);
+        return parsed;
+    }
     parsed.valid = false;
     parsed.invalid_option = args.size() >= 3 ? std::string(args[2]) : std::string{};
     return parsed;
@@ -1490,7 +1496,7 @@ std::string grammar_help_text() {
            "- `ssd explain <id> <file>`\n"
            "- `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`\n"
            "- `ssd set <selector> <value-or-field> ... <file>`\n"
-           "- `ssd remove <selector> <file>`\n"
+           "- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>`\n"
            "- `ssd annotate <selector> <kind> <text> ... <file>`\n"
            "- `ssd split <input.ssd> [--dry-run]`\n"
            "- `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--warn-on-conflict] [--fail-on-conflict]`\n"
@@ -1613,17 +1619,19 @@ std::string reference_help_text(std::string_view target) {
                "Usage:\n"
                "- `ssd remove <selector> <file>`\n"
                "- `ssd remove <selector> --cascade <file>`\n"
-               "- `ssd remove type:<kind> --allow-multi <file>`\n\n"
+                "- `ssd remove type:<kind> --allow-multi <file>`\n"
+                "- `ssd remove type:<kind> --allow-multi --cascade <file>`\n\n"
                "Purpose:\n"
                "- Remove one sidecar metadata field or one structural target when the selector resolves safely.\n"
                "- Structural removals fail on inbound references unless `--cascade` removes dependent targets in the same step.\n"
-               "- Multi-target remove remains deferred outside the existing `type:<kind> --allow-multi` surface.\n\n"
+                "- `type:<kind> --allow-multi --cascade` expands the same cascade edge list across the matched root set; broader multi-target remove remains deferred.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
                "- `ssd help recipes wrong-layer`\n\n"
                "Sample:\n"
                "- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`\n"
-               "- `ssd remove id:H1 --cascade docs/examples/minimal.ssd`\n";
+                "- `ssd remove id:H1 --cascade docs/examples/minimal.ssd`\n"
+                "- `ssd remove type:hypothesis --allow-multi --cascade docs/examples/remove-multi-cascade-source.ssd`\n";
     }
 
     if (target == "annotate") {
@@ -2236,6 +2244,16 @@ CommandResult make_remove_multiple_targets_error(const std::vector<std::string_v
     };
 }
 
+CommandResult make_invalid_remove_options_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_remove_options\ncommand: " + join_args(args) +
+                       "\nusage: ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>\n"
+                       "hint: `--allow-multi` is currently limited to `type:<kind>` selectors\n",
+    };
+}
+
 CommandResult make_remove_break_reference_error(const std::vector<std::string_view>& args) {
     return CommandResult{
         .exit_code = 3,
@@ -2454,6 +2472,22 @@ std::vector<std::string> collect_remove_closure(const semdl::core::DocumentData&
         }
     }
     return ordered;
+}
+
+std::vector<std::string> collect_remove_multi_closure(const semdl::core::DocumentData& document,
+                                                      const std::vector<std::string>& root_ids) {
+    std::vector<std::string> removal_ids;
+    std::set<std::string> seen;
+
+    for (const auto& root_id : root_ids) {
+        for (const auto& closure_id : collect_remove_closure(document, root_id)) {
+            if (seen.insert(closure_id).second) {
+                removal_ids.push_back(closure_id);
+            }
+        }
+    }
+
+    return removal_ids;
 }
 
 bool apply_remove_structural_change(semdl::core::DocumentData& document, const std::vector<std::string>& removed_ids) {
@@ -3266,11 +3300,17 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
         const auto parsed = parse_remove_args(args);
         if (!parsed.valid) {
-            return make_missing_required_argument_error(args, "ssd remove <selector> [--cascade] <file>", "remove");
+            return make_missing_required_argument_error(args,
+                                                        "ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>",
+                                                        "remove");
         }
         semdl::core::DocumentStore store;
         auto document = store.load_document(parsed.input_file);
         const auto selector = semdl::core::parse_selector(parsed.selector);
+
+        if (parsed.allow_multi && selector.kind != semdl::core::SelectorKind::type) {
+            return make_invalid_remove_options_error(args);
+        }
 
         if (selector.kind == semdl::core::SelectorKind::meta) {
             const auto resolution = semdl::core::resolve_selector(document, selector);
@@ -3299,7 +3339,8 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
         }
         if (resolution.error == semdl::core::ResolveError::multiple_targets) {
             if (selector.kind == semdl::core::SelectorKind::type && parsed.allow_multi) {
-                const auto removed_ids = collect_remove_targets_for_kind(document, selector.entity_id);
+                const auto root_ids = collect_remove_targets_for_kind(document, selector.entity_id);
+                const auto removed_ids = parsed.use_cascade ? collect_remove_multi_closure(document, root_ids) : root_ids;
                 const auto referenced_by = describe_remove_dependents_outside(document, removed_ids);
                 if (!referenced_by.empty()) {
                     return make_remove_break_reference_error(args, referenced_by);

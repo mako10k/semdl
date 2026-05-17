@@ -875,11 +875,14 @@ remove は、初期仕様では以下の制約を持つことを推奨する。
 - 補助メタ情報の削除は、構造整合性を壊さない限り許可する
 - 構造削除は単一 target selector に限定し、複数 target 一括削除は既存 `type:<kind> --allow-multi` の deferred surface に残す
 - `--cascade` が明示された場合のみ従属要素削除を許可してよい
+- `type:<kind> --allow-multi --cascade` は既存 cascade edge の closure を matched set 全体へ拡張してよい
 - 初期 cascade edge は次に固定する
   - assertion <- hypothesis.about
   - hypothesis <- alternative.group
   - resource <- segment.source
 - `--cascade` は direct / transitive dependents を同時削除し、target だけを残す部分削除はしない
+
+現行 slice では `--allow-multi` は引き続き `type:<kind>` に限定してよく、broader multi-target selector semantics や remove の non-destructive output surface は後続 slice に分離してよい。
 
 注記: これにより remove を最小限に保ちつつ、誤削除を避ける。
 
@@ -899,6 +902,8 @@ remove は、初期仕様では以下の制約を持つことを推奨する。
   - 初期実装では normalize の `--dry-run` と `--out` がこの option を使い、help render の `--format semdl` とは別役割とする
 - --fail-on-conflict
   - 現行 slice では merge 専用で、merge surface の末尾に付くときだけ競合検出時に失敗させる
+
+remove の safety control では、現行 slice で `type:<kind> --allow-multi --cascade` を許可してよい。
 
 ## 8.8 更新 CLI とサイドカーの相互作用
 
@@ -1085,6 +1090,9 @@ test runner 定義:
 - `ssd remove type:alternative --allow-multi docs/examples/minimal.ssd`
   - type selector の複数一致は `--allow-multi` 明示時だけ一括削除してよい
   - 期待出力は [docs/examples/golden/remove-type-alternative-allow-multi.apply.stdout](docs/examples/golden/remove-type-alternative-allow-multi.apply.stdout) と一致する
+- `ssd remove type:hypothesis --allow-multi --cascade docs/examples/remove-multi-cascade-source.ssd`
+  - matched hypotheses とその dependent alternatives を union closure ごと削除してよい
+  - 期待出力は [docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.apply.stdout](docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.apply.stdout) と一致する
 - `ssd remove id:H1 --cascade docs/examples/minimal.ssd`
   - 仮説 H1 とその dependent alternatives を closure ごと削除する
   - 期待出力は [docs/examples/golden/remove-H1-cascade.apply.stdout](docs/examples/golden/remove-H1-cascade.apply.stdout) と一致する
@@ -1108,6 +1116,15 @@ test runner 定義:
 - `ssd remove id:R1 docs/examples/minimal.ssd`
   - resource に対する source edge が残るため `--cascade` なしでは失敗する
   - 期待 stderr は [docs/examples/golden/remove-R1-references.error.stderr](docs/examples/golden/remove-R1-references.error.stderr) と一致する
+- `ssd remove type:hypothesis --allow-multi docs/examples/remove-multi-cascade-source.ssd`
+  - dependent alternatives が removal set の外に残るため `--cascade` なしでは失敗する
+  - 期待 stderr は [docs/examples/golden/remove-type-hypothesis-allow-multi-without-cascade.error.stderr](docs/examples/golden/remove-type-hypothesis-allow-multi-without-cascade.error.stderr) と一致する
+- `ssd remove type:hypothesis --cascade --allow-multi docs/examples/remove-multi-cascade-source.ssd`
+  - 現行 slice では multi-target cascade の option 順序は明示的で、reordering は失敗する
+  - 期待 stderr は [docs/examples/golden/remove-type-hypothesis-cascade-before-allow-multi.error.stderr](docs/examples/golden/remove-type-hypothesis-cascade-before-allow-multi.error.stderr) と一致する
+- `ssd remove id:ALT1B --allow-multi docs/examples/minimal.ssd`
+  - `--allow-multi` は `type:<kind>` selector 以外では失敗する
+  - 期待 stderr は [docs/examples/golden/remove-id-allow-multi-invalid.error.stderr](docs/examples/golden/remove-id-allow-multi-invalid.error.stderr) と一致する
 - `ssd annotate id:H1 note "補足" docs/examples/minimal.ssd`
   - 未定義 annotation kind のため失敗する
   - 期待 stderr は [docs/examples/golden/annotate-invalid-kind.error.stderr](docs/examples/golden/annotate-invalid-kind.error.stderr) と一致する

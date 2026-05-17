@@ -4,11 +4,12 @@ Usage:
 - `ssd remove <selector> <file>`
 - `ssd remove <selector> --cascade <file>`
 - `ssd remove type:<kind> --allow-multi <file>`
+- `ssd remove type:<kind> --allow-multi --cascade <file>`
 
 Purpose:
 - Remove one sidecar metadata field or one structural target when the selector resolves safely.
 - Structural removals fail on inbound references unless `--cascade` removes dependent targets in the same step.
-- Multi-target remove remains deferred outside the existing `type:<kind> --allow-multi` surface.
+- `type:<kind> --allow-multi --cascade` expands the same cascade edge list across the matched root set; broader multi-target remove remains deferred.
 
 Related help:
 - `ssd help grammar`
@@ -17,3 +18,4 @@ Related help:
 Sample:
 - `ssd remove meta:A1.embedding docs/examples/minimal.ssd`
 - `ssd remove id:H1 --cascade docs/examples/minimal.ssd`
+- `ssd remove type:hypothesis --allow-multi --cascade docs/examples/remove-multi-cascade-source.ssd`

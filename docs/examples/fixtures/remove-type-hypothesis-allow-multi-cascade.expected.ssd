@@ -1,0 +1,22 @@
+document D1 {
+  title: "複数仮説削除サンプル"
+  source_ref: "docs/source/remove-multi-cascade.txt"
+}
+
+resource R1 {
+  type: document
+  label: "複数仮説資料"
+}
+
+segment S1 {
+  source: R1
+  text_quote: "売上増加の理由には複数の解釈がある"
+}
+
+assertion A1 {
+  subject: R1
+  predicate: reports
+  object: "売上増加には複数の仮説がある"
+  label: "複数仮説"
+  source_segment: S1
+}

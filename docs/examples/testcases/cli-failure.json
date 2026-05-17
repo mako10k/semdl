@@ -914,6 +914,55 @@
       "notes": "multi-match selector fails by default"
     },
     {
+      "id": "remove-type-hypothesis-allow-multi-without-cascade",
+      "command": "ssd remove type:hypothesis --allow-multi docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--allow-multi", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/remove-multi-cascade-source.ssd", "docs/examples/remove-multi-cascade-source.ssm"],
+      "expected_files": {
+        "docs/examples/remove-multi-cascade-source.ssd": "docs/examples/remove-multi-cascade-source.ssd",
+        "docs/examples/remove-multi-cascade-source.ssm": "docs/examples/remove-multi-cascade-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-type-hypothesis-allow-multi-without-cascade.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "type selector allow-multi should still fail when dependents remain outside the removal set"
+    },
+    {
+      "id": "remove-type-hypothesis-cascade-before-allow-multi-invalid",
+      "command": "ssd remove type:hypothesis --cascade --allow-multi docs/examples/remove-multi-cascade-source.ssd",
+      "argv": ["ssd", "remove", "type:hypothesis", "--cascade", "--allow-multi", "docs/examples/remove-multi-cascade-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-type-hypothesis-cascade-before-allow-multi.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "multi-target cascade ordering remains explicit in this slice"
+    },
+    {
+      "id": "remove-id-allow-multi-invalid",
+      "command": "ssd remove id:ALT1B --allow-multi docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1B", "--allow-multi", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-id-allow-multi-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "allow-multi should be rejected outside type selectors"
+    },
+    {
       "id": "remove-referenced-assertion-A1",
       "command": "ssd remove id:A1 docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "id:A1", "docs/examples/minimal.ssd"],

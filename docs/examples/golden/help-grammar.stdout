@@ -20,7 +20,7 @@ Key syntax forms:
 - `ssd explain <id> <file>`
 - `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`
 - `ssd set <selector> <value-or-field> ... <file>`
-- `ssd remove <selector> <file>`
+- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] <file>`
 - `ssd annotate <selector> <kind> <text> ... <file>`
 - `ssd split <input.ssd> [--dry-run]`
 - `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--warn-on-conflict] [--fail-on-conflict]`
