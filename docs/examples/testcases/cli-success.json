@@ -1995,6 +1995,37 @@
       "notes": "id selector update preview should resolve one inline field update"
     },
     {
+      "id": "set-id-list-A1-ALT1A-label-dryrun",
+      "command": "ssd set id:A1,id:ALT1A,id:A1 label 確認対象 --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1,id:ALT1A,id:A1", "label", "確認対象", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-id-list-A1-ALT1A-label.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id-list set dry-run should deduplicate duplicate ids in first-seen order before previewing the inline update"
+    },
+    {
+      "id": "set-id-list-A1-ALT1A-label-apply",
+      "command": "ssd set id:A1,id:ALT1A label 確認対象 docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1,id:ALT1A", "label", "確認対象", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/set-id-list-A1-ALT1A-label.apply.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-id-list-A1-ALT1A-label.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id-list set apply should update each deduplicated inline target while preserving the paired sidecar"
+    },
+    {
       "id": "set-path-A1-label-stdout",
       "command": "ssd set path:A1.label 売上報告書 --stdout docs/examples/minimal.ssd",
       "argv": ["ssd", "set", "path:A1.label", "売上報告書", "--stdout", "docs/examples/minimal.ssd"],
@@ -2069,6 +2100,24 @@
       "notes": "id-selector inline set stdout should return canonical inline text without mutating the source pair"
     },
     {
+      "id": "set-id-list-A1-ALT1A-label-stdout",
+      "command": "ssd set id:A1,id:ALT1A label 確認対象 --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1,id:ALT1A", "label", "確認対象", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/set-id-list-A1-ALT1A-label.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id-list set stdout should return canonical inline text without mutating the source pair"
+    },
+    {
       "id": "set-id-A1-label-out",
       "command": "ssd set id:A1 label 売上報告書 --out docs/examples/set-inline-output.ssd docs/examples/minimal.ssd",
       "argv": ["ssd", "set", "id:A1", "label", "売上報告書", "--out", "docs/examples/set-inline-output.ssd", "docs/examples/minimal.ssd"],
@@ -2088,6 +2137,25 @@
       "notes": "id-selector inline set out should write canonical inline text without mutating the source pair"
     },
     {
+      "id": "set-id-list-A1-ALT1A-label-out",
+      "command": "ssd set id:A1,id:ALT1A label 確認対象 --out docs/examples/set-id-list-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1,id:ALT1A", "label", "確認対象", "--out", "docs/examples/set-id-list-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/set-id-list-output.ssd": "docs/examples/fixtures/set-id-list-A1-ALT1A-label.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-id-list-A1-ALT1A-label.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id-list set out should write canonical inline text without mutating the source pair"
+    },
+    {
       "id": "set-id-A1-label-out-dryrun",
       "command": "ssd set id:A1 label 売上報告書 --out docs/examples/set-inline-output.ssd --dry-run docs/examples/minimal.ssd",
       "argv": ["ssd", "set", "id:A1", "label", "売上報告書", "--out", "docs/examples/set-inline-output.ssd", "--dry-run", "docs/examples/minimal.ssd"],
@@ -2105,6 +2173,112 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "id-selector inline set out dry-run should preview a non-destructive inline output target"
+    },
+    {
+      "id": "set-id-list-A1-ALT1A-label-out-dryrun",
+      "command": "ssd set id:A1,id:ALT1A label 確認対象 --out docs/examples/set-id-list-output.ssd --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "id:A1,id:ALT1A", "label", "確認対象", "--out", "docs/examples/set-id-list-output.ssd", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/set-id-list-output.ssd"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-id-list-A1-ALT1A-label.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "id-list set out dry-run should preview a non-destructive inline output target after validating the whole id list"
+    },
+    {
+      "id": "set-type-alternative-label-allow-multi-dryrun",
+      "command": "ssd set type:alternative label 候補更新 --allow-multi --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "type:alternative", "label", "候補更新", "--allow-multi", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-type-alternative-label-allow-multi.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector set dry-run should preview ascending-id-order inline updates after the allow-multi safety opt-in"
+    },
+    {
+      "id": "set-type-alternative-label-allow-multi-apply",
+      "command": "ssd set type:alternative label 候補更新 --allow-multi docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "type:alternative", "label", "候補更新", "--allow-multi", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/set-type-alternative-label-allow-multi.apply.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-type-alternative-label-allow-multi.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector set apply should update all matched inline targets after allow-multi validation while preserving the paired sidecar"
+    },
+    {
+      "id": "set-type-alternative-label-allow-multi-stdout",
+      "command": "ssd set type:alternative label 候補更新 --allow-multi --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "type:alternative", "label", "候補更新", "--allow-multi", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/set-type-alternative-label-allow-multi.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector set stdout should return canonical inline text without mutating the source pair"
+    },
+    {
+      "id": "set-type-alternative-label-allow-multi-out",
+      "command": "ssd set type:alternative label 候補更新 --allow-multi --out docs/examples/set-type-alternative-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "type:alternative", "label", "候補更新", "--allow-multi", "--out", "docs/examples/set-type-alternative-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/set-type-alternative-output.ssd": "docs/examples/fixtures/set-type-alternative-label-allow-multi.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-type-alternative-label-allow-multi.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector set out should write canonical inline text without mutating the source pair"
+    },
+    {
+      "id": "set-type-alternative-label-allow-multi-out-dryrun",
+      "command": "ssd set type:alternative label 候補更新 --allow-multi --out docs/examples/set-type-alternative-output.ssd --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "set", "type:alternative", "label", "候補更新", "--allow-multi", "--out", "docs/examples/set-type-alternative-output.ssd", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/set-type-alternative-output.ssd"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/set-type-alternative-label-allow-multi.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "type selector set out dry-run should preview a non-destructive inline output target after validating the whole matched set"
     },
     {
       "id": "set-meta-A1-confidence-stdout",

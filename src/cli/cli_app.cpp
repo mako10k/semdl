@@ -8,6 +8,7 @@
 #include "semdl/core/sidecar_fields.hpp"
 #include "semdl/core/similarity.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cctype>
 #include <cerrno>
@@ -333,6 +334,7 @@ struct ParsedAnnotateArgs {
 
 struct ParsedSetArgs {
     bool valid = true;
+    bool allow_multi = false;
     bool use_stdout = false;
     bool use_dry_run = false;
     std::string selector;
@@ -341,6 +343,12 @@ struct ParsedSetArgs {
     std::filesystem::path input_file;
     std::optional<std::filesystem::path> output_file;
     std::string invalid_option;
+};
+
+struct ParsedSetSelectorGroup {
+    bool valid = true;
+    bool is_list = false;
+    std::vector<semdl::core::Selector> selectors;
 };
 
 struct ParsedRemoveArgs {
@@ -366,6 +374,10 @@ std::filesystem::path derive_sidecar_path(const std::filesystem::path& input_fil
     auto sidecar = input_file;
     sidecar.replace_extension(".ssm");
     return sidecar;
+}
+
+bool set_selector_uses_explicit_field(std::string_view raw_selector) {
+    return raw_selector.starts_with("id:") || raw_selector.starts_with("type:");
 }
 
 std::string quote_value(std::string_view value) {
@@ -987,7 +999,7 @@ ParsedSetArgs parse_set_args(const std::vector<std::string_view>& args) {
 
     parsed.selector = std::string(args[1]);
     std::size_t index = 2;
-    if (args[1].starts_with("id:")) {
+    if (set_selector_uses_explicit_field(args[1])) {
         if (args.size() < 5) {
             parsed.valid = false;
             return parsed;
@@ -1007,6 +1019,10 @@ ParsedSetArgs parse_set_args(const std::vector<std::string_view>& args) {
     }
 
     parsed.input_file = std::filesystem::path(args.back());
+    if (args[1].starts_with("type:") && index < args.size() - 1 && args[index] == "--allow-multi") {
+        parsed.allow_multi = true;
+        ++index;
+    }
     if (index < args.size() - 1 && args[index] == "--stdout") {
         parsed.use_stdout = true;
         ++index;
@@ -1031,6 +1047,46 @@ ParsedSetArgs parse_set_args(const std::vector<std::string_view>& args) {
         parsed.valid = false;
         parsed.invalid_option = index < args.size() ? std::string(args[index]) : std::string{};
         return parsed;
+    }
+
+    return parsed;
+}
+
+ParsedSetSelectorGroup parse_set_selector_group(std::string_view raw_selector) {
+    ParsedSetSelectorGroup parsed;
+
+    std::size_t start = 0;
+    while (start <= raw_selector.size()) {
+        const auto end = raw_selector.find(',', start);
+        std::string token = trim_copy(std::string(raw_selector.substr(start, end == std::string_view::npos ? raw_selector.size() - start
+                                                                                                        : end - start)));
+        if (token.empty()) {
+            parsed.valid = false;
+            return parsed;
+        }
+
+        auto selector = semdl::core::parse_selector(token);
+        if (selector.kind == semdl::core::SelectorKind::unknown) {
+            parsed.valid = false;
+            return parsed;
+        }
+
+        parsed.selectors.push_back(std::move(selector));
+        if (end == std::string_view::npos) {
+            break;
+        }
+
+        parsed.is_list = true;
+        start = end + 1;
+    }
+
+    if (parsed.is_list) {
+        for (const auto& selector : parsed.selectors) {
+            if (selector.kind != semdl::core::SelectorKind::id) {
+                parsed.valid = false;
+                return parsed;
+            }
+        }
     }
 
     return parsed;
@@ -1622,7 +1678,7 @@ std::string root_help_text() {
            "- `explain`: show the merged semantic view for an entity id\n"
            "- `normalize`: canonicalize document shape and output profile\n"
            "- `add`: add one semantic entity skeleton\n"
-           "- `set`: update one inline or sidecar field\n"
+           "- `set`: update one inline or sidecar field, including explicit id-list and type allow-multi inline updates\n"
            "- `remove`: remove an explicit target set or fail on unsafe removal\n"
            "- `annotate`: add rationale/caveat/todo-like notes\n"
            "- `split`: move sidecar-eligible metadata out of inline form\n"
@@ -1645,7 +1701,7 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds, structural `--stdout` and `--out`, plus create-only sidecar `annotation` and `provenance` with sidecar `--stdout` and `--out`; `set` supports resolved-profile `--stdout` and `--out` across the existing single-target field-update surface; `annotate` supports resolved-profile `--stdout` and `--out` across the existing inline|sidecar|auto target matrix; `remove` supports apply, explicit structural selector lists, `--dry-run`, `--stdout`, and inline `--out`.\n"
+           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds, structural `--stdout` and `--out`, plus create-only sidecar `annotation` and `provenance` with sidecar `--stdout` and `--out`; `set` supports resolved-profile `--stdout` and `--out` across single-target updates plus explicit id-list and type allow-multi inline field updates; `annotate` supports resolved-profile `--stdout` and `--out` across the existing inline|sidecar|auto target matrix; `remove` supports apply, explicit structural selector lists, `--dry-run`, `--stdout`, and inline `--out`.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
            "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
            "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
@@ -1672,6 +1728,8 @@ std::string grammar_help_text() {
            "- `ssd explain <id> <file>`\n"
            "- `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`\n"
            "- `ssd set <selector> <value-or-field> ... [--stdout|--dry-run|--out <file> [--dry-run]] <file>`\n"
+           "- `ssd set id:<id>,id:<id>,... <field> <value> [--stdout|--dry-run|--out <file> [--dry-run]] <file>`\n"
+           "- `ssd set type:<kind> <field> <value> --allow-multi [--stdout|--dry-run|--out <file> [--dry-run]] <file>`\n"
            "- `ssd remove <selector[,selector...]> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`\n"
            "- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto [--stdout|--dry-run|--out <file> [--dry-run]] <file>`\n"
            "- `ssd split <input.ssd> [--dry-run]`\n"
@@ -1792,9 +1850,21 @@ std::string reference_help_text(std::string_view target) {
                "- `ssd set id:<id> <field> <value> --stdout <file>`\n"
                "- `ssd set id:<id> <field> <value> --out <output-file> <file>`\n"
                "- `ssd set id:<id> <field> <value> --out <output-file> --dry-run <file>`\n\n"
+               "- `ssd set id:<id>,id:<id>,... <field> <value> <file>`\n"
+               "- `ssd set id:<id>,id:<id>,... <field> <value> --dry-run <file>`\n"
+               "- `ssd set id:<id>,id:<id>,... <field> <value> --stdout <file>`\n"
+               "- `ssd set id:<id>,id:<id>,... <field> <value> --out <output-file> <file>`\n"
+               "- `ssd set id:<id>,id:<id>,... <field> <value> --out <output-file> --dry-run <file>`\n\n"
+               "- `ssd set type:<kind> <field> <value> --allow-multi <file>`\n"
+               "- `ssd set type:<kind> <field> <value> --allow-multi --dry-run <file>`\n"
+               "- `ssd set type:<kind> <field> <value> --allow-multi --stdout <file>`\n"
+               "- `ssd set type:<kind> <field> <value> --allow-multi --out <output-file> <file>`\n"
+               "- `ssd set type:<kind> <field> <value> --allow-multi --out <output-file> --dry-run <file>`\n\n"
                "Purpose:\n"
-               "- Apply, preview, or emit one target field update in inline structure or sidecar metadata.\n"
+               "- Apply, preview, or emit one target field update, or one explicit id-list / type allow-multi inline field update set, in inline structure or sidecar metadata.\n"
                "- `path:` and current `id:` updates use canonical inline `.ssd` for `--stdout` and `--out`.\n"
+               "- explicit id lists are limited to comma-separated `id:` atoms and currently preserve inline-only id field ownership.\n"
+               "- `type:<kind>` set is limited to inline-owned fields and currently requires `--allow-multi` even when one target matches.\n"
                "- `meta:` updates use canonical sidecar `.ssm` for `--stdout` and `--out`.\n\n"
                "Related help:\n"
                "- `ssd help grammar`\n"
@@ -2385,8 +2455,8 @@ CommandResult make_invalid_selector_error(const std::vector<std::string_view>& a
 }
 
 CommandResult make_missing_target_error(const std::vector<std::string_view>& args) {
-    const bool is_id_selector = args[1].starts_with("id:");
-    const std::size_t quoted_index = is_id_selector ? 3U : 2U;
+    const auto selector = semdl::core::parse_selector(args[1]);
+    const std::size_t quoted_index = (selector.kind == semdl::core::SelectorKind::id || selector.kind == semdl::core::SelectorKind::type) ? 3U : 2U;
 
     return CommandResult{
         .exit_code = 3,
@@ -2397,25 +2467,44 @@ CommandResult make_missing_target_error(const std::vector<std::string_view>& arg
     };
 }
 
-CommandResult make_wrong_layer_error(const std::vector<std::string_view>& args) {
-    const bool expects_inline = !args[1].starts_with("meta:");
-    const auto selector = semdl::core::parse_selector(args[1]);
-    const std::size_t quoted_index = selector.kind == semdl::core::SelectorKind::id ? 3U : 2U;
-    const std::string target_id = selector.entity_id;
+CommandResult make_missing_set_allow_multi_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR missing_set_allow_multi\ncommand: " + join_args_with_quoted_index(args, 3) +
+                       "\nselector: " + std::string(args[1]) +
+                       "\nhint: type selector set currently requires `--allow-multi` even when one target matches\n",
+    };
+}
+
+CommandResult make_wrong_layer_error(const std::vector<std::string_view>& args,
+                                     std::string_view selector_text,
+                                     std::string_view target_id,
+                                     std::size_t quoted_index,
+                                     bool expects_inline) {
+    const std::string selector_string(selector_text);
+    const std::string target_string(target_id);
 
     return CommandResult{
         .exit_code = 3,
         .stdout_text = "",
         .stderr_text = expects_inline
                            ? "ERROR selector_resolved_wrong_layer\ncommand: " + join_args_with_quoted_index(args, quoted_index) +
-                                 "\nselector: " + std::string(args[1]) +
-                                 "\nresolved_target: " + target_id +
+                                 "\nselector: " + selector_string +
+                                 "\nresolved_target: " + target_string +
                                  "\nexpected_layer: inline .ssd structure\nactual_location: sidecar metadata\nhint: use a meta: selector for fields stored only in .ssm\n"
                            : "ERROR selector_resolved_wrong_layer\ncommand: " + join_args_with_quoted_index(args, quoted_index) +
-                                 "\nselector: " + std::string(args[1]) +
-                                 "\nresolved_target: " + target_id +
+                                 "\nselector: " + selector_string +
+                                 "\nresolved_target: " + target_string +
                                  "\nexpected_layer: sidecar metadata\nactual_location: inline .ssd structure\nhint: use a path: selector for fields stored in the main .ssd file\n",
     };
+}
+
+CommandResult make_wrong_layer_error(const std::vector<std::string_view>& args) {
+    const bool expects_inline = !args[1].starts_with("meta:");
+    const auto selector = semdl::core::parse_selector(args[1]);
+    const std::size_t quoted_index = (selector.kind == semdl::core::SelectorKind::id || selector.kind == semdl::core::SelectorKind::type) ? 3U : 2U;
+    return make_wrong_layer_error(args, args[1], selector.entity_id, quoted_index, expects_inline);
 }
 
 CommandResult make_invalid_annotation_kind_error(const std::vector<std::string_view>& args) {
@@ -2513,12 +2602,27 @@ CommandResult make_invalid_annotate_options_error(const std::vector<std::string_
 }
 
 CommandResult make_invalid_set_options_error(const std::vector<std::string_view>& args) {
+    std::string hint = "hint: set output options must appear before the input file, and `--stdout` cannot be combined with `--dry-run` or `--out`";
+    if (args.size() > 1 && args[1].starts_with("type:")) {
+        hint += "; for `type:` set, `--allow-multi` must appear before `--stdout`, `--dry-run`, or `--out`";
+    }
+    hint += "\n";
     return CommandResult{
         .exit_code = 2,
         .stdout_text = "",
         .stderr_text = "ERROR invalid_set_options\ncommand: " + join_args(args) +
                        "\nusage: ssd set <selector> <value-or-field> ... [--stdout|--dry-run|--out <output-file> [--dry-run]] <file>\n"
-                       "hint: set output options must appear before the input file, and `--stdout` cannot be combined with `--dry-run` or `--out`\n",
+                       + hint,
+    };
+}
+
+CommandResult make_invalid_set_selector_list_error(const std::vector<std::string_view>& args) {
+    return CommandResult{
+        .exit_code = 2,
+        .stdout_text = "",
+        .stderr_text = "ERROR invalid_set_selector_list\ncommand: " + join_args(args) +
+                       "\nselector: " + std::string(args[1]) +
+                       "\nhint: set selector lists currently accept only comma-separated `id:` atoms\n",
     };
 }
 
@@ -2831,11 +2935,11 @@ std::string metadata_kind_for_entity(const semdl::core::DocumentData& document, 
 }
 
 std::size_t set_value_arg_index(const semdl::core::Selector& selector) {
-    return selector.kind == semdl::core::SelectorKind::id ? 3U : 2U;
+    return (selector.kind == semdl::core::SelectorKind::id || selector.kind == semdl::core::SelectorKind::type) ? 3U : 2U;
 }
 
 std::string set_field_name(const semdl::core::Selector& selector, const std::vector<std::string_view>& args) {
-    return selector.kind == semdl::core::SelectorKind::id ? std::string(args[2]) : selector.field_path;
+    return (selector.kind == semdl::core::SelectorKind::id || selector.kind == semdl::core::SelectorKind::type) ? std::string(args[2]) : selector.field_path;
 }
 
 std::string set_raw_value(const semdl::core::Selector& selector, const std::vector<std::string_view>& args) {
@@ -2875,6 +2979,30 @@ bool apply_set_change(semdl::core::DocumentData& document, const semdl::core::Se
         return true;
     }
     return false;
+}
+
+std::vector<semdl::core::Selector> collect_set_type_targets(const semdl::core::DocumentData& document,
+                                                            std::string_view kind,
+                                                            std::string_view field_name) {
+    std::vector<std::string> ids;
+    for (const auto& [entity_id, entity] : document.entities) {
+        if (entity.kind == kind) {
+            ids.push_back(entity_id);
+        }
+    }
+    std::sort(ids.begin(), ids.end());
+
+    std::vector<semdl::core::Selector> selectors;
+    selectors.reserve(ids.size());
+    for (const auto& entity_id : ids) {
+        semdl::core::Selector selector;
+        selector.kind = semdl::core::SelectorKind::id;
+        selector.raw = "id:" + entity_id;
+        selector.entity_id = entity_id;
+        selector.field_path = std::string(field_name);
+        selectors.push_back(std::move(selector));
+    }
+    return selectors;
 }
 
 bool apply_annotation_change(semdl::core::DocumentData& document,
@@ -3104,6 +3232,9 @@ UpdatePreview build_set_preview(const semdl::core::DocumentData& document,
     preview.command_line += selector.kind == semdl::core::SelectorKind::meta
                                 ? parsed.raw_value
                                 : quote_value(parsed.raw_value);
+    if (parsed.allow_multi) {
+        preview.command_line += " --allow-multi";
+    }
     if (parsed.output_file.has_value()) {
         preview.command_line += " --out " + parsed.output_file->generic_string();
     }
@@ -3124,6 +3255,37 @@ UpdatePreview build_set_preview(const semdl::core::DocumentData& document,
             preview.detail_lines.push_back("preserve_source_ssm: " + document.sidecar_file.generic_string());
         }
     }
+    return preview;
+}
+
+UpdatePreview build_set_preview(const semdl::core::DocumentData& document,
+                               const std::vector<semdl::core::Selector>& selectors,
+                               const ParsedSetArgs& parsed) {
+    UpdatePreview preview;
+    preview.command_line = "ssd set " + parsed.selector + " " + parsed.field_name.value_or("") + " " + quote_value(parsed.raw_value);
+    if (parsed.allow_multi) {
+        preview.command_line += " --allow-multi";
+    }
+    if (parsed.output_file.has_value()) {
+        preview.command_line += " --out " + parsed.output_file->generic_string();
+    }
+    preview.command_line += " " + parsed.input_file.generic_string();
+    preview.target_profile = "inline";
+    preview.target_file = parsed.output_file.has_value() ? parsed.output_file->generic_string() : parsed.input_file.generic_string();
+    preview.detail_lines.push_back("selector: " + parsed.selector);
+    preview.detail_lines.push_back("field: " + parsed.field_name.value_or(""));
+    preview.detail_lines.push_back("targets:");
+    for (const auto& selector : selectors) {
+        preview.detail_lines.push_back("  - " + selector.entity_id + " old: " + require_field_from_entity(document, selector.entity_id, selector.field_path, false));
+    }
+    preview.detail_lines.push_back("new: " + render_scalar_argument(parsed.raw_value));
+    if (parsed.output_file.has_value()) {
+        preview.detail_lines.push_back("preserve_source_ssd: " + parsed.input_file.generic_string());
+        if (document.has_sidecar) {
+            preview.detail_lines.push_back("preserve_source_ssm: " + document.sidecar_file.generic_string());
+        }
+    }
+    preview.changes = static_cast<int>(selectors.size());
     return preview;
 }
 
@@ -3505,32 +3667,102 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
 
             semdl::core::DocumentStore store;
             auto document = store.load_document(parsed.input_file);
-            auto selector = semdl::core::parse_selector(parsed.selector);
-            const auto resolution = semdl::core::resolve_selector(document, selector);
-            if (resolution.error == semdl::core::ResolveError::invalid_selector_syntax) {
+            const auto selector_group = parse_set_selector_group(parsed.selector);
+            if (!selector_group.valid) {
+                if (selector_group.is_list || parsed.selector.find(',') != std::string::npos) {
+                    return make_invalid_set_selector_list_error(args);
+                }
                 return make_invalid_selector_error(args);
             }
-            if (resolution.error == semdl::core::ResolveError::target_not_found) {
-                return make_missing_target_error(args);
+
+            std::vector<semdl::core::Selector> target_selectors;
+            if (selector_group.is_list) {
+                if (!parsed.field_name.has_value()) {
+                    return make_invalid_set_selector_list_error(args);
+                }
+
+                std::set<std::string> seen_ids;
+                for (auto selector : selector_group.selectors) {
+                    const auto resolution = semdl::core::resolve_selector(document, selector);
+                    if (resolution.error == semdl::core::ResolveError::invalid_selector_syntax) {
+                        return make_invalid_selector_error(args);
+                    }
+                    if (resolution.error == semdl::core::ResolveError::target_not_found) {
+                        return make_missing_target_error(args);
+                    }
+                    if (resolution.error == semdl::core::ResolveError::wrong_layer) {
+                        return make_wrong_layer_error(args, parsed.selector, selector.entity_id, 3U, true);
+                    }
+
+                    selector.field_path = *parsed.field_name;
+                    const auto field_resolution = resolve_set_field_layer(document, selector, selector.field_path);
+                    if (field_resolution == semdl::core::ResolveError::wrong_layer) {
+                        return make_wrong_layer_error(args, parsed.selector, selector.entity_id, 3U, true);
+                    }
+                    if (field_resolution == semdl::core::ResolveError::target_not_found) {
+                        return make_missing_target_error(args);
+                    }
+
+                    if (seen_ids.insert(selector.entity_id).second) {
+                        target_selectors.push_back(std::move(selector));
+                    }
+                }
+            } else {
+                auto selector = selector_group.selectors.front();
+                if (selector.kind == semdl::core::SelectorKind::type) {
+                    if (!parsed.allow_multi) {
+                        return make_missing_set_allow_multi_error(args);
+                    }
+                    if (!parsed.field_name.has_value()) {
+                        return make_missing_required_argument_error(args,
+                                                                    "ssd set <selector> <value-or-field> ... [--stdout|--dry-run|--out <output-file> [--dry-run]] <file>",
+                                                                    "set");
+                    }
+
+                    target_selectors = collect_set_type_targets(document, selector.entity_id, *parsed.field_name);
+                    if (target_selectors.empty()) {
+                        return make_missing_target_error(args);
+                    }
+
+                    for (const auto& target_selector : target_selectors) {
+                        const auto field_resolution = resolve_set_field_layer(document, target_selector, target_selector.field_path);
+                        if (field_resolution == semdl::core::ResolveError::wrong_layer) {
+                            return make_wrong_layer_error(args, parsed.selector, target_selector.entity_id, 3U, true);
+                        }
+                        if (field_resolution == semdl::core::ResolveError::target_not_found) {
+                            return make_missing_target_error(args);
+                        }
+                    }
+                } else {
+                    const auto resolution = semdl::core::resolve_selector(document, selector);
+                    if (resolution.error == semdl::core::ResolveError::invalid_selector_syntax) {
+                        return make_invalid_selector_error(args);
+                    }
+                    if (resolution.error == semdl::core::ResolveError::target_not_found) {
+                        return make_missing_target_error(args);
+                    }
+                    if (resolution.error == semdl::core::ResolveError::wrong_layer) {
+                        return make_wrong_layer_error(args);
+                    }
+
+                    if (selector.kind == semdl::core::SelectorKind::id) {
+                        selector.field_path = parsed.field_name.value_or("");
+                    }
+
+                    const auto field_resolution = resolve_set_field_layer(document, selector, selector.field_path);
+                    if (field_resolution == semdl::core::ResolveError::wrong_layer) {
+                        return make_wrong_layer_error(args);
+                    }
+                    if (field_resolution == semdl::core::ResolveError::target_not_found) {
+                        return make_missing_target_error(args);
+                    }
+
+                    target_selectors.push_back(std::move(selector));
+                }
             }
 
-            if (selector.kind == semdl::core::SelectorKind::id) {
-                selector.field_path = parsed.field_name.value_or("");
-            }
-
-            const auto field_resolution = resolve_set_field_layer(document, selector, selector.field_path);
-            if (field_resolution == semdl::core::ResolveError::wrong_layer) {
-                return make_wrong_layer_error(args);
-            }
-            if (field_resolution == semdl::core::ResolveError::target_not_found) {
-                return make_missing_target_error(args);
-            }
-
-            if (resolution.error == semdl::core::ResolveError::wrong_layer) {
-                return make_wrong_layer_error(args);
-            }
-
-            const bool writes_inline = selector.kind == semdl::core::SelectorKind::path || selector.kind == semdl::core::SelectorKind::id;
+            const bool writes_inline = target_selectors.front().kind == semdl::core::SelectorKind::path ||
+                                       target_selectors.front().kind == semdl::core::SelectorKind::id;
             if (parsed.use_stdout && (parsed.use_dry_run || parsed.output_file.has_value())) {
                 return make_invalid_set_options_error(args);
             }
@@ -3545,11 +3777,16 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             }
 
             if (parsed.use_dry_run) {
-                return make_dry_run_result(build_set_preview(document, selector, parsed));
+                if (selector_group.is_list || selector_group.selectors.front().kind == semdl::core::SelectorKind::type) {
+                    return make_dry_run_result(build_set_preview(document, target_selectors, parsed));
+                }
+                return make_dry_run_result(build_set_preview(document, target_selectors.front(), parsed));
             }
 
-            if (!apply_set_change(document, selector, parsed.raw_value)) {
-                return make_apply_not_implemented_error(args, "set");
+            for (const auto& selector : target_selectors) {
+                if (!apply_set_change(document, selector, parsed.raw_value)) {
+                    return make_apply_not_implemented_error(args, "set");
+                }
             }
 
             if (parsed.use_stdout) {
@@ -3572,12 +3809,12 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
             if (parsed.output_file.has_value()) {
                 if (writes_inline) {
                     write_text_file(*parsed.output_file, semdl::core::render_canonical_inline_document(document));
-                    return make_transform_out_result(*parsed.output_file, 1);
+                    return make_transform_out_result(*parsed.output_file, static_cast<int>(target_selectors.size()));
                 }
 
                 const auto rendered = semdl::core::render_split_document(document);
                 write_text_file(*parsed.output_file, rendered.sidecar_document);
-                return make_transform_out_result(*parsed.output_file, 1, "", "wrote_ssm");
+                return make_transform_out_result(*parsed.output_file, static_cast<int>(target_selectors.size()), "", "wrote_ssm");
             }
 
             if (writes_inline) {
@@ -3587,13 +3824,13 @@ CommandResult CliApp::run(const std::vector<std::string_view>& args) const {
                 } else {
                     write_text_file(parsed.input_file, semdl::core::render_canonical_inline_document(document));
                 }
-                return make_update_apply_result(parsed.input_file, std::nullopt, 1);
+                return make_update_apply_result(parsed.input_file, std::nullopt, static_cast<int>(target_selectors.size()));
             }
 
             const auto sidecar_file = derive_sidecar_path(parsed.input_file);
             const auto rendered = semdl::core::render_split_document(document);
             write_text_file(sidecar_file, rendered.sidecar_document);
-            return make_update_apply_result(std::nullopt, sidecar_file, 1);
+            return make_update_apply_result(std::nullopt, sidecar_file, static_cast<int>(target_selectors.size()));
         }
     }
 

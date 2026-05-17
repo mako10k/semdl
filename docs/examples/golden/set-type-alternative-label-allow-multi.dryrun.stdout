@@ -1,0 +1,11 @@
+DRY-RUN
+command: ssd set type:alternative label "候補更新" --allow-multi docs/examples/minimal.ssd
+target_profile: inline
+target_file: docs/examples/minimal.ssd
+selector: type:alternative
+field: label
+targets:
+  - ALT1A old: "国内売上が増加した"
+  - ALT1B old: "全売上が増加した"
+new: "候補更新"
+changes: 2

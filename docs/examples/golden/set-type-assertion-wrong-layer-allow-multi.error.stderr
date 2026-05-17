@@ -1,0 +1,7 @@
+ERROR selector_resolved_wrong_layer
+command: ssd set type:assertion confidence "0.92" --allow-multi docs/examples/minimal.ssd
+selector: type:assertion
+resolved_target: A1
+expected_layer: inline .ssd structure
+actual_location: sidecar metadata
+hint: use a meta: selector for fields stored only in .ssm

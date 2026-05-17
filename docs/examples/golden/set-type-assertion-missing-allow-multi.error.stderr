@@ -1,0 +1,4 @@
+ERROR missing_set_allow_multi
+command: ssd set type:assertion label "bad" docs/examples/minimal.ssd
+selector: type:assertion
+hint: type selector set currently requires `--allow-multi` even when one target matches

@@ -20,6 +20,8 @@ Key syntax forms:
 - `ssd explain <id> <file>`
 - `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`
 - `ssd set <selector> <value-or-field> ... [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
+- `ssd set id:<id>,id:<id>,... <field> <value> [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
+- `ssd set type:<kind> <field> <value> --allow-multi [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
 - `ssd remove <selector[,selector...]> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
 - `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
 - `ssd split <input.ssd> [--dry-run]`

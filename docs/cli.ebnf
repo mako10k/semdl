@@ -49,10 +49,14 @@ add-structural-cmd = "add" , ws , structural-add-kind , ws , input-file , { ws ,
 add-metadata-cmd = "add" , ws , metadata-add-kind , ws , input-file , { ws , add-field } , ws , target-sidecar-opt
                  , [ ws , stdout-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] | ws , dry-run-opt ] ;
 
-set-apply-cmd   = set-id-apply-cmd | set-path-meta-apply-cmd ;
-set-output-cmd  = set-id-output-cmd | set-path-meta-output-cmd ;
+set-apply-cmd   = set-id-apply-cmd | set-id-list-apply-cmd | set-type-apply-cmd | set-path-meta-apply-cmd ;
+set-output-cmd  = set-id-output-cmd | set-id-list-output-cmd | set-type-output-cmd | set-path-meta-output-cmd ;
 set-id-apply-cmd = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , input-file ;
 set-id-output-cmd = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , set-surface , ws , input-file ;
+set-id-list-apply-cmd = "set" , ws , set-id-list-selector , ws , field-name , ws , scalar-value , ws , input-file ;
+set-id-list-output-cmd = "set" , ws , set-id-list-selector , ws , field-name , ws , scalar-value , ws , set-surface , ws , input-file ;
+set-type-apply-cmd = "set" , ws , type-selector , ws , field-name , ws , scalar-value , ws , allow-multi-opt , ws , input-file ;
+set-type-output-cmd = "set" , ws , type-selector , ws , field-name , ws , scalar-value , ws , allow-multi-opt , ws , set-surface , ws , input-file ;
 set-path-meta-apply-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , ws , input-file ;
 set-path-meta-output-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , ws , set-surface , ws , input-file ;
 set-surface     = dry-run-opt | stdout-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
@@ -61,6 +65,7 @@ selector        = id-selector | type-selector | path-selector | meta-selector | 
 remove-selector = selector | structural-selector-list ;
 structural-selector-list = structural-selector-atom , "," , structural-selector-atom , { "," , structural-selector-atom } ;
 structural-selector-atom = id-selector | type-selector | path-selector ;
+set-id-list-selector = id-selector , "," , id-selector , { "," , id-selector } ;
 id-selector     = "id:" , identifier ;
 type-selector   = "type:" , kind-name ;
 path-selector   = "path:" , identifier , "." , field-path ;

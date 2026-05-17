@@ -32,10 +32,10 @@ hypothesis H1 {
 
 alternative ALT1A {
   group: ALT1
-  label: "国内売上が増加した"
+  label: "候補更新"
 }
 
 alternative ALT1B {
   group: ALT1
-  label: "全売上が増加した"
+  label: "候補更新"
 }

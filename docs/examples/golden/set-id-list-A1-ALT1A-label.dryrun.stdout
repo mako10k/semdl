@@ -1,0 +1,11 @@
+DRY-RUN
+command: ssd set id:A1,id:ALT1A,id:A1 label "確認対象" docs/examples/minimal.ssd
+target_profile: inline
+target_file: docs/examples/minimal.ssd
+selector: id:A1,id:ALT1A,id:A1
+field: label
+targets:
+  - A1 old: "売上増加"
+  - ALT1A old: "国内売上が増加した"
+new: "確認対象"
+changes: 2

@@ -17,9 +17,23 @@ Usage:
 - `ssd set id:<id> <field> <value> --out <output-file> <file>`
 - `ssd set id:<id> <field> <value> --out <output-file> --dry-run <file>`
 
+- `ssd set id:<id>,id:<id>,... <field> <value> <file>`
+- `ssd set id:<id>,id:<id>,... <field> <value> --dry-run <file>`
+- `ssd set id:<id>,id:<id>,... <field> <value> --stdout <file>`
+- `ssd set id:<id>,id:<id>,... <field> <value> --out <output-file> <file>`
+- `ssd set id:<id>,id:<id>,... <field> <value> --out <output-file> --dry-run <file>`
+
+- `ssd set type:<kind> <field> <value> --allow-multi <file>`
+- `ssd set type:<kind> <field> <value> --allow-multi --dry-run <file>`
+- `ssd set type:<kind> <field> <value> --allow-multi --stdout <file>`
+- `ssd set type:<kind> <field> <value> --allow-multi --out <output-file> <file>`
+- `ssd set type:<kind> <field> <value> --allow-multi --out <output-file> --dry-run <file>`
+
 Purpose:
-- Apply, preview, or emit one target field update in inline structure or sidecar metadata.
+- Apply, preview, or emit one target field update, or one explicit id-list / type allow-multi inline field update set, in inline structure or sidecar metadata.
 - `path:` and current `id:` updates use canonical inline `.ssd` for `--stdout` and `--out`.
+- explicit id lists are limited to comma-separated `id:` atoms and currently preserve inline-only id field ownership.
+- `type:<kind>` set is limited to inline-owned fields and currently requires `--allow-multi` even when one target matches.
 - `meta:` updates use canonical sidecar `.ssm` for `--stdout` and `--out`.
 
 Related help:

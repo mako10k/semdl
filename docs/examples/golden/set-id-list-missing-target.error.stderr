@@ -1,0 +1,4 @@
+ERROR selector_target_not_found
+command: ssd set id:A1,id:Z9 label "bad" docs/examples/minimal.ssd
+selector: id:A1,id:Z9
+hint: the selector did not resolve to any resource in the current document set

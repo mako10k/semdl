@@ -1,0 +1,7 @@
+ERROR selector_resolved_wrong_layer
+command: ssd set id:A1,id:H1 confidence "0.91" docs/examples/minimal.ssd
+selector: id:A1,id:H1
+resolved_target: A1
+expected_layer: inline .ssd structure
+actual_location: sidecar metadata
+hint: use a meta: selector for fields stored only in .ssm

@@ -491,6 +491,28 @@ step S18L:
     annotation rationale:
       "set の current field-layer ownership を保ったまま output-only verification を追加すると、update command 間の parity を広げつつ selector semantics を reopen せずに済むため"
 
+step S18M:
+  decision D18M based_on D18L:
+    |
+      次の set list slice では、current id-selector semantics を維持したまま `ssd set` に explicit id list だけを追加してよい。
+      syntax は `id:<id>,id:<id>,...` に限定してよく、`path:`、`meta:`、`type:`、`doc:self`、mixed selector list は failure としてよい。
+      apply、dry-run、stdout、out、out-dry-run のいずれでも mutation 前に全 id を解決・検証し、1 件でも missing target や wrong-layer があれば全体 failure としてよい。
+      duplicate id は first-seen order で dedup してよく、preview / apply の changes は dedup 後 target 数に一致してよい。
+      result payload は current id set と同じ canonical inline `.ssd` に固定してよく、generic selector list、type-based multi-target set、`--allow-multi` は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "generic selector expansion を reopen せず、current id-set ownership を同一 field update の複数 explicit target にだけ lift すると tractable な multi-target slice に保てるため"
+
+step S18N:
+  decision D18N based_on D18M:
+    |
+      次の set type slice では、current set ownership を維持したまま `ssd set type:<kind> <field> <value> --allow-multi ... <file>` だけを追加してよい。
+      `type:<kind>` を使う set surface では matched target 数に関わらず `--allow-multi` を常に必須としてよい。
+      apply、dry-run、stdout、out、out-dry-run のいずれでも matched target 全件を mutation 前に検証し、1 件でも missing target や wrong-layer があれば全体 failure としてよい。
+      matched target order は matched id の ascending order に固定してよく、preview / apply / output の changes はその順序で確定した target 数に一致してよい。
+      generic selector list、mixed selector union、path list、meta list、`--target`、`--format` は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "generic selector expansion を reopen せず、same-kind same-field update だけを opt-in type selector に lift すると tractable な next multi-target slice に保てるため"
+
 step S18J:
   decision D18J based_on D18, D18H, D18I:
     |

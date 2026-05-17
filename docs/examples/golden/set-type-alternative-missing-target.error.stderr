@@ -1,0 +1,4 @@
+ERROR selector_target_not_found
+command: ssd set type:alternative source_segment "S1" --allow-multi docs/examples/minimal.ssd
+selector: type:alternative
+hint: the selector did not resolve to any resource in the current document set

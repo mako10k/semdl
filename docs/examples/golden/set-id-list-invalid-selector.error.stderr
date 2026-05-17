@@ -1,0 +1,4 @@
+ERROR invalid_set_selector_list
+command: ssd set id:A1,path:ALT1A.label label bad docs/examples/minimal.ssd
+selector: id:A1,path:ALT1A.label
+hint: set selector lists currently accept only comma-separated `id:` atoms
