@@ -513,6 +513,18 @@ step S18N:
     annotation rationale:
       "generic selector expansion を reopen せず、same-kind same-field update だけを opt-in type selector に lift すると tractable な next multi-target slice に保てるため"
 
+step S18O:
+  decision D18O based_on D18K:
+    |
+      次の annotate id-list slice では、current annotate ownership を維持したまま `ssd annotate id:<id>,id:<id>,... <kind> <text> --target inline|sidecar ... <file>` だけを追加してよい。
+      list atom は `id:` に限定してよく、`type:`、`path:`、`meta:`、`doc:self`、mixed list は failure としてよい。
+      `--target inline` と `--target sidecar` だけを許可してよく、`--target auto` はこの slice では failure としてよい。
+      apply、dry-run、stdout、out、out-dry-run のいずれでも全 id を mutation 前に検証し、1 件でも missing target、inline unsupported、standalone requirement violation があれば全体 failure としてよい。
+      duplicate id は first-seen order で dedup してよく、preview / apply / output の changes は dedup 後 target 数に一致してよい。
+      generic selector list、type-based multi-target annotate、mixed target profile routing、`--target auto` multi-target rule は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "annotate の current target ownership を保ったまま explicit id intent だけを複数 target に lift すると、heterogeneous routing を導入せず tractable な multi-target slice に保てるため"
+
 step S18J:
   decision D18J based_on D18, D18H, D18I:
     |

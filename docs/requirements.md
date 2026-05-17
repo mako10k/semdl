@@ -906,6 +906,15 @@ annotate は、説明、注意、根拠、TODO などの付加注記を追加す
 - `--stdout` は `--dry-run` や `--out` と併用してはならない
 - `--out` は source `.ssd` を alias してはならず、resolved target が `sidecar` の場合は source sibling `.ssm` も alias してはならない
 
+次の annotate id-list slice では、current annotate ownership を保ったまま explicit id list だけを追加してよい。
+
+- syntax は `ssd annotate id:<id>,id:<id>,... <kind> <text> --target inline|sidecar ... <file>` に限定してよい
+- list atom は `id:` に限定してよく、`type:`、`path:`、`meta:`、`doc:self`、mixed list は failure としてよい
+- `--target inline` と `--target sidecar` だけを許可してよく、`--target auto` はこの slice では failure としてよい
+- apply / `--dry-run` / `--stdout` / `--out` / `--out --dry-run` のいずれでも mutation 前に全 id を解決・検証し、1 件でも missing target、inline unsupported、standalone requirement violation があれば全体 failure としてよい
+- duplicate id は first-seen order で dedup してよく、preview / apply / output の `changes` は dedup 後 target 数に一致してよい
+- result payload は current annotate output surface をそのまま再利用し、`--target inline` は canonical inline `.ssd`、`--target sidecar` は canonical sidecar `.ssm` に固定してよい
+
 field-map から create-only に sidecar metadata を起こす経路が必要な場合は、
 `ssd add annotation --target sidecar` を別経路として追加してよい。
 この場合でも annotate 自体は shorthand command として残し、既存注記の更新責務は annotate または set に残す。
@@ -1057,6 +1066,11 @@ test runner 定義:
 - [docs/examples/golden/annotate-H1-status-inline.out.dryrun.stdout](docs/examples/golden/annotate-H1-status-inline.out.dryrun.stdout)
 - [docs/examples/golden/annotate-R1-rationale-auto-sidecar.apply.stdout](docs/examples/golden/annotate-R1-rationale-auto-sidecar.apply.stdout)
 - [docs/examples/golden/annotate-R1-rationale-auto-sidecar.out.stdout](docs/examples/golden/annotate-R1-rationale-auto-sidecar.out.stdout)
+- [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.dryrun.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.dryrun.stdout)
+- [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.apply.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.apply.stdout)
+- [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.stdout)
+- [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.dryrun.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.dryrun.stdout)
+- [docs/examples/golden/annotate-id-list-A1-H1-status-inline.stdout](docs/examples/golden/annotate-id-list-A1-H1-status-inline.stdout)
 - [docs/examples/golden/split-minimal.dryrun.stdout](docs/examples/golden/split-minimal.dryrun.stdout)
 - [docs/examples/golden/split-minimal.apply.stdout](docs/examples/golden/split-minimal.apply.stdout)
 - [docs/examples/golden/remove-A1-embedding.apply.stdout](docs/examples/golden/remove-A1-embedding.apply.stdout)
@@ -1091,6 +1105,10 @@ test runner 定義:
 - [docs/examples/golden/annotate-invalid-kind.error.stderr](docs/examples/golden/annotate-invalid-kind.error.stderr)
 - [docs/examples/golden/annotate-inline-unsupported-resource.error.stderr](docs/examples/golden/annotate-inline-unsupported-resource.error.stderr)
 - [docs/examples/golden/annotate-inline-requires-standalone.error.stderr](docs/examples/golden/annotate-inline-requires-standalone.error.stderr)
+- [docs/examples/golden/annotate-id-list-invalid-selector.error.stderr](docs/examples/golden/annotate-id-list-invalid-selector.error.stderr)
+- [docs/examples/golden/annotate-id-list-auto-target-unsupported.error.stderr](docs/examples/golden/annotate-id-list-auto-target-unsupported.error.stderr)
+- [docs/examples/golden/annotate-id-list-missing-target.error.stderr](docs/examples/golden/annotate-id-list-missing-target.error.stderr)
+- [docs/examples/golden/annotate-id-list-inline-unsupported.error.stderr](docs/examples/golden/annotate-id-list-inline-unsupported.error.stderr)
 - [docs/examples/golden/annotate-stdout-dryrun-invalid.error.stderr](docs/examples/golden/annotate-stdout-dryrun-invalid.error.stderr)
 - [docs/examples/golden/annotate-stdout-out-invalid.error.stderr](docs/examples/golden/annotate-stdout-out-invalid.error.stderr)
 - [docs/examples/golden/annotate-out-alias-input.error.stderr](docs/examples/golden/annotate-out-alias-input.error.stderr)
@@ -1380,6 +1398,33 @@ test runner 定義:
   - paired input の sidecar annotate で `--out` が source sibling `.ssm` を alias する場合は失敗する
 - `ssd annotate id:R1 rationale bad --target auto --out docs/examples/minimal.ssm docs/examples/minimal.ssd`
   - standalone input で auto が sidecar へ解決される場合も、`--out` は source sibling `.ssm` を alias してはならない
+- `ssd annotate id:A1,id:H1,id:A1 todo 一括確認する --target sidecar --dry-run docs/examples/minimal.ssd`
+  - explicit id-list annotate は first-seen order で dedup し、paired input の sidecar preview を返す
+  - 期待 stdout は [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.dryrun.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.dryrun.stdout) と一致する
+- `ssd annotate id:A1,id:H1 todo 一括確認する --target sidecar docs/examples/minimal.ssd`
+  - explicit id-list sidecar annotate apply は両 id の metadata を一括更新し、source pair では `.ssm` だけを書き換える
+  - 期待 stdout は [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.apply.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.apply.stdout) と一致する
+- `ssd annotate id:A1,id:H1 todo 一括確認する --target sidecar --out docs/examples/annotate-id-list-output.ssm docs/examples/minimal.ssd`
+  - explicit id-list sidecar annotate out は source pair を保持したまま canonical sidecar `.ssm` を別ファイルへ書く
+  - 期待 stdout は [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.stdout) と一致する
+- `ssd annotate id:A1,id:H1 todo 一括確認する --target sidecar --out docs/examples/annotate-id-list-output.ssm --dry-run docs/examples/minimal.ssd`
+  - explicit id-list sidecar annotate out-dry-run は target file を output path に向けた preview として扱う
+  - 期待 stdout は [docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.dryrun.stdout](docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.dryrun.stdout) と一致する
+- `ssd annotate id:A1,id:H1 status 検証待ち --target inline --stdout docs/examples/minimal.inline.ssd`
+  - explicit id-list inline annotate stdout は standalone inline document を変更せず canonical inline `.ssd` を返す
+  - 期待 stdout は [docs/examples/golden/annotate-id-list-A1-H1-status-inline.stdout](docs/examples/golden/annotate-id-list-A1-H1-status-inline.stdout) と一致する
+- `ssd annotate id:A1,path:H1.summary todo bad --target sidecar docs/examples/minimal.ssd`
+  - annotate id-list slice は comma-separated `id:` atoms だけを許可し、mixed selector list は failure とする
+  - 期待 stderr は [docs/examples/golden/annotate-id-list-invalid-selector.error.stderr](docs/examples/golden/annotate-id-list-invalid-selector.error.stderr) と一致する
+- `ssd annotate id:A1,id:H1 todo bad --target auto docs/examples/minimal.ssd`
+  - annotate id-list slice では `--target auto` を許可しない
+  - 期待 stderr は [docs/examples/golden/annotate-id-list-auto-target-unsupported.error.stderr](docs/examples/golden/annotate-id-list-auto-target-unsupported.error.stderr) と一致する
+- `ssd annotate id:A1,id:Z9 todo bad --target sidecar docs/examples/minimal.ssd`
+  - annotate id-list は 1 件でも missing target があれば全体 failure とする
+  - 期待 stderr は [docs/examples/golden/annotate-id-list-missing-target.error.stderr](docs/examples/golden/annotate-id-list-missing-target.error.stderr) と一致する
+- `ssd annotate id:A1,id:R1 status bad --target inline docs/examples/minimal.inline.ssd`
+  - annotate id-list inline は 1 件でも inline unsupported target を含めば全体 failure とする
+  - 期待 stderr は [docs/examples/golden/annotate-id-list-inline-unsupported.error.stderr](docs/examples/golden/annotate-id-list-inline-unsupported.error.stderr) と一致する
 - `ssd remove id:A1 docs/examples/minimal.ssd`
   - 参照されている構造要素のため既定で失敗する
   - 期待 stderr は [docs/examples/golden/remove-id-A1.error.stderr](docs/examples/golden/remove-id-A1.error.stderr) と一致する

@@ -1,0 +1,7 @@
+ERROR invalid_annotate_multi_target_target
+command: ssd annotate id:A1,id:H1 todo bad --target auto docs/examples/minimal.ssd
+target: auto
+allowed:
+  - inline
+  - sidecar
+hint: annotate selector lists currently require an explicit `--target inline` or `--target sidecar`

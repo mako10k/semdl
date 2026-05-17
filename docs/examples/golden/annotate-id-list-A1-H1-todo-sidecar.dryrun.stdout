@@ -1,0 +1,8 @@
+DRY-RUN
+command: ssd annotate id:A1,id:H1,id:A1 todo "一括確認する" --target sidecar docs/examples/minimal.ssd
+target_profile: sidecar
+target_file: docs/examples/minimal.ssm
+selector: id:A1,id:H1,id:A1
+annotation_kind: todo
+write: "一括確認する"
+changes: 2

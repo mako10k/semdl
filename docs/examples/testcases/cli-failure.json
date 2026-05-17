@@ -1329,6 +1329,58 @@
       "notes": "inline annotate should reject paired input because the inline write-path is standalone-only in this slice"
     },
     {
+      "id": "annotate-id-list-invalid-selector",
+      "command": "ssd annotate id:A1,path:H1.summary todo bad --target sidecar docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:A1,path:H1.summary", "todo", "bad", "--target", "sidecar", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-id-list-invalid-selector.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list slice only accepts id atoms and should reject mixed selector lists"
+    },
+    {
+      "id": "annotate-id-list-auto-target-unsupported",
+      "command": "ssd annotate id:A1,id:H1 todo bad --target auto docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:H1", "todo", "bad", "--target", "auto", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-id-list-auto-target-unsupported.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list slice should require an explicit inline or sidecar target"
+    },
+    {
+      "id": "annotate-id-list-missing-target",
+      "command": "ssd annotate id:A1,id:Z9 todo bad --target sidecar docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:Z9", "todo", "bad", "--target", "sidecar", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-id-list-missing-target.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list should fail atomically when any listed id is missing"
+    },
+    {
+      "id": "annotate-id-list-inline-unsupported",
+      "command": "ssd annotate id:A1,id:R1 status bad --target inline docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:R1", "status", "bad", "--target", "inline", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-id-list-inline-unsupported.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list inline should fail atomically when any target is unsupported for inline annotation"
+    },
+    {
       "id": "set-stdout-dryrun-invalid",
       "command": "ssd set path:A1.label bad --stdout --dry-run docs/examples/minimal.ssd",
       "argv": ["ssd", "set", "path:A1.label", "bad", "--stdout", "--dry-run", "docs/examples/minimal.ssd"],

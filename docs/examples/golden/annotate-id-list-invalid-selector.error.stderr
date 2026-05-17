@@ -1,0 +1,4 @@
+ERROR invalid_annotate_selector_list
+command: ssd annotate id:A1,path:H1.summary todo bad --target sidecar docs/examples/minimal.ssd
+selector: id:A1,path:H1.summary
+hint: annotate selector lists currently accept only comma-separated `id:` atoms

@@ -2387,6 +2387,56 @@
       "notes": "sidecar annotate out dry-run should preview a non-destructive sidecar output target"
     },
     {
+      "id": "annotate-id-list-A1-H1-todo-sidecar-dryrun",
+      "command": "ssd annotate id:A1,id:H1,id:A1 todo 一括確認する --target sidecar --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:H1,id:A1", "todo", "一括確認する", "--target", "sidecar", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list dry-run should deduplicate first-seen ids and preview a sidecar write"
+    },
+    {
+      "id": "annotate-id-list-A1-H1-todo-sidecar-stdout",
+      "command": "ssd annotate id:A1,id:H1 todo 一括確認する --target sidecar --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:H1", "todo", "一括確認する", "--target", "sidecar", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/annotate-id-list-A1-H1-todo.expected.ssm",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list stdout should return canonical sidecar text without mutating the source pair"
+    },
+    {
+      "id": "annotate-id-list-A1-H1-todo-sidecar-out-dryrun",
+      "command": "ssd annotate id:A1,id:H1 todo 一括確認する --target sidecar --out docs/examples/annotate-id-list-output.ssm --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:H1", "todo", "一括確認する", "--target", "sidecar", "--out", "docs/examples/annotate-id-list-output.ssm", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/annotate-id-list-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list out dry-run should preview a non-destructive sidecar output target"
+    },
+    {
       "id": "split-minimal-dryrun",
       "command": "ssd split docs/examples/minimal.inline.ssd --dry-run",
       "argv": ["ssd", "split", "docs/examples/minimal.inline.ssd", "--dry-run"],
@@ -2490,6 +2540,24 @@
       "notes": "annotate apply should append sidecar metadata through the common update path"
     },
     {
+      "id": "annotate-id-list-A1-H1-todo-sidecar-apply",
+      "command": "ssd annotate id:A1,id:H1 todo 一括確認する --target sidecar docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:H1", "todo", "一括確認する", "--target", "sidecar", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/annotate-id-list-A1-H1-todo.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list apply should rewrite the paired sidecar once after validating the whole list"
+    },
+    {
       "id": "annotate-H1-status-inline-apply",
       "command": "ssd annotate id:H1 status 検証待ち --target inline docs/examples/minimal.inline.ssd",
       "argv": ["ssd", "annotate", "id:H1", "status", "検証待ち", "--target", "inline", "docs/examples/minimal.inline.ssd"],
@@ -2522,6 +2590,23 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "inline annotate stdout should return canonical inline text without mutating the standalone source"
+    },
+    {
+      "id": "annotate-id-list-A1-H1-status-inline-stdout",
+      "command": "ssd annotate id:A1,id:H1 status 検証待ち --target inline --stdout docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:H1", "status", "検証待ち", "--target", "inline", "--stdout", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.inline.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.inline.ssd": "docs/examples/minimal.inline.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/annotate-id-list-A1-H1-status-inline.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list inline stdout should return canonical inline text without mutating the standalone source"
     },
     {
       "id": "annotate-H1-status-inline-out-dryrun",
@@ -2577,6 +2662,24 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "auto annotate out should write resolved sidecar output without mutating the standalone source"
+    },
+    {
+      "id": "annotate-id-list-A1-H1-todo-sidecar-out",
+      "command": "ssd annotate id:A1,id:H1 todo 一括確認する --target sidecar --out docs/examples/annotate-id-list-output.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:A1,id:H1", "todo", "一括確認する", "--target", "sidecar", "--out", "docs/examples/annotate-id-list-output.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/annotate-id-list-output.ssm": "docs/examples/fixtures/annotate-id-list-A1-H1-todo.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-id-list-A1-H1-todo-sidecar.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "annotate id-list out should write canonical sidecar text without mutating the source pair"
     },
     {
       "id": "remove-A1-embedding-apply",
