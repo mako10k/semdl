@@ -1082,6 +1082,108 @@
       "notes": "merge out should not widen merge to standalone inputs"
     },
     {
+      "id": "merge-standalone-apply-warn-on-conflict-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-standalone-apply-warn-on-conflict-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "warn-on-conflict should not widen bare merge apply to standalone inputs"
+    },
+    {
+      "id": "merge-standalone-dryrun-warn-on-conflict-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --dry-run --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--dry-run", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-standalone-dryrun-warn-on-conflict-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "warn-on-conflict should preserve the paired-input requirement for merge dry-run"
+    },
+    {
+      "id": "merge-standalone-out-warn-on-conflict-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --out docs/examples/merge-output.ssd --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--out", "docs/examples/merge-output.ssd", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-standalone-out-warn-on-conflict-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "warn-on-conflict should not widen merge out to standalone inputs"
+    },
+    {
+      "id": "merge-standalone-apply-warn-and-fail-on-conflict-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --warn-on-conflict --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--warn-on-conflict", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-standalone-apply-warn-and-fail-on-conflict-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "combined warn-on-conflict and fail-on-conflict should not widen bare merge apply to standalone inputs"
+    },
+    {
+      "id": "merge-standalone-dryrun-warn-and-fail-on-conflict-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --dry-run --warn-on-conflict --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--dry-run", "--warn-on-conflict", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-standalone-dryrun-warn-and-fail-on-conflict-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "combined warn-on-conflict and fail-on-conflict should preserve the paired-input requirement for merge dry-run"
+    },
+    {
+      "id": "merge-standalone-out-warn-and-fail-on-conflict-requires-paired-input",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --out docs/examples/merge-output.ssd --warn-on-conflict --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--out", "docs/examples/merge-output.ssd", "--warn-on-conflict", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-standalone-source.ssd"],
+      "expected_files": {
+        "docs/examples/normalize-standalone-source.ssd": "docs/examples/normalize-standalone-source.ssd"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-standalone-out-warn-and-fail-on-conflict-requires-paired-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "combined warn-on-conflict and fail-on-conflict should not widen merge out to standalone inputs"
+    },
+    {
       "id": "normalize-out-alias-input",
       "command": "ssd normalize docs/examples/normalize-source.ssd --out docs/examples/normalize-source.ssd",
       "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--out", "docs/examples/normalize-source.ssd"],
@@ -1268,6 +1370,24 @@
       "notes": "preferred-source remains merge-only in this slice"
     },
     {
+      "id": "merge-format-invalid",
+      "command": "ssd merge docs/examples/minimal.ssd --dry-run --format sidecar",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--dry-run", "--format", "sidecar"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-format-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge should reject normalize-only format selection in this slice"
+    },
+    {
       "id": "merge-conflict-dryrun-fail-on-conflict",
       "command": "ssd merge docs/examples/merge-conflict-source.ssd --dry-run --fail-on-conflict",
       "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--dry-run", "--fail-on-conflict"],
@@ -1323,6 +1443,24 @@
       "notes": "merge apply should fail before rewriting or deleting files when fail-on-conflict is requested"
     },
     {
+      "id": "merge-conflict-stdout-warn-and-fail-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --warn-on-conflict --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--warn-on-conflict", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning-fail-on-conflict.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "fail-on-conflict should remain stronger than warn-on-conflict on a conflicting merge input"
+    },
+    {
       "id": "merge-fail-on-conflict-nontrailing",
       "command": "ssd merge docs/examples/minimal.ssd --fail-on-conflict --stdout",
       "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--fail-on-conflict", "--stdout"],
@@ -1334,6 +1472,19 @@
       "expected_stderr": "docs/examples/golden/merge-fail-on-conflict-nontrailing.error.stderr",
       "expected_output_kind": "exact",
       "notes": "fail-on-conflict remains trailing-only on merge"
+    },
+    {
+      "id": "merge-warn-on-conflict-nontrailing",
+      "command": "ssd merge docs/examples/minimal.ssd --warn-on-conflict --stdout",
+      "argv": ["ssd", "merge", "docs/examples/minimal.ssd", "--warn-on-conflict", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/merge-warn-on-conflict-nontrailing.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "warn-on-conflict remains trailing-only on merge"
     },
     {
       "id": "normalize-fail-on-conflict-invalid",
@@ -1352,6 +1503,24 @@
       "expected_stderr": "docs/examples/golden/normalize-fail-on-conflict.error.stderr",
       "expected_output_kind": "exact",
       "notes": "fail-on-conflict is not accepted outside merge in this slice"
+    },
+    {
+      "id": "normalize-warn-on-conflict-invalid",
+      "command": "ssd normalize docs/examples/normalize-source.ssd --dry-run --warn-on-conflict",
+      "argv": ["ssd", "normalize", "docs/examples/normalize-source.ssd", "--dry-run", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/normalize-source.ssd", "docs/examples/normalize-source.ssm"],
+      "expected_files": {
+        "docs/examples/normalize-source.ssd": "docs/examples/normalize-source.ssd",
+        "docs/examples/normalize-source.ssm": "docs/examples/normalize-source.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/normalize-warn-on-conflict.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "warn-on-conflict is not accepted outside merge in this slice"
     },
     {
       "id": "annotate-unterminated-quoted-string",

@@ -1437,6 +1437,32 @@
       "notes": "merge stdout with fail-on-conflict should still succeed when no paired sidecar exists"
     },
     {
+      "id": "merge-standalone-stdout-warn-on-conflict",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --stdout --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--stdout", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/normalize-standalone.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "merge stdout with warn-on-conflict should still succeed with empty stderr when no paired sidecar exists"
+    },
+    {
+      "id": "merge-standalone-stdout-warn-and-fail-on-conflict",
+      "command": "ssd merge docs/examples/normalize-standalone-source.ssd --stdout --warn-on-conflict --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd", "--stdout", "--warn-on-conflict", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/normalize-standalone.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "standalone merge stdout should still succeed when warn-on-conflict and fail-on-conflict are combined without a paired sidecar"
+    },
+    {
       "id": "merge-same-value-stdout-fail-on-conflict",
       "command": "ssd merge docs/examples/merge-same-value-source.ssd --stdout --fail-on-conflict",
       "argv": ["ssd", "merge", "docs/examples/merge-same-value-source.ssd", "--stdout", "--fail-on-conflict"],
@@ -1450,6 +1476,32 @@
       "notes": "same-value duplicate sidecar-owned fields should not trip merge fail-on-conflict"
     },
     {
+      "id": "merge-same-value-stdout-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-same-value-source.ssd --stdout --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-same-value-source.ssd", "--stdout", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/merge-same-value.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "same-value duplicate sidecar-owned fields should keep stderr empty even when warn-on-conflict is requested"
+    },
+    {
+      "id": "merge-same-value-stdout-warn-and-fail-on-conflict",
+      "command": "ssd merge docs/examples/merge-same-value-source.ssd --stdout --warn-on-conflict --fail-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-same-value-source.ssd", "--stdout", "--warn-on-conflict", "--fail-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/merge-same-value.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "fixture-file",
+      "notes": "same-value duplicate sidecar-owned fields should still succeed when warn-on-conflict and fail-on-conflict are combined"
+    },
+    {
       "id": "merge-conflict-stdout-default-precedence",
       "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout",
       "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout"],
@@ -1461,6 +1513,176 @@
       "expected_stderr": "",
       "expected_output_kind": "fixture-file",
       "notes": "default merge should keep paired sidecar precedence for sidecar-owned duplicate fields"
+    },
+    {
+      "id": "merge-conflict-stdout-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge stdout should keep the default precedence result and emit a warning on stderr when requested"
+    },
+    {
+      "id": "merge-conflict-stdout-prefer-inline-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --prefer-source inline --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--prefer-source", "inline", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning-prefer-inline.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning-prefer-inline.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge stdout should preserve preferred-source selection while emitting a warning on stderr"
+    },
+    {
+      "id": "merge-conflict-stdout-explicit-sidecar-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --stdout --prefer-source sidecar --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--stdout", "--prefer-source", "sidecar", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning-explicit-sidecar.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning-explicit-sidecar.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge stdout should pin explicit sidecar precedence while emitting a warning on stderr"
+    },
+    {
+      "id": "merge-conflict-dryrun-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --dry-run --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--dry-run", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning.dryrun.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning.dryrun.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge dry-run should preserve its preview while emitting a warning on stderr"
+    },
+    {
+      "id": "merge-conflict-out-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --out docs/examples/merge-conflict-warning-output.ssd --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--out", "docs/examples/merge-conflict-warning-output.ssd", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm",
+        "docs/examples/merge-conflict-warning-output.ssd": "docs/examples/fixtures/merge-conflict-default.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning.out.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning.out.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge out should write the selected result and emit a warning on stderr without mutating the source pair"
+    },
+    {
+      "id": "merge-conflict-out-prefer-inline-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --out docs/examples/merge-conflict-inline-warning-output.ssd --prefer-source inline --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--out", "docs/examples/merge-conflict-inline-warning-output.ssd", "--prefer-source", "inline", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm",
+        "docs/examples/merge-conflict-inline-warning-output.ssd": "docs/examples/fixtures/merge-conflict-inline.expected.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning-prefer-inline.out.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning-prefer-inline.out.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge out should preserve preferred-source inline selection while emitting a warning on stderr"
+    },
+    {
+      "id": "merge-conflict-out-dryrun-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --out docs/examples/merge-conflict-warning-output.ssd --dry-run --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--out", "docs/examples/merge-conflict-warning-output.ssd", "--dry-run", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning.out.dryrun.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning.out.dryrun.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge out dry-run should preview the selected output path and emit a warning on stderr without writing files"
+    },
+    {
+      "id": "merge-conflict-dryrun-prefer-inline-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --dry-run --prefer-source inline --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--dry-run", "--prefer-source", "inline", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/merge-conflict-source.ssd",
+        "docs/examples/merge-conflict-source.ssm": "docs/examples/merge-conflict-source.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning-prefer-inline.dryrun.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning-prefer-inline.dryrun.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge dry-run should preserve preferred-source selection while emitting a warning on stderr"
+    },
+    {
+      "id": "merge-conflict-apply-prefer-inline-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --prefer-source inline --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--prefer-source", "inline", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/fixtures/merge-conflict-inline.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/merge-conflict-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning-prefer-inline.apply.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning-prefer-inline.apply.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge apply should preserve preferred-source inline selection while emitting a warning on stderr"
+    },
+    {
+      "id": "merge-conflict-apply-warn-on-conflict",
+      "command": "ssd merge docs/examples/merge-conflict-source.ssd --warn-on-conflict",
+      "argv": ["ssd", "merge", "docs/examples/merge-conflict-source.ssd", "--warn-on-conflict"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/merge-conflict-source.ssd", "docs/examples/merge-conflict-source.ssm"],
+      "expected_files": {
+        "docs/examples/merge-conflict-source.ssd": "docs/examples/fixtures/merge-conflict-default.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/merge-conflict-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/merge-conflict-warning.apply.stdout",
+      "expected_stderr": "docs/examples/golden/merge-conflict-warning.apply.stderr",
+      "expected_output_kind": "exact",
+      "notes": "merge apply should keep the selected result, remove the sidecar, and emit a warning on stderr"
     },
     {
       "id": "normalize-paired-apply",

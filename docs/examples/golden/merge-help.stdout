@@ -5,14 +5,16 @@ Usage:
 - `ssd merge <input.ssd>`
 - `ssd merge <input.ssd> --dry-run`
 - `ssd merge <input.ssd> --out <output.ssd> [--dry-run]`
-- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] --prefer-source inline|sidecar
-- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--prefer-source inline|sidecar] --fail-on-conflict`
+- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] --prefer-source inline|sidecar`
+- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--prefer-source inline|sidecar] --warn-on-conflict`
+- `ssd merge <input.ssd> [--stdout|--dry-run|--out <output.ssd> [--dry-run]] [--prefer-source inline|sidecar] [--warn-on-conflict] --fail-on-conflict`
 
 Status:
 - `--stdout` returns the merged inline view of `.ssd` with an optional paired `.ssm`.
 - Bare apply and `--dry-run` require a paired `.ssm`; in-place apply removes that sidecar after writing inline output.
 - `--out <output.ssd>` writes merged inline output without modifying the source `.ssd` or paired `.ssm`.
 - `--prefer-source inline|sidecar` changes which source wins for sidecar-owned duplicate field conflicts; without it, paired `.ssm` keeps precedence.
+- `--warn-on-conflict` keeps the selected merge result but emits a warning on stderr when inline source and paired sidecar disagree on the same sidecar-owned field.
 - `--fail-on-conflict` fails before output or mutation when inline source and paired sidecar disagree on the same sidecar-owned field.
 
 Related help:
@@ -23,4 +25,5 @@ Sample:
 - `ssd merge docs/examples/minimal.ssd --stdout`
 - `ssd merge docs/examples/minimal.ssd --out docs/examples/merged-output.ssd --dry-run`
 - `ssd merge docs/examples/merge-conflict-source.ssd --stdout --prefer-source inline`
+- `ssd merge docs/examples/merge-conflict-source.ssd --stdout --warn-on-conflict`
 - `ssd merge docs/examples/merge-conflict-source.ssd --stdout --fail-on-conflict`

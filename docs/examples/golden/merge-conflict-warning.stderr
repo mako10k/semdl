@@ -1,0 +1,7 @@
+WARNING merge_sidecar_conflict
+command: ssd merge docs/examples/merge-conflict-source.ssd --stdout --warn-on-conflict
+input: docs/examples/merge-conflict-source.ssd
+id: D1
+field: version
+selected_source: sidecar
+hint: rerun with `--fail-on-conflict` to reject differing duplicate fields in this slice

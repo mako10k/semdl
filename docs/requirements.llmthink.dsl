@@ -419,6 +419,18 @@ step S18F:
     annotation rationale:
       "warning mode を持ち込まずに precedence だけを opt-in で切り替えると、既存 default 契約を壊さずに merge policy matrix を小さく広げられる"
 
+step S18G:
+  decision D18G based_on D18E, D18F:
+    |
+      次の merge warning slice では `ssd merge` に限って trailing `--warn-on-conflict` を追加してよい。
+      `--warn-on-conflict` は D18E と同じ source-aware comparison scope で differing duplicate を検出しても success を継続し、warning text を stderr に出してよい。
+      stdout、dry-run、out、apply は default precedence または D18F の `--prefer-source` で選ばれた merged inline view をそのまま維持してよい。
+      warning report は first differing duplicate 1 件に限定してよく、same-value duplicate は warning にしなくてよい。
+      `--fail-on-conflict` と併用した場合は failure を warning より優先してよい。
+      `--warn-on-conflict` は merge-only trailing option として扱ってよい。
+    annotation rationale:
+      "success-with-warning を narrow に追加すると、default output compatibility を保ったまま merge policy matrix を完了できるため"
+
 step S27A:
   decision D27A based_on D27, D8A:
     |

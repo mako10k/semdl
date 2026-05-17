@@ -1,5 +1,5 @@
 DRY-RUN
-command: ssd merge docs/examples/minimal.ssd
+command: ssd merge docs/examples/minimal.ssd --dry-run
 target_profile: inline
 target_file: docs/examples/minimal.ssd
 source_profile: sidecar

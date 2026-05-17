@@ -1,0 +1,9 @@
+DRY-RUN
+command: ssd merge docs/examples/merge-conflict-source.ssd --out docs/examples/merge-conflict-warning-output.ssd --dry-run --warn-on-conflict
+target_profile: inline
+target_file: docs/examples/merge-conflict-warning-output.ssd
+source_profile: sidecar
+result_profile: inline
+preserve_source_ssd: docs/examples/merge-conflict-source.ssd
+preserve_source_ssm: docs/examples/merge-conflict-source.ssm
+changes: 1

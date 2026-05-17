@@ -3,4 +3,4 @@ command: ssd merge docs/examples/merge-conflict-source.ssd --stdout --fail-on-co
 input: docs/examples/merge-conflict-source.ssd
 id: D1
 field: version
-hint: rerun without `--fail-on-conflict` to keep paired sidecar precedence in this slice
+hint: rerun with `--warn-on-conflict` to continue with the selected merge precedence in this slice
