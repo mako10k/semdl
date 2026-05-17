@@ -20,8 +20,8 @@ Key syntax forms:
 - `ssd explain <id> <file>`
 - `ssd add <kind> <file> [field=value ...] [--stdout|--out <file> [--dry-run]|--target sidecar|--dry-run]`
 - `ssd set <selector> <value-or-field> ... <file>`
-- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
-- `ssd annotate <selector> <kind> <text> ... <file>`
+- `ssd remove <selector[,selector...]> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
+- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto [--stdout|--dry-run|--out <file> [--dry-run]] <file>`
 - `ssd split <input.ssd> [--dry-run]`
 - `ssd merge <input.ssd> [--stdout|--dry-run|--out <file> [--dry-run]] [--prefer-source inline|sidecar] [--warn-on-conflict] [--fail-on-conflict]`
 - `ssd normalize <input.ssd> [--stdout|--dry-run [--format inline|sidecar]|--out <file> [--format inline|sidecar] [--dry-run]]`
@@ -34,6 +34,7 @@ Selectors:
 - `meta:<id>.<field>`
 - `doc:self`
 - Use `path:` for inline `.ssd` structure and `meta:` for sidecar `.ssm` metadata
+- `remove` also accepts comma-separated structural selector lists composed of `id:`, `path:`, and `type:` atoms
 
 Value forms:
 - text with spaces should be passed as a quoted string
@@ -41,7 +42,7 @@ Value forms:
 
 Common options:
 - `--dry-run` previews update-oriented commands
-- `--stdout` is currently used by `add`, `remove`, `merge`, `normalize`, and `extract`
+- `--stdout` is currently used by `add`, `annotate`, `remove`, `merge`, `normalize`, and `extract`
 - `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`
 - `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`
 - `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar`, `--warn-on-conflict`, and `--fail-on-conflict` are currently merge-only trailing options

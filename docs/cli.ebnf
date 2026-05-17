@@ -35,20 +35,27 @@ extract-embed-pair = embed-provider-opt , ws , embed-model-opt | embed-model-opt
 add-cmd         = add-structural-cmd | add-metadata-cmd | "add" , ws , help-opt , [ ws , help-render-opt ] ;
 set-cmd         = set-id-cmd | set-path-meta-cmd | "set" , ws , help-opt , [ ws , help-render-opt ] ;
 remove-cmd      = remove-apply-cmd | remove-output-cmd | "remove" , ws , help-opt , [ ws , help-render-opt ] ;
-annotate-cmd    = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , target-opt , [ ws , dry-run-opt ] , ws , input-file | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
+annotate-cmd    = annotate-apply-cmd | annotate-output-cmd | "annotate" , ws , help-opt , [ ws , help-render-opt ] ;
 
-remove-apply-cmd = "remove" , ws , selector , ws , [ allow-multi-opt , [ ws , cascade-opt ] , ws | cascade-opt , ws ] , input-file ;
-remove-output-cmd = "remove" , ws , selector , ws , [ allow-multi-opt , [ ws , cascade-opt ] , ws | cascade-opt , ws ] , remove-surface , ws , input-file ;
+remove-apply-cmd = "remove" , ws , remove-selector , ws , [ allow-multi-opt , [ ws , cascade-opt ] , ws | cascade-opt , ws ] , input-file ;
+remove-output-cmd = "remove" , ws , remove-selector , ws , [ allow-multi-opt , [ ws , cascade-opt ] , ws | cascade-opt , ws ] , remove-surface , ws , input-file ;
 remove-surface  = dry-run-opt | stdout-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
+annotate-apply-cmd = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , target-opt , ws , input-file ;
+annotate-output-cmd = "annotate" , ws , selector , ws , annotation-kind , ws , text-value , ws , target-opt , ws , annotate-surface , ws , input-file ;
+annotate-surface = dry-run-opt | stdout-opt | out-opt , ws , output-file , [ ws , dry-run-opt ] ;
 
 add-structural-cmd = "add" , ws , structural-add-kind , ws , input-file , { ws , add-field }
                   , [ ws , stdout-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] | ws , dry-run-opt ] ;
-add-metadata-cmd = "add" , ws , metadata-add-kind , ws , input-file , { ws , add-field } , ws , target-sidecar-opt , [ ws , dry-run-opt ] ;
+add-metadata-cmd = "add" , ws , metadata-add-kind , ws , input-file , { ws , add-field } , ws , target-sidecar-opt
+                 , [ ws , stdout-opt | ws , out-opt , ws , output-file , [ ws , dry-run-opt ] | ws , dry-run-opt ] ;
 
 set-id-cmd      = "set" , ws , id-selector , ws , field-name , ws , scalar-value , ws , input-file , { ws , common-opt } ;
 set-path-meta-cmd = "set" , ws , ( path-selector | meta-selector ) , ws , scalar-value , { ws , common-opt } , ws , input-file ;
 
 selector        = id-selector | type-selector | path-selector | meta-selector | doc-selector ;
+remove-selector = selector | structural-selector-list ;
+structural-selector-list = structural-selector-atom , "," , structural-selector-atom , { "," , structural-selector-atom } ;
+structural-selector-atom = id-selector | type-selector | path-selector ;
 id-selector     = "id:" , identifier ;
 type-selector   = "type:" , kind-name ;
 path-selector   = "path:" , identifier , "." , field-path ;

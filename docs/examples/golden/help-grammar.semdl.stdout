@@ -107,12 +107,12 @@ segment HELP_LINE_19 {
 
 segment HELP_LINE_20 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove <selector> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`"
+  text_quote: "- `ssd remove <selector[,selector...]> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <file> [--dry-run]] <file>`"
 }
 
 segment HELP_LINE_21 {
   source: HELP_TOPIC
-  text_quote: "- `ssd annotate <selector> <kind> <text> ... <file>`"
+  text_quote: "- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto [--stdout|--dry-run|--out <file> [--dry-run]] <file>`"
 }
 
 segment HELP_LINE_22 {
@@ -172,65 +172,70 @@ segment HELP_LINE_32 {
 
 segment HELP_LINE_33 {
   source: HELP_TOPIC
-  text_quote: "Value forms:"
+  text_quote: "- `remove` also accepts comma-separated structural selector lists composed of `id:`, `path:`, and `type:` atoms"
 }
 
 segment HELP_LINE_34 {
   source: HELP_TOPIC
-  text_quote: "- text with spaces should be passed as a quoted string"
+  text_quote: "Value forms:"
 }
 
 segment HELP_LINE_35 {
   source: HELP_TOPIC
-  text_quote: "- update-oriented scalar values accept quoted-string, number, boolean, or identifier forms"
+  text_quote: "- text with spaces should be passed as a quoted string"
 }
 
 segment HELP_LINE_36 {
   source: HELP_TOPIC
-  text_quote: "Common options:"
+  text_quote: "- update-oriented scalar values accept quoted-string, number, boolean, or identifier forms"
 }
 
 segment HELP_LINE_37 {
   source: HELP_TOPIC
-  text_quote: "- `--dry-run` previews update-oriented commands"
+  text_quote: "Common options:"
 }
 
 segment HELP_LINE_38 {
   source: HELP_TOPIC
-  text_quote: "- `--stdout` is currently used by `add`, `remove`, `merge`, `normalize`, and `extract`"
+  text_quote: "- `--dry-run` previews update-oriented commands"
 }
 
 segment HELP_LINE_39 {
   source: HELP_TOPIC
-  text_quote: "- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`"
+  text_quote: "- `--stdout` is currently used by `add`, `annotate`, `remove`, `merge`, `normalize`, and `extract`"
 }
 
 segment HELP_LINE_40 {
   source: HELP_TOPIC
-  text_quote: "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`"
+  text_quote: "- `normalize --dry-run` and `normalize --out` accept `--format inline|sidecar`; help render keeps separate `--format semdl`"
 }
 
 segment HELP_LINE_41 {
   source: HELP_TOPIC
-  text_quote: "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar`, `--warn-on-conflict`, and `--fail-on-conflict` are currently merge-only trailing options"
+  text_quote: "- `annotate` accepts `--target inline|sidecar|auto`; metadata-only `add` still requires `--target sidecar`"
 }
 
 segment HELP_LINE_42 {
   source: HELP_TOPIC
-  text_quote: "This topic is the canonical user-facing operational syntax summary."
+  text_quote: "- `--allow-multi` and `--cascade` are safety controls on specific update forms; `--prefer-source inline|sidecar`, `--warn-on-conflict`, and `--fail-on-conflict` are currently merge-only trailing options"
 }
 
 segment HELP_LINE_43 {
   source: HELP_TOPIC
-  text_quote: "Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details."
+  text_quote: "This topic is the canonical user-facing operational syntax summary."
 }
 
 segment HELP_LINE_44 {
   source: HELP_TOPIC
-  text_quote: "Use `--format semdl` for line-preserving SEMDL help output."
+  text_quote: "Use `ssd help reference <subcommand>` or `ssd <subcommand> --help` for command-specific usage details."
 }
 
 segment HELP_LINE_45 {
+  source: HELP_TOPIC
+  text_quote: "Use `--format semdl` for line-preserving SEMDL help output."
+}
+
+segment HELP_LINE_46 {
   source: HELP_TOPIC
   text_quote: "For command-specific help, see `ssd help reference <subcommand>`."
 }

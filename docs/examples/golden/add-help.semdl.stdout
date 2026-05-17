@@ -43,7 +43,7 @@ segment HELP_LINE_6 {
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "- `ssd add <kind> <file> [field=value ...] --target sidecar [--dry-run]`"
+  text_quote: "- `ssd add <kind> <file> [field=value ...] --target sidecar [--stdout|--out <output.ssm> [--dry-run]|--dry-run]`"
 }
 
 segment HELP_LINE_8 {
@@ -58,7 +58,7 @@ segment HELP_LINE_9 {
 
 segment HELP_LINE_10 {
   source: HELP_TOPIC
-  text_quote: "- Metadata-only add supports `annotation` and `provenance` with `--target sidecar` only."
+  text_quote: "- Metadata-only add supports `annotation` and `provenance` with `--target sidecar` only, and its `--stdout` / `--out <output.ssm>` surface returns canonical sidecar text without mutating the source files."
 }
 
 segment HELP_LINE_11 {
@@ -97,6 +97,11 @@ segment HELP_LINE_17 {
 }
 
 segment HELP_LINE_18 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --stdout`"
+}
+
+segment HELP_LINE_19 {
   source: HELP_TOPIC
   text_quote: "- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --dry-run`"
 }

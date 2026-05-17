@@ -33,55 +33,80 @@ segment HELP_LINE_4 {
 
 segment HELP_LINE_5 {
   source: HELP_TOPIC
-  text_quote: "Purpose:"
+  text_quote: "- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto --stdout <file>`"
 }
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- Write or preview one rationale, caveat, todo, status, or explanation field in inline or sidecar metadata."
+  text_quote: "- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto --out <output-file> <file>`"
 }
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "- `--target inline` is currently limited to standalone input and `assertion` / `hypothesis` targets."
+  text_quote: "- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto --out <output-file> --dry-run <file>`"
 }
 
 segment HELP_LINE_8 {
   source: HELP_TOPIC
-  text_quote: "- `--target auto` uses sidecar on paired input and otherwise prefers inline only where that standalone inline form is supported."
+  text_quote: "Purpose:"
 }
 
 segment HELP_LINE_9 {
   source: HELP_TOPIC
-  text_quote: "- Use `ssd add annotation ... --target sidecar` when you need create-only field-map semantics."
+  text_quote: "- Write, preview, or emit one rationale, caveat, todo, status, or explanation field in inline or sidecar metadata."
 }
 
 segment HELP_LINE_10 {
   source: HELP_TOPIC
-  text_quote: "Related help:"
+  text_quote: "- `--target inline` is currently limited to standalone input and `assertion` / `hypothesis` targets."
 }
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "- `--target auto` uses sidecar on paired input and otherwise prefers inline only where that standalone inline form is supported."
 }
 
 segment HELP_LINE_12 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help samples`"
+  text_quote: "- `--stdout` and `--out` return the canonical text for the resolved target profile."
 }
 
 segment HELP_LINE_13 {
   source: HELP_TOPIC
-  text_quote: "Sample:"
+  text_quote: "- Use `ssd add annotation ... --target sidecar` when you need create-only field-map semantics."
 }
 
 segment HELP_LINE_14 {
   source: HELP_TOPIC
-  text_quote: "- `ssd annotate id:H1 todo 追加入力で主体を確認する --target inline docs/examples/minimal.inline.ssd`"
+  text_quote: "Related help:"
 }
 
 segment HELP_LINE_15 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help grammar`"
+}
+
+segment HELP_LINE_16 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd help samples`"
+}
+
+segment HELP_LINE_17 {
+  source: HELP_TOPIC
+  text_quote: "Sample:"
+}
+
+segment HELP_LINE_18 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd annotate id:H1 todo 追加入力で主体を確認する --target inline docs/examples/minimal.inline.ssd`"
+}
+
+segment HELP_LINE_19 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd annotate id:H1 status 検証待ち --target inline --stdout docs/examples/minimal.inline.ssd`"
+}
+
+segment HELP_LINE_20 {
   source: HELP_TOPIC
   text_quote: "- `ssd annotate id:R1 rationale 参照元を追記する --target auto docs/examples/minimal.ssd`"
 }

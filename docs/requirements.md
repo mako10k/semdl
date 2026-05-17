@@ -838,6 +838,17 @@ sidecar-only add と `--out` / `--stdout` / `--target` は後続 slice に分離
 - paired `.ssm` が存在しない場合は、新規作成してよい
 - 既存 field の更新は `ssd set` または `ssd annotate` の責務に残す
 
+さらに後続 metadata-only add output slice では、`annotation` と `provenance` に限って sidecar-only の `--stdout` と `--out <output.ssm>` を追加してよい。
+
+- `--target sidecar` 必須と create-only semantics は維持してよい
+- `ssd add <metadata-kind> <file> [field=value ...] --target sidecar --stdout` は source `.ssd` と source sibling `.ssm` を変更せず、add 後の canonical sidecar `.ssm` text を stdout へ返してよい
+- `ssd add <metadata-kind> <file> [field=value ...] --target sidecar --out <output.ssm>` は source `.ssd` と source sibling `.ssm` を変更せず、add 後の canonical sidecar `.ssm` text を output file へ書いてよい
+- `ssd add <metadata-kind> <file> [field=value ...] --target sidecar --out <output.ssm> --dry-run` は target file を output path に向けた preview として扱ってよい
+- bare `--dry-run` は sibling sidecar path を target file とする preview として扱ってよい
+- `--stdout` は `--dry-run` や `--out` と併用してはならない
+- `--out` は source `.ssd` や source sibling `.ssm` を alias してはならない
+- inline target、auto target、upsert、broader conflict policy はこの slice に含めない
+
 さらに後続 structural add output slice では、inline structural kind に限って `--stdout` と `--out <output.ssd>` を追加してよい。
 
 - 対象 kind は resource / segment / assertion / hypothesis / alternative に限定してよい
@@ -861,6 +872,14 @@ annotate は、説明、注意、根拠、TODO などの付加注記を追加す
 - `--target inline` は standalone `.ssd` 入力に限り許可し、対象 kind は `assertion` と `hypothesis` に限定する
 - `--target auto` は paired 入力では sidecar を選び、standalone 入力では inline が許される `assertion` / `hypothesis` のみ inline を選び、それ以外は sidecar へ落としてよい
 
+現行 annotate output slice では、既存 target matrix を維持したまま `--stdout`、`--out <output-file>`、`--out <output-file> --dry-run` を追加してよい。
+
+- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto --stdout <file>` は source file を変更せず、resolved target が `inline` なら canonical inline `.ssd`、`sidecar` なら canonical sidecar `.ssm` を stdout へ返してよい
+- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto --out <output-file> <file>` は source `.ssd` と source sibling `.ssm` を変更せず、resolved target profile の canonical text を output file へ書いてよい
+- `ssd annotate <selector> <kind> <text> --target inline|sidecar|auto --out <output-file> --dry-run <file>` は既存 annotate preview format を再利用しつつ target file を output path に向けてよい
+- `--stdout` は `--dry-run` や `--out` と併用してはならない
+- `--out` は source `.ssd` を alias してはならず、resolved target が `sidecar` の場合は source sibling `.ssm` も alias してはならない
+
 field-map から create-only に sidecar metadata を起こす経路が必要な場合は、
 `ssd add annotation --target sidecar` を別経路として追加してよい。
 この場合でも annotate 自体は shorthand command として残し、既存注記の更新責務は annotate または set に残す。
@@ -882,9 +901,21 @@ remove は、初期仕様では以下の制約を持つことを推奨する。
   - resource <- segment.source
 - `--cascade` は direct / transitive dependents を同時削除し、target だけを残す部分削除はしない
 
-現行 slice では `--allow-multi` は引き続き `type:<kind>` に限定してよく、broader multi-target selector semantics は後続 slice に分離してよい。
+現行 slice では `--allow-multi` は引き続き `type:<kind>` に限定してよく、broader multi-target selector semantics は次の remove list slice へ分離してよい。
 
-次の remove output slice では、selector semantics を広げずに `--dry-run`、`--stdout`、`--out <output.ssd>` を追加してよい。
+次の remove list slice では、remove 専用に comma-separated explicit selector list を追加してよい。
+
+- syntax は `selector1,selector2,...` に限定してよい
+- list atom は `id:<id>`、`path:<id>.<field>`、`type:<kind>` に限定してよい
+- `meta:<id>.<field>` list と `doc:self` list はこの slice に含めない
+- explicit `id:` / `path:` list は、それ自体で multi-target intent として扱ってよい
+- list に含まれる `type:<kind>` atom が複数 target に展開される場合だけ、既存の `--allow-multi` を要求してよい
+- `--cascade`、`--dry-run`、`--stdout`、`--out <output.ssd> [--dry-run]` は resolved root set の union に対して既存 remove surface をそのまま適用してよい
+- duplicate target は resolved id union に正規化して 1 回だけ remove してよい
+- safety check は union remove set の外に dependent が残るかどうかで判定してよい
+- option ordering は current contract を維持し、output-before-safety reorder は failure のままとしてよい
+
+現行 remove output surface では、selector semantics を広げずに `--dry-run`、`--stdout`、`--out <output.ssd>` を追加してよい。
 
 - `ssd remove <selector> [--allow-multi [--cascade]|--cascade] --dry-run <file>` は apply と同じ validation を通した preview を返してよい
 - `ssd remove <selector> [--allow-multi [--cascade]|--cascade] --stdout <file>` は source file を変更せず、remove 後の canonical inline `.ssd` を stdout へ返してよい
@@ -981,8 +1012,11 @@ test runner 定義:
 - [docs/examples/golden/set-meta-A1-confidence.apply.stdout](docs/examples/golden/set-meta-A1-confidence.apply.stdout)
 - [docs/examples/golden/annotate-H1-rationale.dryrun.stdout](docs/examples/golden/annotate-H1-rationale.dryrun.stdout)
 - [docs/examples/golden/annotate-H1-todo.apply.stdout](docs/examples/golden/annotate-H1-todo.apply.stdout)
+- [docs/examples/golden/annotate-H1-rationale-sidecar.out.dryrun.stdout](docs/examples/golden/annotate-H1-rationale-sidecar.out.dryrun.stdout)
 - [docs/examples/golden/annotate-H1-status-inline.apply.stdout](docs/examples/golden/annotate-H1-status-inline.apply.stdout)
+- [docs/examples/golden/annotate-H1-status-inline.out.dryrun.stdout](docs/examples/golden/annotate-H1-status-inline.out.dryrun.stdout)
 - [docs/examples/golden/annotate-R1-rationale-auto-sidecar.apply.stdout](docs/examples/golden/annotate-R1-rationale-auto-sidecar.apply.stdout)
+- [docs/examples/golden/annotate-R1-rationale-auto-sidecar.out.stdout](docs/examples/golden/annotate-R1-rationale-auto-sidecar.out.stdout)
 - [docs/examples/golden/split-minimal.dryrun.stdout](docs/examples/golden/split-minimal.dryrun.stdout)
 - [docs/examples/golden/split-minimal.apply.stdout](docs/examples/golden/split-minimal.apply.stdout)
 - [docs/examples/golden/remove-A1-embedding.apply.stdout](docs/examples/golden/remove-A1-embedding.apply.stdout)
@@ -1017,6 +1051,11 @@ test runner 定義:
 - [docs/examples/golden/annotate-invalid-kind.error.stderr](docs/examples/golden/annotate-invalid-kind.error.stderr)
 - [docs/examples/golden/annotate-inline-unsupported-resource.error.stderr](docs/examples/golden/annotate-inline-unsupported-resource.error.stderr)
 - [docs/examples/golden/annotate-inline-requires-standalone.error.stderr](docs/examples/golden/annotate-inline-requires-standalone.error.stderr)
+- [docs/examples/golden/annotate-stdout-dryrun-invalid.error.stderr](docs/examples/golden/annotate-stdout-dryrun-invalid.error.stderr)
+- [docs/examples/golden/annotate-stdout-out-invalid.error.stderr](docs/examples/golden/annotate-stdout-out-invalid.error.stderr)
+- [docs/examples/golden/annotate-out-alias-input.error.stderr](docs/examples/golden/annotate-out-alias-input.error.stderr)
+- [docs/examples/golden/annotate-out-alias-sidecar.error.stderr](docs/examples/golden/annotate-out-alias-sidecar.error.stderr)
+- [docs/examples/golden/annotate-auto-out-alias-standalone-sidecar.error.stderr](docs/examples/golden/annotate-auto-out-alias-standalone-sidecar.error.stderr)
 - [docs/examples/golden/set-malformed-selector.error.stderr](docs/examples/golden/set-malformed-selector.error.stderr)
 - [docs/examples/golden/check-unknown-option.error.stderr](docs/examples/golden/check-unknown-option.error.stderr)
 - [docs/examples/golden/check-trailing-unknown-option.error.stderr](docs/examples/golden/check-trailing-unknown-option.error.stderr)
@@ -1093,15 +1132,36 @@ test runner 定義:
 - `ssd annotate id:H1 rationale "原文に主語がないため補完" --target sidecar --dry-run docs/examples/minimal.ssd`
   - 仮説 H1 に対する注記を .ssm 側へ追加予定として表示する
   - 期待出力は [docs/examples/golden/annotate-H1-rationale.dryrun.stdout](docs/examples/golden/annotate-H1-rationale.dryrun.stdout) と一致する
+- `ssd annotate id:H1 todo "追加入力で主体を確認する" --target sidecar --stdout docs/examples/minimal.ssd`
+  - paired input に対する sidecar annotate の `--stdout` は canonical `.ssm` を返してよい
+  - 期待出力は [docs/examples/fixtures/annotate-H1-todo.expected.ssm](docs/examples/fixtures/annotate-H1-todo.expected.ssm) と一致する
+- `ssd annotate id:H1 rationale "原文に主語がないため補完" --target sidecar --out docs/examples/annotate-sidecar-output.ssm --dry-run docs/examples/minimal.ssd`
+  - sidecar annotate の `--out --dry-run` は sidecar output path を target file に向けた preview を返してよい
+  - 期待出力は [docs/examples/golden/annotate-H1-rationale-sidecar.out.dryrun.stdout](docs/examples/golden/annotate-H1-rationale-sidecar.out.dryrun.stdout) と一致する
+- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --stdout`
+  - metadata-only add の non-destructive stdout は canonical sidecar `.ssm` を返してよい
+- `ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale=監査で人手確認した --target sidecar --out docs/examples/provenance-output.ssm`
+  - standalone input に対する metadata-only add の `--out` は source `.ssd` を変更せず canonical sidecar `.ssm` を別ファイルへ書いてよい
+- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --out docs/examples/annotation-output.ssm --dry-run`
+  - metadata-only add の `--out --dry-run` は sidecar output path を target file に向けた preview を返してよい
 - `ssd annotate id:H1 todo "追加入力で主体を確認する" --target sidecar docs/examples/minimal.ssd`
   - 仮説 H1 に対する sidecar 注記を `.ssm` へ追加する
   - 期待出力は [docs/examples/golden/annotate-H1-todo.apply.stdout](docs/examples/golden/annotate-H1-todo.apply.stdout) と一致する
 - `ssd annotate id:H1 status "検証待ち" --target inline docs/examples/minimal.inline.ssd`
   - standalone `.ssd` 上の supported target では inline annotate が成功する
   - 期待出力は [docs/examples/golden/annotate-H1-status-inline.apply.stdout](docs/examples/golden/annotate-H1-status-inline.apply.stdout) と一致する
+- `ssd annotate id:H1 status "検証待ち" --target inline --stdout docs/examples/minimal.inline.ssd`
+  - inline annotate の `--stdout` は canonical inline `.ssd` を返してよい
+  - 期待出力は [docs/examples/fixtures/annotate-H1-status-inline.expected.ssd](docs/examples/fixtures/annotate-H1-status-inline.expected.ssd) と一致する
+- `ssd annotate id:H1 status "検証待ち" --target inline --out docs/examples/annotate-inline-output.ssd --dry-run docs/examples/minimal.inline.ssd`
+  - inline annotate の `--out --dry-run` は inline output path を target file に向けた preview を返してよい
+  - 期待出力は [docs/examples/golden/annotate-H1-status-inline.out.dryrun.stdout](docs/examples/golden/annotate-H1-status-inline.out.dryrun.stdout) と一致する
 - `ssd annotate id:R1 rationale "参照元を追記する" --target auto docs/examples/minimal.ssd`
   - standalone 入力でも inline 非対応 target では auto が sidecar へフォールバックする
   - 期待出力は [docs/examples/golden/annotate-R1-rationale-auto-sidecar.apply.stdout](docs/examples/golden/annotate-R1-rationale-auto-sidecar.apply.stdout) と一致する
+- `ssd annotate id:R1 rationale "参照元を追記する" --target auto --out docs/examples/annotate-auto-output.ssm docs/examples/minimal.ssd`
+  - standalone input で inline 非対応 target に対する auto annotate の `--out` は source `.ssd` を変更せず canonical sidecar `.ssm` を別ファイルへ書いてよい
+  - 期待出力は [docs/examples/golden/annotate-R1-rationale-auto-sidecar.out.stdout](docs/examples/golden/annotate-R1-rationale-auto-sidecar.out.stdout) と一致する
 - `ssd merge docs/examples/minimal.ssd --stdout`
   - .ssd と .ssm を統合した単一表現を標準出力へ出す
   - 期待出力は [docs/examples/minimal.inline.ssd](docs/examples/minimal.inline.ssd) と一致する
@@ -1128,6 +1188,14 @@ test runner 定義:
   - structural remove の `--out` は source pair を保持したまま output file へ inline result を書いてよい
 - `ssd remove meta:A1.embedding --stdout docs/examples/minimal.ssd`
   - metadata remove の non-destructive stdout も post-remove canonical inline view を返してよい
+- `ssd remove id:ALT1A,id:ALT1B docs/examples/minimal.ssd`
+  - explicit id list は `type:<kind>` へ還元せずに multi-target structural remove へ使ってよい
+- `ssd remove id:H1,id:ALT1B --cascade --stdout docs/examples/minimal.ssd`
+  - explicit structural list の cascade stdout は resolved union closure の canonical inline result を返してよい
+- `ssd remove path:ALT1A.label,id:ALT1B --out docs/examples/remove-explicit-list-output.ssd docs/examples/minimal.ssd`
+  - path/id mixed explicit list も structural target union として別ファイル出力してよい
+- `ssd remove id:ALT1A,type:alternative --allow-multi --dry-run docs/examples/minimal.ssd`
+  - explicit list に含まれる `type:<kind>` atom は `--allow-multi` と組み合わせて preview してよい
 - `ssd remove type:hypothesis --allow-multi --cascade docs/examples/remove-multi-cascade-source.ssd`
   - matched hypotheses とその dependent alternatives を union closure ごと削除してよい
   - 期待出力は [docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.apply.stdout](docs/examples/golden/remove-type-hypothesis-allow-multi-cascade.apply.stdout) と一致する
@@ -1147,6 +1215,20 @@ test runner 定義:
 - `ssd remove type:alternative docs/examples/minimal.ssd`
   - 複数対象に一致するため既定で失敗する
   - 期待 stderr は [docs/examples/golden/remove-type-alternative.error.stderr](docs/examples/golden/remove-type-alternative.error.stderr) と一致する
+- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --stdout --dry-run`
+  - metadata-only add の `--stdout` と `--dry-run` 併用は失敗する
+- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --out docs/examples/minimal.ssm`
+  - metadata-only add の `--out` が source sibling `.ssm` を alias する場合は失敗する
+- `ssd annotate id:H1 todo bad --target sidecar --stdout --dry-run docs/examples/minimal.ssd`
+  - annotate の `--stdout` と `--dry-run` 併用は失敗する
+- `ssd annotate id:H1 todo bad --target sidecar --stdout --out docs/examples/annotate-output.ssm docs/examples/minimal.ssd`
+  - annotate の `--stdout` と `--out` 併用は失敗する
+- `ssd annotate id:H1 status bad --target inline --out docs/examples/minimal.inline.ssd docs/examples/minimal.inline.ssd`
+  - inline annotate の `--out` が source `.ssd` を alias する場合は失敗する
+- `ssd annotate id:H1 todo bad --target sidecar --out docs/examples/minimal.ssm docs/examples/minimal.ssd`
+  - paired input の sidecar annotate で `--out` が source sibling `.ssm` を alias する場合は失敗する
+- `ssd annotate id:R1 rationale bad --target auto --out docs/examples/minimal.ssm docs/examples/minimal.ssd`
+  - standalone input で auto が sidecar へ解決される場合も、`--out` は source sibling `.ssm` を alias してはならない
 - `ssd remove id:A1 docs/examples/minimal.ssd`
   - 参照されている構造要素のため既定で失敗する
   - 期待 stderr は [docs/examples/golden/remove-id-A1.error.stderr](docs/examples/golden/remove-id-A1.error.stderr) と一致する
@@ -1159,6 +1241,14 @@ test runner 定義:
   - `--out` が source `.ssd` を alias する場合は失敗する
 - `ssd remove id:ALT1B --out docs/examples/minimal.ssm docs/examples/minimal.ssd`
   - paired input の `--out` が source `.ssm` を alias する場合も失敗する
+- `ssd remove meta:A1.embedding,meta:H1.rationale docs/examples/minimal.ssd`
+  - meta selector list はこの slice では失敗する
+- `ssd remove doc:self,id:ALT1B docs/examples/minimal.ssd`
+  - `doc:self` selector list はこの slice では失敗する
+- `ssd remove id:ALT1A,type:alternative docs/examples/minimal.ssd`
+  - explicit list 内の `type:<kind>` atom が複数 target を持つ場合、`--allow-multi` なしでは失敗する
+- `ssd remove id:H1,id:ALT1B --stdout --cascade docs/examples/minimal.ssd`
+  - output-before-safety reorder は explicit list でも失敗する
 - `ssd remove id:R1 docs/examples/minimal.ssd`
   - resource に対する source edge が残るため `--cascade` なしでは失敗する
   - 期待 stderr は [docs/examples/golden/remove-R1-references.error.stderr](docs/examples/golden/remove-R1-references.error.stderr) と一致する

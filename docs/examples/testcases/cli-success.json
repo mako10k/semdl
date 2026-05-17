@@ -1081,6 +1081,43 @@
       "notes": "metadata-only add apply should create a missing annotation field on an existing sidecar"
     },
     {
+      "id": "add-annotation-todo-stdout",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --stdout",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=追加入力で主体を確認する", "--target", "sidecar", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/add-annotation-todo.expected.ssm",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add stdout should return canonical sidecar output without mutating the source files"
+    },
+    {
+      "id": "add-annotation-todo-out-dryrun",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --out docs/examples/annotation-output.ssm --dry-run",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=追加入力で主体を確認する", "--target", "sidecar", "--out", "docs/examples/annotation-output.ssm", "--dry-run"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/annotation-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-annotation-todo.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add out dry-run should preview a non-destructive sidecar output target"
+    },
+    {
       "id": "add-provenance-A1-apply",
       "command": "ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale=監査で人手確認した --target sidecar",
       "argv": ["ssd", "add", "provenance", "docs/examples/minimal.ssd", "id=A1", "provenance_kind=reviewed", "confidence=0.91", "rationale=監査で人手確認した", "--target", "sidecar"],
@@ -1097,6 +1134,59 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "metadata-only add should create a new sidecar when provenance is added to a standalone input"
+    },
+    {
+      "id": "add-provenance-A1-stdout",
+      "command": "ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale=監査で人手確認した --target sidecar --stdout",
+      "argv": ["ssd", "add", "provenance", "docs/examples/minimal.ssd", "id=A1", "provenance_kind=reviewed", "confidence=0.91", "rationale=監査で人手確認した", "--target", "sidecar", "--stdout"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/add-provenance-A1.expected.ssm",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only provenance stdout should return canonical sidecar output without mutating the standalone source"
+    },
+    {
+      "id": "add-provenance-A1-out",
+      "command": "ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale=監査で人手確認した --target sidecar --out docs/examples/provenance-output.ssm",
+      "argv": ["ssd", "add", "provenance", "docs/examples/minimal.ssd", "id=A1", "provenance_kind=reviewed", "confidence=0.91", "rationale=監査で人手確認した", "--target", "sidecar", "--out", "docs/examples/provenance-output.ssm"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/provenance-output.ssm": "docs/examples/fixtures/add-provenance-A1.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-provenance-A1.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add out should write canonical sidecar output without mutating the source standalone input"
+    },
+    {
+      "id": "add-provenance-A1-out-dryrun",
+      "command": "ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale=監査で人手確認した --target sidecar --out docs/examples/provenance-output.ssm --dry-run",
+      "argv": ["ssd", "add", "provenance", "docs/examples/minimal.ssd", "id=A1", "provenance_kind=reviewed", "confidence=0.91", "rationale=監査で人手確認した", "--target", "sidecar", "--out", "docs/examples/provenance-output.ssm", "--dry-run"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd"
+      },
+      "expected_absent_files": ["docs/examples/provenance-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/add-provenance-A1.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only provenance out dry-run should preview a non-destructive sidecar output target on a standalone source"
     },
     {
       "id": "set-help",
@@ -1918,6 +2008,43 @@
       "notes": "sidecar annotation preview"
     },
     {
+      "id": "annotate-H1-todo-sidecar-stdout",
+      "command": "ssd annotate id:H1 todo 追加入力で主体を確認する --target sidecar --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "todo", "追加入力で主体を確認する", "--target", "sidecar", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/annotate-H1-todo.expected.ssm",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "sidecar annotate stdout should return canonical sidecar text without mutating the source pair"
+    },
+    {
+      "id": "annotate-H1-rationale-sidecar-out-dryrun",
+      "command": "ssd annotate id:H1 rationale \"原文に主語がないため補完\" --target sidecar --out docs/examples/annotate-sidecar-output.ssm --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "rationale", "原文に主語がないため補完", "--target", "sidecar", "--out", "docs/examples/annotate-sidecar-output.ssm", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_absent_files": ["docs/examples/annotate-sidecar-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-H1-rationale-sidecar.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "sidecar annotate out dry-run should preview a non-destructive sidecar output target"
+    },
+    {
       "id": "split-minimal-dryrun",
       "command": "ssd split docs/examples/minimal.inline.ssd --dry-run",
       "argv": ["ssd", "split", "docs/examples/minimal.inline.ssd", "--dry-run"],
@@ -2038,6 +2165,41 @@
       "notes": "standalone inline annotate should update supported hypothesis metadata in-place"
     },
     {
+      "id": "annotate-H1-status-inline-stdout",
+      "command": "ssd annotate id:H1 status 検証待ち --target inline --stdout docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "status", "検証待ち", "--target", "inline", "--stdout", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.inline.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.inline.ssd": "docs/examples/minimal.inline.ssd"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/annotate-H1-status-inline.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "inline annotate stdout should return canonical inline text without mutating the standalone source"
+    },
+    {
+      "id": "annotate-H1-status-inline-out-dryrun",
+      "command": "ssd annotate id:H1 status 検証待ち --target inline --out docs/examples/annotate-inline-output.ssd --dry-run docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "status", "検証待ち", "--target", "inline", "--out", "docs/examples/annotate-inline-output.ssd", "--dry-run", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.inline.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.inline.ssd": "docs/examples/minimal.inline.ssd"
+      },
+      "expected_absent_files": ["docs/examples/annotate-inline-output.ssd"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-H1-status-inline.out.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "inline annotate out dry-run should preview a non-destructive inline output target"
+    },
+    {
       "id": "annotate-R1-rationale-auto-sidecar-apply",
       "command": "ssd annotate id:R1 rationale 参照元を追記する --target auto docs/examples/minimal.ssd",
       "argv": ["ssd", "annotate", "id:R1", "rationale", "参照元を追記する", "--target", "auto", "docs/examples/minimal.ssd"],
@@ -2054,6 +2216,25 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "auto annotate should fall back to sidecar when standalone inline metadata is unsupported"
+    },
+    {
+      "id": "annotate-R1-rationale-auto-sidecar-out",
+      "command": "ssd annotate id:R1 rationale 参照元を追記する --target auto --out docs/examples/annotate-auto-output.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:R1", "rationale", "参照元を追記する", "--target", "auto", "--out", "docs/examples/annotate-auto-output.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/annotate-auto-output.ssm": "docs/examples/fixtures/annotate-R1-rationale-auto-sidecar.expected.ssm"
+      },
+      "expected_absent_files": ["docs/examples/minimal.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/annotate-R1-rationale-auto-sidecar.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "auto annotate out should write resolved sidecar output without mutating the standalone source"
     },
     {
       "id": "remove-A1-embedding-apply",
@@ -2090,6 +2271,24 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "single-target structural remove should succeed when no dependents need to be removed"
+    },
+    {
+      "id": "remove-id-list-apply",
+      "command": "ssd remove id:ALT1A,id:ALT1B docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1A,id:ALT1B", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/remove-type-alternative-allow-multi.expected.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/fixtures/remove-type-alternative-allow-multi.expected.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-type-alternative-allow-multi.apply.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "explicit structural selector lists should remove the union target set without requiring type-based matching"
     },
     {
       "id": "remove-type-alternative-allow-multi-apply",
@@ -2164,6 +2363,44 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "type selector allow-multi should support out when no dependents remain"
+    },
+    {
+      "id": "remove-path-id-list-out",
+      "command": "ssd remove path:ALT1A.label,id:ALT1B --out docs/examples/remove-explicit-list-output.ssd docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "path:ALT1A.label,id:ALT1B", "--out", "docs/examples/remove-explicit-list-output.ssd", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm",
+        "docs/examples/remove-explicit-list-output.ssd": "docs/examples/fixtures/remove-type-alternative-allow-multi-inline-output.expected.ssd"
+      },
+      "expected_absent_files": ["docs/examples/remove-explicit-list-output.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-explicit-list.out.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "explicit path/id selector lists should support non-destructive out using the same canonical inline render"
+    },
+    {
+      "id": "remove-id-plus-type-alternative-allow-multi-dryrun",
+      "command": "ssd remove id:ALT1A,type:alternative --allow-multi --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1A,type:alternative", "--allow-multi", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/golden/remove-id-plus-type-alternative-allow-multi.dryrun.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "selector lists may mix explicit ids with type selectors when allow-multi is present for the type expansion"
     },
     {
       "id": "remove-ALT1B-dryrun",
@@ -2442,6 +2679,24 @@
       "expected_stderr": "",
       "expected_output_kind": "exact",
       "notes": "cascade remove should support stdout without mutating source files"
+    },
+    {
+      "id": "remove-id-list-cascade-stdout",
+      "command": "ssd remove id:H1,id:ALT1B --cascade --stdout docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:H1,id:ALT1B", "--cascade", "--stdout", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/remove-H1-cascade-inline-output.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "explicit selector lists should deduplicate overlapping cascade closures before rendering stdout"
     },
     {
       "id": "remove-H1-cascade-out",

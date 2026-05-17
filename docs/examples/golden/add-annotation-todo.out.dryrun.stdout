@@ -1,0 +1,14 @@
+DRY-RUN
+command: ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text="追加入力で主体を確認する" --out docs/examples/annotation-output.ssm --target sidecar
+target_profile: sidecar
+target_file: docs/examples/annotation-output.ssm
+source_profile: sidecar
+result_profile: sidecar
+kind: annotation
+target_id: H1
+fields:
+  - kind=todo
+  - text="追加入力で主体を確認する"
+preserve_source_ssd: docs/examples/minimal.ssd
+preserve_source_ssm: docs/examples/minimal.ssm
+changes: 1

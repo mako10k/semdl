@@ -1,20 +1,21 @@
 SEMDL Help Topic: reference remove
 
 Usage:
-- `ssd remove <selector> <file>`
-- `ssd remove <selector> --cascade <file>`
-- `ssd remove <selector> --dry-run <file>`
-- `ssd remove <selector> --stdout <file>`
-- `ssd remove <selector> --out <output.ssd> [--dry-run] <file>`
+- `ssd remove <selector[,selector...]> <file>`
+- `ssd remove <selector[,selector...]> --cascade <file>`
+- `ssd remove <selector[,selector...]> --dry-run <file>`
+- `ssd remove <selector[,selector...]> --stdout <file>`
+- `ssd remove <selector[,selector...]> --out <output.ssd> [--dry-run] <file>`
 - `ssd remove type:<kind> --allow-multi [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>`
 - `ssd remove type:<kind> --allow-multi --cascade [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>`
 
 Purpose:
-- Remove one sidecar metadata field or one structural target when the selector resolves safely.
+- Remove one sidecar metadata field or one structural target set when the selector resolves safely.
 - Structural removals fail on inbound references unless `--cascade` removes dependent targets in the same step.
+- Explicit comma-separated structural selector lists resolve each `id:`, `path:`, or `type:` atom and remove the union target set.
 - `--stdout` and `--out` return the post-remove canonical inline `.ssd` without mutating the source files.
-- `type:<kind> --allow-multi` keeps existing selector limits and also accepts the same non-destructive output surface.
-- `type:<kind> --allow-multi --cascade` expands the same cascade edge list across the matched root set; broader multi-target remove remains deferred.
+- `type:<kind>` list atoms still require `--allow-multi` when they expand to multiple targets.
+- `type:<kind> --allow-multi --cascade` expands the same cascade edge list across the matched root set and the same union rules apply inside selector lists.
 
 Related help:
 - `ssd help grammar`
@@ -23,5 +24,6 @@ Related help:
 Sample:
 - `ssd remove meta:A1.embedding docs/examples/minimal.ssd`
 - `ssd remove id:ALT1B --stdout docs/examples/minimal.ssd`
+- `ssd remove id:ALT1A,id:ALT1B docs/examples/minimal.ssd`
 - `ssd remove id:H1 --cascade docs/examples/minimal.ssd`
 - `ssd remove type:hypothesis --allow-multi --cascade --out docs/examples/remove-multi-cascade-output.ssd --dry-run docs/examples/remove-multi-cascade-source.ssd`

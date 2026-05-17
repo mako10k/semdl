@@ -1,0 +1,9 @@
+DRY-RUN
+command: ssd annotate id:H1 status "検証待ち" --target inline --out docs/examples/annotate-inline-output.ssd docs/examples/minimal.inline.ssd
+target_profile: inline
+target_file: docs/examples/annotate-inline-output.ssd
+selector: id:H1
+annotation_kind: status
+write: "検証待ち"
+preserve_source_ssd: docs/examples/minimal.inline.ssd
+changes: 1

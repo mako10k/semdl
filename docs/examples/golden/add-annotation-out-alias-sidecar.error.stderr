@@ -1,0 +1,5 @@
+ERROR transform_out_alias_conflict
+command: ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --out docs/examples/minimal.ssm
+out: docs/examples/minimal.ssm
+aliases: docs/examples/minimal.ssm
+hint: `--out` must not overwrite the source `.ssd` or paired `.ssm` in this slice

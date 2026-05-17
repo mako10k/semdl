@@ -1,4 +1,4 @@
 ERROR invalid_remove_options
-command: ssd remove type:hypothesis --stdout --allow-multi docs/examples/remove-multi-cascade-source.ssd
+command: ssd remove id:H1,id:ALT1B --stdout --cascade docs/examples/minimal.ssd
 usage: ssd remove <selector[,selector...]> [--allow-multi [--cascade]|--cascade] [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>
 hint: `--allow-multi` is currently limited to `type:<kind>` selectors or selector lists that include `type:<kind>`, and output options must follow the safety options

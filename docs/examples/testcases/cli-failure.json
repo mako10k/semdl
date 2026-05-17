@@ -128,30 +128,84 @@
       "notes": "structural add out must not alias the paired sidecar"
     },
     {
-      "id": "add-annotation-stdout-unsupported",
-      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --stdout",
-      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=bad", "--target", "sidecar", "--stdout"],
+      "id": "add-annotation-stdout-dryrun-invalid",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --stdout --dry-run",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=bad", "--target", "sidecar", "--stdout", "--dry-run"],
       "cwd": ".",
       "stdin": "",
       "environment": {},
       "expected_exit": 2,
       "expected_stdout": "",
-      "expected_stderr": "docs/examples/golden/add-annotation-stdout-unsupported.error.stderr",
+      "expected_stderr": "docs/examples/golden/add-annotation-stdout-dryrun-invalid.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "metadata-only add remains sidecar-apply-only and does not support stdout in this slice"
+      "notes": "metadata-only add stdout cannot be combined with dry-run"
     },
     {
-      "id": "add-annotation-out-unsupported",
-      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --out docs/examples/annotation-output.ssd",
-      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=bad", "--target", "sidecar", "--out", "docs/examples/annotation-output.ssd"],
+      "id": "add-annotation-stdout-out-invalid",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --stdout --out docs/examples/annotation-output.ssm",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=bad", "--target", "sidecar", "--stdout", "--out", "docs/examples/annotation-output.ssm"],
       "cwd": ".",
       "stdin": "",
       "environment": {},
       "expected_exit": 2,
       "expected_stdout": "",
-      "expected_stderr": "docs/examples/golden/add-annotation-out-unsupported.error.stderr",
+      "expected_stderr": "docs/examples/golden/add-annotation-stdout-out-invalid.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "metadata-only add remains sidecar-apply-only and does not support out in this slice"
+      "notes": "metadata-only add stdout cannot be combined with out"
+    },
+    {
+      "id": "add-annotation-out-alias-input",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --out docs/examples/minimal.ssd",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=bad", "--target", "sidecar", "--out", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-annotation-out-alias-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add out must not alias the source ssd"
+    },
+    {
+      "id": "add-annotation-out-alias-sidecar",
+      "command": "ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --out docs/examples/minimal.ssm",
+      "argv": ["ssd", "add", "annotation", "docs/examples/minimal.ssd", "id=H1", "kind=todo", "text=bad", "--target", "sidecar", "--out", "docs/examples/minimal.ssm"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-annotation-out-alias-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add out must not alias the paired sidecar"
+    },
+    {
+      "id": "add-provenance-out-alias-standalone-sidecar",
+      "command": "ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale=監査で人手確認した --target sidecar --out docs/examples/minimal.ssm",
+      "argv": ["ssd", "add", "provenance", "docs/examples/minimal.ssd", "id=A1", "provenance_kind=reviewed", "confidence=0.91", "rationale=監査で人手確認した", "--target", "sidecar", "--out", "docs/examples/minimal.ssm"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd"
+      },
+      "expected_absent_files": ["docs/examples/minimal.ssm"],
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/add-provenance-out-alias-standalone-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "metadata-only add out must also reject the reserved sibling sidecar path on standalone input"
     },
     {
       "id": "similarity-missing-args-help",
@@ -963,6 +1017,60 @@
       "notes": "allow-multi should be rejected outside type selectors"
     },
     {
+      "id": "remove-meta-selector-list-invalid",
+      "command": "ssd remove meta:A1.embedding,meta:H1.rationale docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "meta:A1.embedding,meta:H1.rationale", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-meta-selector-list-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "remove selector lists are limited to structural selector atoms in this slice"
+    },
+    {
+      "id": "remove-doc-self-selector-list-invalid",
+      "command": "ssd remove doc:self,id:ALT1B docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "doc:self,id:ALT1B", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-doc-self-selector-list-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "doc:self remains unsupported inside remove selector lists in this slice"
+    },
+    {
+      "id": "remove-id-plus-type-alternative-without-allow-multi",
+      "command": "ssd remove id:ALT1A,type:alternative docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:ALT1A,type:alternative", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-id-plus-type-alternative-without-allow-multi.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "type selector atoms inside explicit selector lists still require allow-multi when they expand to multiple targets"
+    },
+    {
       "id": "remove-ALT1B-stdout-dryrun-invalid",
       "command": "ssd remove id:ALT1B --stdout --dry-run docs/examples/minimal.ssd",
       "argv": ["ssd", "remove", "id:ALT1B", "--stdout", "--dry-run", "docs/examples/minimal.ssd"],
@@ -997,6 +1105,24 @@
       "expected_stderr": "docs/examples/golden/remove-ALT1B-stdout-out-invalid.error.stderr",
       "expected_output_kind": "exact",
       "notes": "remove stdout cannot be combined with out"
+    },
+    {
+      "id": "remove-id-list-stdout-before-cascade-invalid",
+      "command": "ssd remove id:H1,id:ALT1B --stdout --cascade docs/examples/minimal.ssd",
+      "argv": ["ssd", "remove", "id:H1,id:ALT1B", "--stdout", "--cascade", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/remove-id-list-stdout-before-cascade.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "output-before-safety ordering remains invalid for explicit selector lists"
     },
     {
       "id": "remove-type-hypothesis-stdout-before-allow-multi-invalid",
@@ -1201,6 +1327,79 @@
       "expected_stderr": "docs/examples/golden/annotate-inline-requires-standalone.error.stderr",
       "expected_output_kind": "exact",
       "notes": "inline annotate should reject paired input because the inline write-path is standalone-only in this slice"
+    },
+    {
+      "id": "annotate-stdout-dryrun-invalid",
+      "command": "ssd annotate id:H1 todo bad --target sidecar --stdout --dry-run docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "todo", "bad", "--target", "sidecar", "--stdout", "--dry-run", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-stdout-dryrun-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate stdout and dry-run cannot be combined"
+    },
+    {
+      "id": "annotate-stdout-out-invalid",
+      "command": "ssd annotate id:H1 todo bad --target sidecar --stdout --out docs/examples/annotate-output.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "todo", "bad", "--target", "sidecar", "--stdout", "--out", "docs/examples/annotate-output.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 2,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-stdout-out-invalid.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate stdout and out cannot be combined"
+    },
+    {
+      "id": "annotate-out-alias-input",
+      "command": "ssd annotate id:H1 status bad --target inline --out docs/examples/minimal.inline.ssd docs/examples/minimal.inline.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "status", "bad", "--target", "inline", "--out", "docs/examples/minimal.inline.ssd", "docs/examples/minimal.inline.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.inline.ssd"],
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-out-alias-input.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate out must not alias the source inline file"
+    },
+    {
+      "id": "annotate-out-alias-sidecar",
+      "command": "ssd annotate id:H1 todo bad --target sidecar --out docs/examples/minimal.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:H1", "todo", "bad", "--target", "sidecar", "--out", "docs/examples/minimal.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
+      "expected_files": {
+        "docs/examples/minimal.ssd": "docs/examples/minimal.ssd",
+        "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
+      },
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-out-alias-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate out must not alias the paired sidecar"
+    },
+    {
+      "id": "annotate-auto-out-alias-standalone-sidecar",
+      "command": "ssd annotate id:R1 rationale bad --target auto --out docs/examples/minimal.ssm docs/examples/minimal.ssd",
+      "argv": ["ssd", "annotate", "id:R1", "rationale", "bad", "--target", "auto", "--out", "docs/examples/minimal.ssm", "docs/examples/minimal.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/minimal.ssd"],
+      "expected_absent_files": ["docs/examples/minimal.ssm"],
+      "expected_exit": 3,
+      "expected_stdout": "",
+      "expected_stderr": "docs/examples/golden/annotate-auto-out-alias-standalone-sidecar.error.stderr",
+      "expected_output_kind": "exact",
+      "notes": "annotate auto must reserve the sibling sidecar path even on standalone input when resolution falls back to sidecar"
     },
     {
       "id": "set-malformed-selector-missing-field",

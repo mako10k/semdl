@@ -23,27 +23,27 @@ segment HELP_LINE_2 {
 
 segment HELP_LINE_3 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove <selector> <file>`"
+  text_quote: "- `ssd remove <selector[,selector...]> <file>`"
 }
 
 segment HELP_LINE_4 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove <selector> --cascade <file>`"
+  text_quote: "- `ssd remove <selector[,selector...]> --cascade <file>`"
 }
 
 segment HELP_LINE_5 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove <selector> --dry-run <file>`"
+  text_quote: "- `ssd remove <selector[,selector...]> --dry-run <file>`"
 }
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove <selector> --stdout <file>`"
+  text_quote: "- `ssd remove <selector[,selector...]> --stdout <file>`"
 }
 
 segment HELP_LINE_7 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove <selector> --out <output.ssd> [--dry-run] <file>`"
+  text_quote: "- `ssd remove <selector[,selector...]> --out <output.ssd> [--dry-run] <file>`"
 }
 
 segment HELP_LINE_8 {
@@ -63,7 +63,7 @@ segment HELP_LINE_10 {
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- Remove one sidecar metadata field or one structural target when the selector resolves safely."
+  text_quote: "- Remove one sidecar metadata field or one structural target set when the selector resolves safely."
 }
 
 segment HELP_LINE_12 {
@@ -73,55 +73,65 @@ segment HELP_LINE_12 {
 
 segment HELP_LINE_13 {
   source: HELP_TOPIC
-  text_quote: "- `--stdout` and `--out` return the post-remove canonical inline `.ssd` without mutating the source files."
+  text_quote: "- Explicit comma-separated structural selector lists resolve each `id:`, `path:`, or `type:` atom and remove the union target set."
 }
 
 segment HELP_LINE_14 {
   source: HELP_TOPIC
-  text_quote: "- `type:<kind> --allow-multi` keeps existing selector limits and also accepts the same non-destructive output surface."
+  text_quote: "- `--stdout` and `--out` return the post-remove canonical inline `.ssd` without mutating the source files."
 }
 
 segment HELP_LINE_15 {
   source: HELP_TOPIC
-  text_quote: "- `type:<kind> --allow-multi --cascade` expands the same cascade edge list across the matched root set; broader multi-target remove remains deferred."
+  text_quote: "- `type:<kind>` list atoms still require `--allow-multi` when they expand to multiple targets."
 }
 
 segment HELP_LINE_16 {
   source: HELP_TOPIC
-  text_quote: "Related help:"
+  text_quote: "- `type:<kind> --allow-multi --cascade` expands the same cascade edge list across the matched root set and the same union rules apply inside selector lists."
 }
 
 segment HELP_LINE_17 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help grammar`"
+  text_quote: "Related help:"
 }
 
 segment HELP_LINE_18 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help recipes wrong-layer`"
+  text_quote: "- `ssd help grammar`"
 }
 
 segment HELP_LINE_19 {
   source: HELP_TOPIC
-  text_quote: "Sample:"
+  text_quote: "- `ssd help recipes wrong-layer`"
 }
 
 segment HELP_LINE_20 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`"
+  text_quote: "Sample:"
 }
 
 segment HELP_LINE_21 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove id:ALT1B --stdout docs/examples/minimal.ssd`"
+  text_quote: "- `ssd remove meta:A1.embedding docs/examples/minimal.ssd`"
 }
 
 segment HELP_LINE_22 {
   source: HELP_TOPIC
-  text_quote: "- `ssd remove id:H1 --cascade docs/examples/minimal.ssd`"
+  text_quote: "- `ssd remove id:ALT1B --stdout docs/examples/minimal.ssd`"
 }
 
 segment HELP_LINE_23 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd remove id:ALT1A,id:ALT1B docs/examples/minimal.ssd`"
+}
+
+segment HELP_LINE_24 {
+  source: HELP_TOPIC
+  text_quote: "- `ssd remove id:H1 --cascade docs/examples/minimal.ssd`"
+}
+
+segment HELP_LINE_25 {
   source: HELP_TOPIC
   text_quote: "- `ssd remove type:hypothesis --allow-multi --cascade --out docs/examples/remove-multi-cascade-output.ssd --dry-run docs/examples/remove-multi-cascade-source.ssd`"
 }

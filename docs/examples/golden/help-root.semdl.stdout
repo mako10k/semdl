@@ -167,7 +167,7 @@ segment HELP_LINE_31 {
 
 segment HELP_LINE_32 {
   source: HELP_TOPIC
-  text_quote: "- `remove`: remove one target or fail on unsafe removal"
+  text_quote: "- `remove`: remove an explicit target set or fail on unsafe removal"
 }
 
 segment HELP_LINE_33 {
@@ -217,75 +217,80 @@ segment HELP_LINE_41 {
 
 segment HELP_LINE_42 {
   source: HELP_TOPIC
-  text_quote: "- Machine-readable help: `ssd help grammar --format semdl`"
+  text_quote: "- Emit an inline annotation without writing: `ssd annotate id:<id> status <text> --target inline --stdout <file>`"
 }
 
 segment HELP_LINE_43 {
   source: HELP_TOPIC
-  text_quote: "- Understand an option error: `ssd help grammar`"
+  text_quote: "- Machine-readable help: `ssd help grammar --format semdl`"
 }
 
 segment HELP_LINE_44 {
   source: HELP_TOPIC
-  text_quote: "- Understand a selector-layer error: `ssd help recipes wrong-layer`"
+  text_quote: "- Understand an option error: `ssd help grammar`"
 }
 
 segment HELP_LINE_45 {
   source: HELP_TOPIC
-  text_quote: "6. Samples"
+  text_quote: "- Understand a selector-layer error: `ssd help recipes wrong-layer`"
 }
 
 segment HELP_LINE_46 {
   source: HELP_TOPIC
-  text_quote: "- `ssd check docs/examples/minimal.ssd`"
+  text_quote: "6. Samples"
 }
 
 segment HELP_LINE_47 {
   source: HELP_TOPIC
-  text_quote: "- `ssd explain A1 docs/examples/minimal.ssd`"
+  text_quote: "- `ssd check docs/examples/minimal.ssd`"
 }
 
 segment HELP_LINE_48 {
   source: HELP_TOPIC
-  text_quote: "- `ssd help reference check`"
+  text_quote: "- `ssd explain A1 docs/examples/minimal.ssd`"
 }
 
 segment HELP_LINE_49 {
   source: HELP_TOPIC
-  text_quote: "- `ssd check --help --format semdl`"
+  text_quote: "- `ssd help reference check`"
 }
 
 segment HELP_LINE_50 {
   source: HELP_TOPIC
-  text_quote: "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`"
+  text_quote: "- `ssd check --help --format semdl`"
 }
 
 segment HELP_LINE_51 {
   source: HELP_TOPIC
-  text_quote: "7. Cautions, Known Bugs, Reporting"
+  text_quote: "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`"
 }
 
 segment HELP_LINE_52 {
   source: HELP_TOPIC
-  text_quote: "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds, including structural `--stdout` and `--out`, plus create-only sidecar `annotation` and `provenance`; `remove` supports apply, `--dry-run`, `--stdout`, and inline `--out`."
+  text_quote: "7. Cautions, Known Bugs, Reporting"
 }
 
 segment HELP_LINE_53 {
   source: HELP_TOPIC
-  text_quote: "- Use `--format semdl` when another tool needs structured help output."
+  text_quote: "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds, structural `--stdout` and `--out`, plus create-only sidecar `annotation` and `provenance` with sidecar `--stdout` and `--out`; `annotate` supports resolved-profile `--stdout` and `--out` across the existing inline|sidecar|auto target matrix; `remove` supports apply, explicit structural selector lists, `--dry-run`, `--stdout`, and inline `--out`."
 }
 
 segment HELP_LINE_54 {
   source: HELP_TOPIC
-  text_quote: "- Update flows are acceptance-driven and still incomplete for full file rewriting."
+  text_quote: "- Use `--format semdl` when another tool needs structured help output."
 }
 
 segment HELP_LINE_55 {
   source: HELP_TOPIC
-  text_quote: "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file."
+  text_quote: "- Update flows are acceptance-driven and still incomplete for full file rewriting."
 }
 
 segment HELP_LINE_56 {
+  source: HELP_TOPIC
+  text_quote: "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file."
+}
+
+segment HELP_LINE_57 {
   source: HELP_TOPIC
   text_quote: "- Preferred reporting path: repository issue or change request with a reproducing CLI case."
 }

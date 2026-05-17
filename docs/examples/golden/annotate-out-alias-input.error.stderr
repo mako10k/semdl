@@ -1,0 +1,5 @@
+ERROR transform_out_alias_conflict
+command: ssd annotate id:H1 status bad --target inline --out docs/examples/minimal.inline.ssd docs/examples/minimal.inline.ssd
+out: docs/examples/minimal.inline.ssd
+aliases: docs/examples/minimal.inline.ssd
+hint: `--out` must not overwrite the source `.ssd` or paired `.ssm` in this slice

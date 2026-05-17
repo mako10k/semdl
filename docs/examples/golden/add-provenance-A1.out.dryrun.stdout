@@ -1,0 +1,14 @@
+DRY-RUN
+command: ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale="監査で人手確認した" --out docs/examples/provenance-output.ssm --target sidecar
+target_profile: sidecar
+target_file: docs/examples/provenance-output.ssm
+source_profile: standalone
+result_profile: sidecar
+kind: provenance
+target_id: A1
+fields:
+  - provenance_kind=reviewed
+  - confidence=0.91
+  - rationale="監査で人手確認した"
+preserve_source_ssd: docs/examples/minimal.ssd
+changes: 1

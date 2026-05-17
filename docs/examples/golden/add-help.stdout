@@ -5,11 +5,11 @@ Usage:
 - `ssd add <kind> <file> [field=value ...] --stdout`
 - `ssd add <kind> <file> [field=value ...] --out <output.ssd> [--dry-run]`
 - `ssd add <kind> <file> [field=value ...] --dry-run`
-- `ssd add <kind> <file> [field=value ...] --target sidecar [--dry-run]`
+- `ssd add <kind> <file> [field=value ...] --target sidecar [--stdout|--out <output.ssm> [--dry-run]|--dry-run]`
 
 Status:
 - Inline structural add supports: `resource`, `segment`, `assertion`, `hypothesis`, `alternative`. Structural add also supports canonical inline `--stdout` and `--out <output.ssd>`.
-- Metadata-only add supports `annotation` and `provenance` with `--target sidecar` only.
+- Metadata-only add supports `annotation` and `provenance` with `--target sidecar` only, and its `--stdout` / `--out <output.ssm>` surface returns canonical sidecar text without mutating the source files.
 - Metadata-only add is create-only: it creates missing sidecar fields, creates a paired `.ssm` when absent, and fails on existing field conflicts.
 
 Related help:
@@ -19,4 +19,5 @@ Related help:
 Sample:
 - `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --dry-run`
 - `ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --stdout`
+- `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --stdout`
 - `ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=追加入力で主体を確認する --target sidecar --dry-run`

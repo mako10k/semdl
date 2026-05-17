@@ -1,0 +1,5 @@
+ERROR transform_out_alias_conflict
+command: ssd add provenance docs/examples/minimal.ssd id=A1 provenance_kind=reviewed confidence=0.91 rationale=監査で人手確認した --target sidecar --out docs/examples/minimal.ssm
+out: docs/examples/minimal.ssm
+aliases: docs/examples/minimal.ssm
+hint: `--out` must not overwrite the source `.ssd` or paired `.ssm` in this slice

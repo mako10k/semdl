@@ -1,3 +1,3 @@
 ERROR invalid_add_options
-command: ssd add resource docs/examples/minimal.ssd id=R2 type=appendix label=月次売上補足 --target sidecar
+command: ssd add annotation docs/examples/minimal.ssd id=H1 kind=todo text=bad --target sidecar --stdout --dry-run
 usage: ssd add <kind> <file> [field=value ...] [--stdout|--out <output-file> [--dry-run]|--target sidecar|--dry-run]

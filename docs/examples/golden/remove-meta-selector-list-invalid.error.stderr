@@ -1,0 +1,4 @@
+ERROR invalid_remove_selector
+command: ssd remove meta:A1.embedding,meta:H1.rationale docs/examples/minimal.ssd
+selector: meta:A1.embedding,meta:H1.rationale
+hint: remove selector lists require comma-separated `id:`, `path:`, or `type:` atoms; `meta:` and `doc:self` lists are not supported in this slice

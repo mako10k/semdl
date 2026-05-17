@@ -1,0 +1,5 @@
+ERROR selector_resolved_multiple_targets
+command: ssd remove id:ALT1A,type:alternative docs/examples/minimal.ssd
+selector: id:ALT1A,type:alternative
+matched: 2
+hint: type selector requires --allow-multi when multiple targets are matched

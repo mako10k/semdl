@@ -1,0 +1,4 @@
+ERROR invalid_annotate_options
+command: ssd annotate id:H1 todo bad --target sidecar --stdout --dry-run docs/examples/minimal.ssd
+usage: ssd annotate <selector> <kind> <text> --target inline|sidecar|auto [--stdout|--dry-run|--out <output-file> [--dry-run]] <file>
+hint: annotate output options must follow `--target`, and `--stdout` cannot be combined with `--dry-run` or `--out`

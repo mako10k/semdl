@@ -1,0 +1,4 @@
+ERROR invalid_remove_selector
+command: ssd remove doc:self,id:ALT1B docs/examples/minimal.ssd
+selector: doc:self,id:ALT1B
+hint: remove selector lists require comma-separated `id:`, `path:`, or `type:` atoms; `meta:` and `doc:self` lists are not supported in this slice

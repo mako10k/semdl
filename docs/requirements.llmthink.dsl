@@ -77,6 +77,18 @@ step S2C:
     annotation rationale:
       "metadata add の sidecar ownership を広げずに、structural add だけへ non-destructive output surface を追加すると update command 間の対称性を小さく回収できる"
 
+step S2D:
+  decision D2D based_on D2B, D2C, D18B:
+    |
+      次の metadata-only `ssd add` output slice では、`annotation` と `provenance` に限って sidecar-only の `--stdout` と `--out <output.ssm>` を追加してよい。
+      `--target sidecar` 必須と create-only semantics は維持してよく、result は canonical sidecar `.ssm` text に固定してよい。
+      `--stdout` は source `.ssd` と source sibling `.ssm` を変更せず stdout へ sidecar text を返し、`--out` は source pair を保護したまま output file へ同じ sidecar text を書いてよい。
+      `--out <output.ssm> --dry-run` は target file を output path に向けた preview として扱ってよく、bare `--dry-run` は sibling sidecar path を target file とする preview として扱ってよい。
+      `--stdout` は `--dry-run` や `--out` と併用してはならず、`--out` は source `.ssd` や source sibling `.ssm` を alias してはならない。
+      inline target、auto target、upsert、broader conflict policy option はこの slice に含めない。
+    annotation rationale:
+      "metadata-only add でも sidecar profile に閉じた non-destructive parity を足すと、create-only と layer ownership を保ったまま確認経路を増やせるため"
+
 problem P2:
   "初期更新 CLI において、更新対象 selector と各レイヤの責務をどの粒度まで固定するか"
   annotation rationale:
@@ -453,6 +465,31 @@ step S18I:
       broader multi-target selector semantics と sidecar output profile selection は引き続き後続 slice に分離してよい。
     annotation rationale:
       "remove も inline-only non-destructive path を持たせると、selector safety を広げずに update command 間の parity を回収できるため"
+
+step S18K:
+  decision D18K based_on D18C, D18I:
+    |
+      次の annotate output slice では、existing `--target inline|sidecar|auto` matrix を維持したまま `ssd annotate` に `--stdout`、`--out <output-file>`、`--out <output-file> --dry-run` を追加してよい。
+      resolved target が `inline` のとき、`--stdout` と `--out` は canonical inline `.ssd` を扱ってよく、resolved target が `sidecar` のときは canonical sidecar `.ssm` を扱ってよい。
+      `--target auto` でも result profile は resolved target に従ってよく、`--out --dry-run` は existing annotate preview format を再利用しつつ target file を output path に向けてよい。
+      `--stdout` は `--dry-run` や `--out` と併用してはならず、`--out` は source `.ssd` を alias してはならない。
+      resolved target が `sidecar` のときは source sibling `.ssm` も alias してはならず、paired input だけでなく standalone input の reserved sibling sidecar path にも同じ保護を適用してよい。
+      target matrix の拡張、`--format`、multi-target annotate は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "annotate の既存 routing contract を保ったまま resolved-profile output だけを追加すると、inline と sidecar の ownership boundary を崩さずに non-destructive parity を回収できるため"
+
+step S18J:
+  decision D18J based_on D18, D18H, D18I:
+    |
+      次の remove selector slice では、remove 専用に comma-separated explicit selector list を追加してよい。
+      syntax は existing selector atom の comma-separated union に限定し、allowed atom kinds は `id:<id>`、`path:<id>.<field>`、`type:<kind>` としてよい。
+      `meta:<id>.<field>` list と `doc:self` list はこの slice に含めない。
+      explicit `id:` / `path:` list はそれ自体で multi-target intent として扱ってよく、list に含まれる `type:<kind>` atom が複数 target に展開される場合だけ existing `--allow-multi` を要求してよい。
+      resolved root ids は union set に正規化し、`--cascade`、`--dry-run`、`--stdout`、`--out <output.ssd> [--dry-run]` は D18H と D18I の surface を union set へそのまま適用してよい。
+      safety check は union remove set の外に dependent が残るかどうかで判定してよく、output-before-safety reorder は failure のままとしてよい。
+      core selector language 全体や他 subcommand、cross-layer mixed list は引き続き後続 slice に分離してよい。
+    annotation rationale:
+      "remove 専用の explicit list に閉じると、core selector boundary を広げずに practical multi-target gap を埋められるため"
 
 step S27A:
   decision D27A based_on D27, D8A:

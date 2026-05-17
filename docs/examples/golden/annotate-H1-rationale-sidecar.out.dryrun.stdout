@@ -1,0 +1,10 @@
+DRY-RUN
+command: ssd annotate id:H1 rationale "原文に主語がないため補完" --target sidecar --out docs/examples/annotate-sidecar-output.ssm docs/examples/minimal.ssd
+target_profile: sidecar
+target_file: docs/examples/annotate-sidecar-output.ssm
+selector: id:H1
+annotation_kind: rationale
+write: "原文に主語がないため補完"
+preserve_source_ssd: docs/examples/minimal.ssd
+preserve_source_ssm: docs/examples/minimal.ssm
+changes: 1
