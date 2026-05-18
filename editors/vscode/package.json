@@ -1,7 +1,7 @@
 {
   "name": "semdl-vscode",
   "displayName": "SEMDL",
-  "description": "VS Code extension scaffold for upcoming SEMDL syntax highlighting and TypeScript LSP support.",
+  "description": "VS Code extension for SEMDL syntax highlighting and initial TypeScript LSP support.",
   "version": "0.0.1",
   "publisher": "mako10k",
   "license": "UNLICENSED",
@@ -13,14 +13,51 @@
     "Programming Languages"
   ],
   "activationEvents": [
-    "onCommand:semdl.showLanguageServerScaffoldStatus"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "semdl-ssd",
+        "aliases": ["SEMDL SSD", "ssd"],
+        "extensions": [".ssd"],
+        "configuration": "./languages/ssd.language-configuration.json"
+      },
+      {
+        "id": "semdl-ssm",
+        "aliases": ["SEMDL SSM", "ssm"],
+        "extensions": [".ssm"],
+        "configuration": "./languages/ssm.language-configuration.json"
+      },
+      {
+        "id": "semdl-ssq",
+        "aliases": ["SEMDL SSQ", "ssq"],
+        "extensions": [".ssq"],
+        "configuration": "./languages/ssq.language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "semdl-ssd",
+        "scopeName": "source.semdl.ssd",
+        "path": "./syntaxes/semdl-ssd.tmLanguage.json"
+      },
+      {
+        "language": "semdl-ssm",
+        "scopeName": "source.semdl.ssm",
+        "path": "./syntaxes/semdl-ssm.tmLanguage.json"
+      },
+      {
+        "language": "semdl-ssq",
+        "scopeName": "source.semdl.ssq",
+        "path": "./syntaxes/semdl-ssq.tmLanguage.json"
+      }
+    ],
     "commands": [
       {
-        "command": "semdl.showLanguageServerScaffoldStatus",
-        "title": "SEMDL: Show Language Server Scaffold Status"
+        "command": "semdl.showLanguageServerStatus",
+        "title": "SEMDL: Show Language Server Status"
       }
     ]
   },
@@ -28,12 +65,15 @@
     "clean": "rm -rf out dist",
     "compile": "tsc -b tsconfig.json tsconfig.server.json",
     "watch": "tsc -b tsconfig.json tsconfig.server.json --watch",
-    "check": "npm run compile"
+    "check": "npm run compile",
+    "test": "npm run compile && node --test out/server/**/*.test.js"
   },
   "devDependencies": {
     "@types/node": "^22.15.31",
     "@types/vscode": "^1.100.0",
-    "typescript": "^5.8.3",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
     "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"

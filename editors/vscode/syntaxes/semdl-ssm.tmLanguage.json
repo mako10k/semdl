@@ -1,0 +1,104 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "SEMDL SSM",
+  "scopeName": "source.semdl.ssm",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#blocks" },
+    { "include": "#fieldLine" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#booleans" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.semdl",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "blocks": {
+      "patterns": [
+        {
+          "name": "meta.block.sidecar.semdl",
+          "match": "^(\\s*)(document_meta|meta)( +)([A-Za-z][A-Za-z0-9_-]*)( +)(\\{)",
+          "captures": {
+            "2": { "name": "keyword.control.block.semdl" },
+            "4": { "name": "entity.name.type.semdl" },
+            "6": { "name": "punctuation.section.block.begin.semdl" }
+          }
+        },
+        {
+          "name": "meta.block.embedding.semdl",
+          "match": "^(\\s*)(embedding)( +)(\\{)",
+          "captures": {
+            "2": { "name": "keyword.control.block.semdl" },
+            "4": { "name": "punctuation.section.block.begin.semdl" }
+          }
+        },
+        {
+          "name": "punctuation.section.block.end.semdl",
+          "match": "^\\s*(\\})"
+        }
+      ]
+    },
+    "fieldLine": {
+      "patterns": [
+        {
+          "name": "meta.field.semdl",
+          "match": "^(\\s*)([A-Za-z][A-Za-z0-9_-]*)(:)( *)(?=\\S)",
+          "captures": {
+            "2": { "name": "variable.other.member.semdl" },
+            "3": { "name": "keyword.operator.assignment.semdl" }
+          }
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.semdl",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.semdl",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.semdl",
+          "match": "(?<![A-Za-z0-9_-])-?\\b\\d+(?:\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "booleans": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.semdl",
+          "match": "(?<![A-Za-z0-9_-])\\b(?:true|false)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.key-value.semdl",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.block.semdl",
+          "match": "[{}]"
+        }
+      ]
+    }
+  }
+}

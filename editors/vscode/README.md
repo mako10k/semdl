@@ -1,17 +1,18 @@
-# SEMDL VS Code Scaffold
+# SEMDL VS Code Extension
 
 This directory contains the first implementation slice for SEMDL editor integration.
 
 Current scope:
 - VS Code extension manifest and extension entrypoint
+- Language registration for `.ssd`, `.ssm`, and `.ssq`
+- TextMate grammars for `.ssd`, `.ssm`, and `.ssq`
+- Runtime LanguageClient wiring for `.ssd`, `.ssm`, and `.ssq`
+- Basic syntax diagnostics and top-level document symbols
 - TypeScript build wiring for extension and language server
-- Stub language server process entrypoint
+- Language server entrypoint
 
 Intentionally deferred:
-- TextMate grammars for .ssd, .ssm, and .ssq
-- VS Code language contributions and file associations
-- Runtime LanguageClient wiring
-- Diagnostics, symbols, hover, completion, and other language features
+- Richer diagnostics, hover, completion, rename, formatting, code actions, and semantic tokens
 
 ## Local development
 
@@ -24,6 +25,6 @@ npm run compile
 ```
 
 The extension currently contributes a single command:
-- `SEMDL: Show Language Server Scaffold Status`
+- `SEMDL: Show Language Server Status`
 
-That command confirms the scaffold is present. It does not launch the server yet.
+That command reports the current extension and LSP status. The language server starts automatically for `.ssd`, `.ssm`, and `.ssq` documents.

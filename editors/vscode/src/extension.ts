@@ -1,20 +1,30 @@
 import * as vscode from 'vscode';
-import { getServerModule } from './lspClient';
+import type { LanguageClient } from 'vscode-languageclient/node';
+import { createLanguageClient, getServerModule } from './lspClient';
 
-export function activate(context: vscode.ExtensionContext): void {
+let client: LanguageClient | undefined;
+
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const output = vscode.window.createOutputChannel('SEMDL');
+  client = createLanguageClient(context, output);
+  await client.start();
 
-  const showScaffoldStatus = vscode.commands.registerCommand('semdl.showLanguageServerScaffoldStatus', async () => {
+  const showLanguageServerStatus = vscode.commands.registerCommand('semdl.showLanguageServerStatus', async () => {
     const serverModule = getServerModule(context);
-    output.appendLine(`SEMDL language server scaffold is available at: ${serverModule}`);
-    output.appendLine('Language registration, TextMate grammars, and runtime client wiring are intentionally deferred to later slices.');
+    output.appendLine(`SEMDL language server module: ${serverModule}`);
+    output.appendLine('Language registration, TextMate grammars, and runtime LanguageClient wiring are active.');
+    output.appendLine('Current LSP slice provides basic syntax diagnostics and top-level document symbols.');
     output.show(true);
 
-    await vscode.window.showInformationMessage('SEMDL language server scaffold is present. Runtime activation will be added in a later slice.');
+    await vscode.window.showInformationMessage('SEMDL LSP is active with basic diagnostics and top-level document symbols.');
   });
 
-  context.subscriptions.push(output, showScaffoldStatus);
+  context.subscriptions.push(output, showLanguageServerStatus);
 }
 
-export function deactivate(): void {
+export async function deactivate(): Promise<void> {
+  if (client) {
+    await client.stop();
+    client = undefined;
+  }
 }
