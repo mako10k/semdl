@@ -5,6 +5,10 @@
   "version": "0.0.1",
   "publisher": "mako10k",
   "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mako10k/semdl.git"
+  },
   "private": true,
   "engines": {
     "vscode": "^1.100.0"
@@ -66,9 +70,11 @@
     "compile": "tsc -b tsconfig.json tsconfig.server.json",
     "watch": "tsc -b tsconfig.json tsconfig.server.json --watch",
     "check": "npm run compile",
-    "test": "npm run compile && node --test out/server/**/*.test.js"
+    "test": "npm run compile && node --test out/server/**/*.test.js",
+    "package:vsix": "npm run test && mkdir -p dist && vsce package --out dist/semdl-${npm_package_version}.vsix"
   },
   "devDependencies": {
+    "@vscode/vsce": "^3.6.2",
     "@types/node": "^22.15.31",
     "@types/vscode": "^1.100.0",
     "typescript": "^5.8.3"

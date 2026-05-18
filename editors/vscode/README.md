@@ -24,6 +24,16 @@ npm install
 npm run compile
 ```
 
+Build a VSIX package locally:
+
+```bash
+cd editors/vscode
+npm install
+npm run package:vsix
+```
+
+The generated package is written to `dist/semdl-<version>.vsix`.
+
 The extension currently contributes a single command:
 - `SEMDL: Show Language Server Status`
 
