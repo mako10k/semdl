@@ -11,11 +11,20 @@ This repository is currently specification-first. Default to updating or reading
 - Test runner manifest: [docs/test-runner-format.md](docs/test-runner-format.md)
 - Test runner execution contract: [docs/test-runner-contract.md](docs/test-runner-contract.md)
 
+## Document Precedence
+- Use the following precedence when artifacts disagree: requirements and accepted ADRs, then primary grammar and contract artifacts, then manifests and golden expectations, then examples and fixtures, then implementation details or observed tool behavior.
+- Treat [docs/requirements.md](docs/requirements.md) as the top-level product and behavior source unless an accepted ADR narrows or redirects that decision for a specific boundary.
+- Treat EBNF, runner contracts, manifests, and golden files as binding only within the surface they define; they must refine higher-level intent, not silently replace it.
+- Treat examples, fixtures, help text snapshots, and current implementation behavior as evidence of what exists, not proof of what is correct.
+- Never treat a lower-precedence artifact's de facto state as sufficient reason to override a higher-precedence artifact.
+- If lower-precedence artifacts expose a conflict, stop treating the lower artifact as truth. Either repair the lower artifact to match the higher one, or, if the intended policy has changed, get approval and update the higher-precedence artifact first in the same change.
+
 ## Working Rules
 - Treat architecture-impacting changes as ADR work first. If format boundaries, CLI contracts, selector rules, runner contracts, or layer responsibilities change, update or add an ADR before implementation.
 - Follow the repo's test-first policy. For new CLI or format behavior, define or update acceptance examples, golden files, and manifests before proposing code.
 - Keep requirements, ADRs, EBNF, manifests, and golden files aligned in the same change when behavior changes.
 - Do not invent CLI syntax, runner behavior, or selector semantics when the answer exists in the docs above.
+- When artifacts disagree, cite the highest-precedence artifact that governs the decision and explain whether lower artifacts are stale, over-constrained, or reflecting an unapproved policy drift.
 - For pilot-scoped spec/process docs, maintain the `.md` source and paired `.ssd` companion together using [docs/documentation-pairing-workflow.md](docs/documentation-pairing-workflow.md). During the pilot, `.md` remains authoritative and the `.ssd` companion is used to test expressiveness and record loss explicitly.
 - For non-trivial multi-artifact work, consult [docs/pitfall-prevention.md](docs/pitfall-prevention.md) before finalizing the change. Prefer `search_pitfall_precautions` and related pitfall tools when available; if the tool domain is unavailable, use the repo-local fallback documented there.
 - When a meaningful failure exposes an authoritative-artifact update miss, record it as a pitfall. Prefer the pitfall tools; if unavailable, add or refine a local case in [docs/pitfall-prevention.md](docs/pitfall-prevention.md) and keep the concrete fix anchored in existing authoritative docs, manifests, and goldens.
