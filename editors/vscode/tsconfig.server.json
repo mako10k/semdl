@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "server/src",
+    "outDir": "out/server"
+  },
+  "include": ["server/src/**/*.ts"]
+}

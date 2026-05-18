@@ -6,3 +6,8 @@ tmp_*.stdout
 tmp_*.stderr
 actual.stdout
 temp_repo/
+editors/vscode/node_modules/
+editors/vscode/.vscode-test/
+editors/vscode/out/
+editors/vscode/dist/
+editors/vscode/*.tsbuildinfo
