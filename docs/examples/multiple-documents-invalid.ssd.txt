@@ -1,5 +1,0 @@
-document D1 {
-}
-
-document D2 {
-}
