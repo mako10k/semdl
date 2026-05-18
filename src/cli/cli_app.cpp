@@ -1868,10 +1868,12 @@ std::string root_help_text() {
            "- `ssd check --help --format semdl`\n"
            "- `ssd set meta:A1.confidence 0.91 --dry-run docs/examples/minimal.ssd`\n\n"
            "7. Cautions, Known Bugs, Reporting\n"
-           "- In this initial slice, `search` supports `select`, an optional single `where`, target-based `similar`, `return: matches`, and grouped `return: subgraph`, including similarity-backed grouped results. `where` accepts presence checks, scalar equality, numeric range comparisons, mixed `and`/`or` boolean expressions, parenthesized grouping, and unary `not`; function calls remain outside this slice. `extract` supports canonical inline stdout for one or more `.ssd` / `.txt` inputs without embedding options, multi-input `--out` aggregation, and explicit `ollama` and `openai` embedding adapters; embedding-enabled `--stdout` keeps single-input omitted=`sidecar`, accepts explicit `--format inline|sidecar|bundle`, and also supports multi-input existing `.ssd` when that profile is explicit. Raw `.txt` embedding generation still requires `--out <output.ssd>`. `ssd similarity` supports pairwise cosine comparison against precomputed embeddings in one input document; `add` supports inline structural kinds, structural `--stdout` and `--out`, plus create-only sidecar `annotation` and `provenance` with sidecar `--stdout` and `--out`; `set` supports resolved-profile `--stdout` and `--out` across single-target updates plus explicit id-list and type allow-multi inline field updates; `annotate` supports resolved-profile `--stdout` and `--out` across the existing inline|sidecar|auto target matrix plus explicit id-list updates for `--target inline|sidecar` and type allow-multi sidecar updates; `remove` supports apply, explicit structural selector lists, `--dry-run`, `--stdout`, and inline `--out`.\n"
+           "- Some subcommands intentionally support a smaller surface than their names suggest. Use `ssd help reference <subcommand>` before relying on advanced selector, output, or embedding combinations.\n"
+           "- `extract` can read raw `.txt`, but embedding generation from raw text still requires `--out <output.ssd>` rather than `--stdout`.\n"
+           "- Non-destructive output options such as `--dry-run`, `--stdout`, and `--out` are not available on every command or every target form.\n"
            "- Use `--format semdl` when another tool needs structured help output.\n"
-           "- Update flows are acceptance-driven and still incomplete for full file rewriting.\n"
-           "- Report problems with the command, argv, input paths, expected output, actual output, and related golden file.\n"
+           "- Some update and rewrite workflows are still narrower than the read-only commands. Check command-specific help when writing paired `.ssd` / `.ssm` files.\n"
+           "- Report problems with the command, argv, input paths, expected output, and actual output.\n"
            "- Preferred reporting path: repository issue or change request with a reproducing CLI case.\n";
 }
 
