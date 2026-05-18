@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(semdl LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -31,6 +33,10 @@ add_executable(ssd
 )
 
 target_link_libraries(ssd PRIVATE semdl_core)
+
+install(TARGETS ssd
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
 add_executable(semdl_runner
     src/runner/main.cpp

@@ -51,6 +51,17 @@ build 済みなら、repo root から次で確認できる。
 ./build/ssd explain H1 docs/examples/fixtures/ollama-embeddings-overview.ssd
 ```
 
+system install 用に CLI を prefix 配下へ配置したい場合は、`ssd` だけを `cmake --install` で install できる。
+`semdl_runner` は internal test runner なので install 対象には含めない。
+
+```sh
+cmake -S . -B build
+cmake --build build
+cmake --install build --prefix "$HOME/.local"
+```
+
+既定では command は `bin/ssd` に入るので、上の例では `$HOME/.local/bin/ssd` が生成される。
+
 `fake-ollama.sh` の参照先確認には次を使う。
 
 ```sh
