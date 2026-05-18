@@ -1,11 +1,4 @@
 document D1 {
-  title: "抽出元サンプル"
-  source_ref: "docs/examples/extract-source.txt"
-}
-
-document D2 {
-  title: "extract-raw-source"
-  source_ref: "docs/examples/extract-raw-source.txt"
 }
 
 resource R1 {

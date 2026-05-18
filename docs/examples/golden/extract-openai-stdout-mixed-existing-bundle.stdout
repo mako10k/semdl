@@ -4,15 +4,6 @@ sidecar_profile: sidecar
 
 inline_document:
 | document D1 {
-|   title: "抽出元サンプル"
-|   source_ref: "docs/examples/extract-source.txt"
-| }
-|
-| document D2 {
-|   title: "月次売上サンプル"
-|   source_ref: "docs/source/monthly-sales.txt"
-|   version: "0.1"
-|   generator: "ssd extract"
 | }
 |
 | resource R1 {
@@ -66,7 +57,7 @@ inline_document:
 |   embedding_presence: true
 |
 |   meta {
-|     confidence: 0.82
+|     confidence: 0.91
 |     provenance_kind: extracted
 |     rationale: "文中の明示表現をそのまま主張化した"
 |

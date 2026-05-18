@@ -730,6 +730,20 @@
       "notes": "no-provider stdout should aggregate multiple existing semantic inputs into one canonical inline `.ssd`"
     },
     {
+      "id": "extract-stdout-document-meta-consensus",
+      "command": "ssd extract --stdout docs/examples/document-meta-consensus-source.ssd docs/examples/document-meta-consensus-source.ssd",
+      "argv": ["ssd", "extract", "--stdout", "docs/examples/document-meta-consensus-source.ssd", "docs/examples/document-meta-consensus-source.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "setup_files": ["docs/examples/document-meta-consensus-source.ssd", "docs/examples/document-meta-consensus-source.ssm"],
+      "expected_exit": 0,
+      "expected_stdout": "docs/examples/fixtures/extract-document-meta-consensus.expected.ssd",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "multi-input extract should keep same-value resolved document metadata with sidecar precedence"
+    },
+    {
       "id": "extract-stdout-mixed-inline",
       "command": "ssd extract --stdout docs/examples/extract-source.ssd docs/examples/extract-raw-source.txt",
       "argv": ["ssd", "extract", "--stdout", "docs/examples/extract-source.ssd", "docs/examples/extract-raw-source.txt"],

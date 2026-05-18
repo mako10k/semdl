@@ -181,6 +181,8 @@ DocumentData DocumentStore::load_document(const std::filesystem::path& input_fil
 
     if (data.document_count == 0) {
         data.issues.push_back("missing document block");
+    } else if (data.document_count > 1) {
+        data.issues.push_back("multiple document blocks");
     }
 
     return data;
@@ -195,6 +197,8 @@ DocumentSourceViews DocumentStore::load_document_source_views(const std::filesys
     parse_file(input_file, views.inline_source, false);
     if (views.inline_source.document_count == 0) {
         views.inline_source.issues.push_back("missing document block");
+    } else if (views.inline_source.document_count > 1) {
+        views.inline_source.issues.push_back("multiple document blocks");
     }
 
     views.sidecar_source.input_file = input_file;

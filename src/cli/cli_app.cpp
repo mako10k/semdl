@@ -577,6 +577,101 @@ std::vector<std::string> collect_extract_ordered_entity_ids(const semdl::core::D
     return ids;
 }
 
+std::optional<std::string> find_extract_document_id(const semdl::core::DocumentData& document) {
+    std::optional<std::string> document_id;
+    for (const auto& [entity_id, entity] : document.entities) {
+        if (entity.kind != "document") {
+            continue;
+        }
+        if (document_id.has_value()) {
+            return std::nullopt;
+        }
+        document_id = entity_id;
+    }
+    return document_id;
+}
+
+std::map<std::string, std::string> collect_extract_inline_document_fields(const semdl::core::DocumentData& document) {
+    const auto document_id = find_extract_document_id(document);
+    if (!document_id.has_value()) {
+        return {};
+    }
+
+    std::map<std::string, std::string> fields;
+    if (const auto* entity = document.find_entity(*document_id); entity != nullptr) {
+        for (const auto& [name, value] : entity->fields) {
+            if (!semdl::core::is_document_sidecar_field(name)) {
+                fields[name] = value;
+            }
+        }
+    }
+
+    return fields;
+}
+
+std::map<std::string, std::string> collect_extract_document_metadata_fields(const semdl::core::DocumentData& document) {
+    const auto document_id = find_extract_document_id(document);
+    if (!document_id.has_value()) {
+        return {};
+    }
+
+    std::map<std::string, std::string> fields;
+    if (const auto* entity = document.find_entity(*document_id); entity != nullptr) {
+        for (const auto& [name, value] : entity->fields) {
+            if (semdl::core::is_document_sidecar_field(name)) {
+                fields[name] = value;
+            }
+        }
+    }
+
+    if (const auto* metadata = document.find_metadata(*document_id); metadata != nullptr) {
+        for (const auto& [name, value] : metadata->fields) {
+            fields[name] = value;
+        }
+    }
+
+    return fields;
+}
+
+template <typename FieldCollector>
+std::map<std::string, std::string> consensus_extract_document_fields(const std::vector<semdl::core::DocumentData>& source_documents,
+                                                                     FieldCollector&& collector) {
+    if (source_documents.empty()) {
+        return {};
+    }
+
+    auto consensus = collector(source_documents.front());
+    for (std::size_t index = 1; index < source_documents.size(); ++index) {
+        const auto current = collector(source_documents[index]);
+        for (auto it = consensus.begin(); it != consensus.end();) {
+            const auto current_it = current.find(it->first);
+            if (current_it == current.end() || current_it->second != it->second) {
+                it = consensus.erase(it);
+                continue;
+            }
+            ++it;
+        }
+    }
+    return consensus;
+}
+
+void initialize_extract_aggregate_document(semdl::core::DocumentData& merged,
+                                           const std::vector<semdl::core::DocumentData>& source_documents) {
+    semdl::core::EntityData document_entity{.kind = "document",
+                                            .fields = consensus_extract_document_fields(source_documents,
+                                                                                       collect_extract_inline_document_fields)};
+
+    merged.entities.emplace("D1", std::move(document_entity));
+    merged.document_count = 1;
+
+    semdl::core::EntityData document_metadata{.kind = "document_meta",
+                                              .fields = consensus_extract_document_fields(source_documents,
+                                                                                         collect_extract_document_metadata_fields)};
+    if (!document_metadata.fields.empty()) {
+        merged.metadata_entities.emplace("D1", std::move(document_metadata));
+    }
+}
+
 std::string normalize_extract_group_token(const std::string& token,
                                           std::map<std::string, std::string>& group_map,
                                           int& group_index) {
@@ -589,8 +684,8 @@ std::string normalize_extract_group_token(const std::string& token,
 
 semdl::core::DocumentData aggregate_extract_documents(const std::vector<semdl::core::DocumentData>& source_documents) {
     semdl::core::DocumentData merged;
+    initialize_extract_aggregate_document(merged, source_documents);
 
-    int document_index = 0;
     int resource_index = 0;
     int segment_index = 0;
     int assertion_index = 0;
@@ -608,9 +703,12 @@ semdl::core::DocumentData aggregate_extract_documents(const std::vector<semdl::c
             if (entity == nullptr) {
                 continue;
             }
+            if (entity->kind == "document") {
+                continue;
+            }
             id_map.emplace(old_id,
                            next_rebased_extract_id(entity->kind,
-                                                   document_index,
+                                                   merged.document_count,
                                                    resource_index,
                                                    segment_index,
                                                    assertion_index,
@@ -630,6 +728,9 @@ semdl::core::DocumentData aggregate_extract_documents(const std::vector<semdl::c
         for (const auto& old_id : ordered_ids) {
             const auto* entity = source_document.find_entity(old_id);
             if (entity == nullptr) {
+                continue;
+            }
+            if (entity->kind == "document") {
                 continue;
             }
 

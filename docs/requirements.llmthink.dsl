@@ -270,6 +270,7 @@ step S8I:
       embedding-enabled `--stdout --format bundle` は line-preserving plain-text bundle を返してよく、header 順序は `stdout_profile`、`inline_profile`、`sidecar_profile`、payload section は `inline_document:` と `sidecar_document:` に固定し、payload line は `|` prefix で保持する。
       embedding-enabled `--stdout` は one or more existing `.ssd` input を受け付けてよいが、multi-input のとき omitted `--format` は失敗とし、`inline|sidecar|bundle` を明示必須とする。
       multi-input embedding-enabled `--stdout --format inline` は rebased merged view の canonical inline `.ssd` を返し、`--format sidecar` は rebased merged `.ssm` を返し、`--format bundle` は両 payload を同じ rebased view から返してよい。
+      multi-input extract が inline `.ssd` を返す surface は single top-level `document D1` を返してよく、aggregate document body の `title` / `source_ref` と document-scoped `version` / `generator` / `document_meta` field は source document 間の same-value intersection だけを保持してよい。値が異なる、または存在有無が揃わない field は aggregate output から省略してよい。
       no-provider `--stdout` と `--out <output.ssd>` はこの slice でも `--format bundle` を受け付けず、raw `.txt` を含む embedding-enabled stdout は single/multi とも failure とする。
       raw `.txt` input の embedding generation は `--out <output.ssd>` 成功時だけ許可し、embeddable target は generated resource.label と segment.text_quote に限定し、document D1 は対象に含めない。
       後続 multi-input out slice では `ssd extract --out <output.ssd> <input>...` に限って mixed `.ssd` / `.txt` input を受け付け、resolved view を 1 つの canonical inline `.ssd` に集約してよい。

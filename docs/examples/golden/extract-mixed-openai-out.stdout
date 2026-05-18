@@ -1,4 +1,4 @@
 wrote_ssd: docs/examples/extract-mixed-output.ssd
 wrote_ssm: docs/examples/extract-mixed-output.ssm
 embedded: 8
-skipped: 2
+skipped: 1

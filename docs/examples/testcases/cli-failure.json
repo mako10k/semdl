@@ -1792,6 +1792,19 @@
       "notes": "unknown trailing option is rejected instead of being ignored"
     },
     {
+      "id": "check-multiple-documents",
+      "command": "ssd check docs/examples/multiple-documents-invalid.ssd",
+      "argv": ["ssd", "check", "docs/examples/multiple-documents-invalid.ssd"],
+      "cwd": ".",
+      "stdin": "",
+      "environment": {},
+      "expected_exit": 1,
+      "expected_stdout": "docs/examples/golden/check-multiple-documents.stdout",
+      "expected_stderr": "",
+      "expected_output_kind": "exact",
+      "notes": "check should surface multiple top-level document blocks as a structural issue"
+    },
+    {
       "id": "merge-standalone-apply-requires-paired-input",
       "command": "ssd merge docs/examples/normalize-standalone-source.ssd",
       "argv": ["ssd", "merge", "docs/examples/normalize-standalone-source.ssd"],

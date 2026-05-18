@@ -1,0 +1,9 @@
+OK docs/examples/multiple-documents-invalid.ssd
+profile: inline
+documents: 2
+resources: 0
+segments: 0
+assertions: 0
+hypotheses: 0
+alternatives: 0
+issues: 1

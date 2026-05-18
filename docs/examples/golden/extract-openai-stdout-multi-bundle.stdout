@@ -8,11 +8,6 @@ inline_document:
 |   source_ref: "docs/examples/extract-source.txt"
 | }
 |
-| document D2 {
-|   title: "抽出元サンプル"
-|   source_ref: "docs/examples/extract-source.txt"
-| }
-|
 | resource R1 {
 |   type: document
 |   label: "抽出元文書"

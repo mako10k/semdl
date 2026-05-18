@@ -597,6 +597,9 @@ CLI は、少なくとも次のサイドカー運用を支援すること。
 - multi-input embedding-enabled `--stdout --format inline` は rebased merged view の canonical inline `.ssd` を返してよいこと
 - multi-input embedding-enabled `--stdout --format sidecar` は rebased merged IDs を使う generated `.ssm` profile text を返してよいこと
 - multi-input embedding-enabled `--stdout --format bundle` は同じ rebased merged view から inline `.ssd` payload と generated `.ssm` payload を同時に返してよいこと
+- multi-input extract が inline `.ssd` を返す surface は、`--out`、no-provider `--stdout`、embedding-enabled `--format inline`、bundle 内 inline payload のいずれでも single top-level `document D1` を返すこと
+- multi-input aggregate の `document D1` body は `title` と `source_ref` について source document 間の same-value intersection だけを保持し、値が異なる、または存在有無が揃わない field は省略してよいこと
+- multi-input aggregate の document-scoped `version` / `generator` と paired `document_meta` 由来 field も same-value intersection だけを保持し、non-consensus field は aggregate output から省略してよいこと
 - multi-input embedding-enabled `--stdout` では `--format` omitted を受け付けず、single-input compatibility default と切り分けて failure にしてよいこと
 - `--format bundle` の bundle framing は `stdout_profile` / `inline_profile` / `sidecar_profile` header、`inline_document:` / `sidecar_document:` section、payload line の `|` prefix を canonical shape として固定してよいこと
 - `--out <file>` では 1 件以上の input から出力先 inline `.ssd` を生成でき、embedding option を伴う場合は paired `.ssm` も生成できること

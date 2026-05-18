@@ -1,0 +1,7 @@
+document D1 {
+  title: "Document Meta Sample"
+  source_ref: "docs/source/document-meta.txt"
+  version: "1.0"
+  generator: "ssd extract"
+  review_status: "approved"
+}
