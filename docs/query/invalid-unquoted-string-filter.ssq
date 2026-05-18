@@ -1,6 +1,4 @@
-# Invalid .ssq example: string equality requires a quoted rhs
 query {
   select: assertion
-  where: provenance_kind = extracted
   return: matches
 }

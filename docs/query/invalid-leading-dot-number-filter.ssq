@@ -1,6 +1,4 @@
-# Invalid .ssq example: numeric equality requires a leading digit
 query {
   select: assertion
-  where: confidence = .5
   return: matches
 }

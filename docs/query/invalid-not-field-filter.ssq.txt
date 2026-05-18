@@ -1,4 +1,5 @@
 query {
   select: assertion
+  where: not = true
   return: matches
 }

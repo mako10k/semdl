@@ -1,6 +1,6 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-unmatched-parenthesis-filter.ssq docs/examples/minimal.ssd
-query_file: docs/query/invalid-unmatched-parenthesis-filter.ssq
+command: ssd search docs/query/invalid-unmatched-parenthesis-filter.ssq.txt docs/examples/minimal.ssd
+query_file: docs/query/invalid-unmatched-parenthesis-filter.ssq.txt
 where: source_presence and (confidence > 0.8 or label = "売上増加"
 reason: closing ')' is required for each opening '(' in the current .ssq filter profile
 allowed:

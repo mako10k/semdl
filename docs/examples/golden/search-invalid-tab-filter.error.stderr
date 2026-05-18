@@ -1,6 +1,6 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-tab-filter.ssq docs/examples/minimal.ssd
-query_file: docs/query/invalid-tab-filter.ssq
+command: ssd search docs/query/invalid-tab-filter.ssq.txt docs/examples/minimal.ssd
+query_file: docs/query/invalid-tab-filter.ssq.txt
 where: 	confidence	=	1
 reason: tab characters are not supported in the current .ssq filter profile
 allowed:

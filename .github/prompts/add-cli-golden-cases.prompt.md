@@ -6,11 +6,11 @@ agent: "agent"
 ---
 Add or revise SEMDL CLI golden cases for the requested behavior.
 
-Requirements, in order:
-- Treat [docs/test-runner-format.md](../../docs/test-runner-format.md) and [docs/test-runner-contract.md](../../docs/test-runner-contract.md) as authoritative.
-- Keep [docs/examples/testcases/cli-success.json](../../docs/examples/testcases/cli-success.json) and [docs/examples/testcases/cli-failure.json](../../docs/examples/testcases/cli-failure.json) aligned with the golden files under [docs/examples/golden/](../../docs/examples/golden/).
-- Update [docs/requirements.md](../../docs/requirements.md) if the new case changes the documented acceptance surface.
-- Invoke `semantics-code-reviewer` before finalizing if the new case changes expected stdout or stderr, introduces a new CLI argument or selector boundary, or requires choosing between competing valid interpretations of the current docs.
+Use this checklist:
+- Source of truth: [docs/test-runner-format.md](../../docs/test-runner-format.md) and [docs/test-runner-contract.md](../../docs/test-runner-contract.md).
+- Keep [docs/examples/testcases/cli-success.json](../../docs/examples/testcases/cli-success.json) and [docs/examples/testcases/cli-failure.json](../../docs/examples/testcases/cli-failure.json) aligned with [docs/examples/golden/](../../docs/examples/golden/).
+- Update [docs/requirements.md](../../docs/requirements.md) only when the new case changes the documented acceptance surface.
+- Run `semantics-code-reviewer` before finalizing if stdout or stderr expectations change, a new CLI argument or selector boundary is introduced, or the docs explicitly permit more than one valid behavior.
 
 Expected output:
 - Updated manifest entries

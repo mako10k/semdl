@@ -1,5 +1,4 @@
 query {
   select: assertion
-  where: confidence > "0.8"
   return: matches
 }

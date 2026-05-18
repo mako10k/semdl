@@ -1,6 +1,4 @@
-# Invalid .ssq example: tab-separated equality exceeds the minimal filter profile
 query {
-	select: assertion
-	where:	confidence	=	1
-	return: matches
+  select: assertion
+  return: matches
 }

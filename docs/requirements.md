@@ -1555,25 +1555,25 @@ test runner 定義:
 - `ssd annotate id:H1 rationale "未完 docs/examples/minimal.ssd`
   - quoted string が閉じていないため字句段階で失敗する
   - 期待 stderr は [docs/examples/golden/annotate-unterminated-quoted-string.error.stderr](docs/examples/golden/annotate-unterminated-quoted-string.error.stderr) と一致する
-- `ssd search docs/query/invalid-range-quoted-number-filter.ssq docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-range-quoted-number-filter.ssq.txt docs/examples/minimal.ssd`
   - range filter の rhs が quoted number の場合は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-range-quoted-number-filter.error.stderr](docs/examples/golden/search-invalid-range-quoted-number-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-unmatched-parenthesis-filter.ssq docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-unmatched-parenthesis-filter.ssq.txt docs/examples/minimal.ssd`
   - closing されない grouping は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-unmatched-parenthesis-filter.error.stderr](docs/examples/golden/search-invalid-unmatched-parenthesis-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-empty-group-filter.ssq docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-empty-group-filter.ssq.txt docs/examples/minimal.ssd`
   - empty grouping は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-empty-group-filter.error.stderr](docs/examples/golden/search-invalid-empty-group-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-group-adjacency-filter.ssq docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-group-adjacency-filter.ssq.txt docs/examples/minimal.ssd`
   - term と group の間に operator がない式は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-group-adjacency-filter.error.stderr](docs/examples/golden/search-invalid-group-adjacency-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-dangling-not-filter.ssq docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-dangling-not-filter.ssq.txt docs/examples/minimal.ssd`
   - operand のない unary `not` は validation failure とする
   - 期待 stderr は [docs/examples/golden/search-invalid-dangling-not-filter.error.stderr](docs/examples/golden/search-invalid-dangling-not-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-not-right-paren-filter.ssq docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-not-right-paren-filter.ssq.txt docs/examples/minimal.ssd`
   - `not )` のように closing parenthesis が operand 位置へ現れる式は validation failure とする
   - 期待 stderr は [docs/examples/golden/search-invalid-not-right-paren-filter.error.stderr](docs/examples/golden/search-invalid-not-right-paren-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-not-field-filter.ssq docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-not-field-filter.ssq.txt docs/examples/minimal.ssd`
   - current `where` profile では reserved keyword `not` を field name として使えない
   - 期待 stderr は [docs/examples/golden/search-invalid-not-field-filter.error.stderr](docs/examples/golden/search-invalid-not-field-filter.error.stderr) と一致する
 

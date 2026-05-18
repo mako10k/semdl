@@ -1,6 +1,6 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-group-adjacency-filter.ssq docs/examples/minimal.ssd
-query_file: docs/query/invalid-group-adjacency-filter.ssq
+command: ssd search docs/query/invalid-group-adjacency-filter.ssq.txt docs/examples/minimal.ssd
+query_file: docs/query/invalid-group-adjacency-filter.ssq.txt
 where: source_presence (confidence > 0.8)
 reason: boolean terms and groups must be separated by `and` or `or`
 allowed:

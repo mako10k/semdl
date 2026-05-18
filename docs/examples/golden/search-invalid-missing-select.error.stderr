@@ -1,6 +1,6 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-missing-select.ssq docs/examples/minimal.ssd
-query_file: docs/query/invalid-missing-select.ssq
+command: ssd search docs/query/invalid-missing-select.ssq.txt docs/examples/minimal.ssd
+query_file: docs/query/invalid-missing-select.ssq.txt
 select: <missing>
 reason: select is required
 allowed:

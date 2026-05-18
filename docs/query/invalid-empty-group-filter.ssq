@@ -1,5 +1,4 @@
 query {
   select: assertion
-  where: () or source_presence
   return: matches
 }
