@@ -24,6 +24,14 @@ npm install
 npm run compile
 ```
 
+Bundle the runtime files used by the packaged extension:
+
+```bash
+cd editors/vscode
+npm install
+npm run bundle
+```
+
 Build a VSIX package locally:
 
 ```bash
@@ -33,6 +41,7 @@ npm run package:vsix
 ```
 
 The generated package is written to `dist/semdl-<version>.vsix`.
+The packaged runtime is emitted to `bundle/extension.js` and `bundle/server.js`.
 
 The extension currently contributes a single command:
 - `SEMDL: Show Language Server Status`

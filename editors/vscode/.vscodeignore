@@ -2,8 +2,11 @@
 .vscode/**
 .vscode-test/**
 dist/**
+node_modules/**
 node_modules/.bin/**
+out/**
 out/**/*.map
+bundle/**/*.map
 src/**
 server/src/**
 **/*.ts

@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { LanguageClient, type LanguageClientOptions, type ServerOptions, TransportKind } from 'vscode-languageclient/node';
 
 export function getServerModule(context: vscode.ExtensionContext): string {
-  return context.asAbsolutePath(path.join('out', 'server', 'server.js'));
+  return context.asAbsolutePath(path.join('bundle', 'server.js'));
 }
 
 export function createLanguageClient(context: vscode.ExtensionContext, outputChannel: vscode.OutputChannel): LanguageClient {
