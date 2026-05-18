@@ -1,0 +1,17 @@
+{
+  "expected_diagnostics": [
+    {
+      "file": "multiple-documents-invalid.ssd",
+      "allow": [
+        {
+          "line": 4,
+          "message": "The `document` block is only allowed once and must appear first."
+        },
+        {
+          "line": 5,
+          "message": "Unexpected closing brace."
+        }
+      ]
+    }
+  ]
+}

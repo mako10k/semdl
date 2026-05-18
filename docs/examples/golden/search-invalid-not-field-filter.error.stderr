@@ -1,6 +1,6 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-not-field-filter.ssq.txt docs/examples/minimal.ssd
-query_file: docs/query/invalid-not-field-filter.ssq.txt
+command: ssd search docs/query/invalid-not-field-filter.ssq docs/examples/minimal.ssd
+query_file: docs/query/invalid-not-field-filter.ssq
 where: not = true
 reason: reserved keyword `not` cannot be used as a field name in the current .ssq filter profile
 allowed:

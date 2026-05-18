@@ -1,0 +1,62 @@
+{
+  "expected_diagnostics": [
+    {
+      "file": "invalid-missing-select.ssq",
+      "allow": [
+        {
+          "line": 2,
+          "message": "Query documents require a `select:` entry."
+        },
+        {
+          "line": 3,
+          "message": "The first query entry must be `select:`."
+        }
+      ]
+    },
+    {
+      "file": "invalid-range-quoted-number-filter.ssq",
+      "allow": [
+        {
+          "line": 3,
+          "message": "Range filters require a numeric value."
+        }
+      ]
+    },
+    {
+      "file": "invalid-unmatched-parenthesis-filter.ssq",
+      "allow": [
+        {
+          "line": 3,
+          "message": "Unmatched parenthesis in `where:` expression."
+        }
+      ]
+    },
+    {
+      "file": "invalid-dangling-not-filter.ssq",
+      "allow": [
+        {
+          "line": 3,
+          "message": "Filter terms must begin with an identifier field reference."
+        }
+      ]
+    },
+    {
+      "file": "invalid-not-right-paren-filter.ssq",
+      "allow": [
+        {
+          "line": 3,
+          "message": "Filter terms must begin with an identifier field reference."
+        }
+      ]
+    },
+    {
+      "file": "invalid-not-field-filter.ssq",
+      "allow": [
+        {
+          "line": 3,
+          "message": "Filter terms must begin with an identifier field reference."
+        }
+      ]
+    }
+  ]
+}

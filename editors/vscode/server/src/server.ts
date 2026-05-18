@@ -9,13 +9,14 @@ import {
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { analyzeDocument } from './analyzer';
+import { filterExpectedDiagnostics } from './diagnosticPolicy';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
 function publishDiagnostics(document: TextDocument): void {
   const result = analyzeDocument(document);
-  connection.sendDiagnostics({ uri: document.uri, diagnostics: result.diagnostics });
+  connection.sendDiagnostics({ uri: document.uri, diagnostics: filterExpectedDiagnostics(document, result.diagnostics) });
 }
 
 connection.onInitialize((_params: InitializeParams): InitializeResult => {

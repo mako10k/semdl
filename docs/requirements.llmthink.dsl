@@ -50,6 +50,9 @@ step S28B:
       initial editor integration は `.ssd`、`.ssm`、`.ssq` の basic language identification を提供してよい。
       initial language server は TypeScript 実装としてよく、extension host から分離した process にしてよい。
       initial LSP feature set は parse / validate diagnostics と top-level document symbols に限定してよい。
+      expected diagnostic allow rule は editor-only policy file として扱い、core / CLI format へ先行して埋め込んではならない。
+      initial expected diagnostic allow rule は同一ディレクトリの `.semdl-diagnostics.json` だけを見てよく、exact file name、1-based line number、exact diagnostic message 一致だけを許容条件にしてよい。
+      wildcard、directory-wide default、workspace-wide default、parent directory 継承、message prefix match は初回では許可しない。
       completion、hover、rename、formatting、code action、semantic token、workspace-wide index は後続 slice に分離してよい。
       editor surface は requirements、grammar artifacts、core / CLI behavior に準拠する adapter とし、editor-only semantics を先行定義してはならない。
     annotation rationale:

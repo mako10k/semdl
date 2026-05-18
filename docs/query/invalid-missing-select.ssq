@@ -1,4 +1,5 @@
+# Invalid .ssq example: the minimal profile requires select
 query {
-  select: assertion
+  where: source_presence
   return: matches
 }

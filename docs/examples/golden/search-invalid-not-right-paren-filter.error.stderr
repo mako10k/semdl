@@ -1,6 +1,6 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-not-right-paren-filter.ssq.txt docs/examples/minimal.ssd
-query_file: docs/query/invalid-not-right-paren-filter.ssq.txt
+command: ssd search docs/query/invalid-not-right-paren-filter.ssq docs/examples/minimal.ssd
+query_file: docs/query/invalid-not-right-paren-filter.ssq
 where: not )
 reason: unary `not` must be followed by a filter term or parenthesized group
 allowed:

@@ -1,5 +1,0 @@
-# Invalid .ssq example: the minimal profile requires select
-query {
-  where: source_presence
-  return: matches
-}

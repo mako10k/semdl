@@ -1,5 +1,0 @@
-query {
-  select: assertion
-  where: not
-  return: matches
-}

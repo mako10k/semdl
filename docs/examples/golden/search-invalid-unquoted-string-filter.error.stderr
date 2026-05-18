@@ -1,6 +1,6 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-unquoted-string-filter.ssq.txt docs/examples/minimal.ssd
-query_file: docs/query/invalid-unquoted-string-filter.ssq.txt
+command: ssd search docs/query/invalid-unquoted-string-filter.ssq docs/examples/minimal.ssd
+query_file: docs/query/invalid-unquoted-string-filter.ssq
 where: provenance_kind = extracted
 reason: equality checks must use a quoted string, number, or boolean on the right-hand side
 allowed:

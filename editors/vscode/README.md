@@ -11,6 +11,31 @@ Current scope:
 - TypeScript build wiring for extension and language server
 - Language server entrypoint
 
+Expected editor diagnostics can be suppressed for intentionally invalid fixtures with a same-directory `.semdl-diagnostics.json` file.
+The initial policy surface is intentionally narrow:
+- only the diagnosed file's own directory is consulted
+- rules must match an exact file name in that directory
+- each suppressed diagnostic must match an exact 1-based line number and exact message
+- wildcard and inherited suppression are ignored
+
+Example:
+
+```json
+{
+	"expected_diagnostics": [
+		{
+			"file": "invalid-range-quoted-number-filter.ssq",
+			"allow": [
+				{
+					"line": 3,
+					"message": "Range filters require a numeric value."
+				}
+			]
+		}
+	]
+}
+```
+
 Intentionally deferred:
 - Richer diagnostics, hover, completion, rename, formatting, code actions, and semantic tokens
 

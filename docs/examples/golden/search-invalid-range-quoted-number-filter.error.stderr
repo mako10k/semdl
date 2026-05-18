@@ -1,6 +1,6 @@
 ERROR invalid_query_filter
-command: ssd search docs/query/invalid-range-quoted-number-filter.ssq.txt docs/examples/minimal.ssd
-query_file: docs/query/invalid-range-quoted-number-filter.ssq.txt
+command: ssd search docs/query/invalid-range-quoted-number-filter.ssq docs/examples/minimal.ssd
+query_file: docs/query/invalid-range-quoted-number-filter.ssq
 where: confidence > "0.8"
 reason: range comparisons must use a number on the right-hand side
 allowed:

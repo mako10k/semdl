@@ -1,4 +1,6 @@
+# Invalid .ssq example: numeric equality requires digits after the decimal point
 query {
   select: assertion
+  where: confidence = 1.
   return: matches
 }

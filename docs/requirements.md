@@ -68,6 +68,10 @@ SEMDL が対象外とするものは以下とする。
 - initial LSP feature set は parse / validate diagnostics と top-level document symbols に限定してよい
 - completion、hover、rename、formatting、code action、semantic token、workspace-wide index は後続 slice に分離してよい
 - editor integration は requirements、grammar artifacts、core / CLI behavior に準拠する adapter surface とし、editor-only semantics を先行定義してはならない
+- editor diagnostics の expected-error allow rule は editor-only policy file として定義してよく、core / CLI format へ先行して埋め込んではならない
+- initial expected-error allow rule は診断対象 file と同一ディレクトリの `.semdl-diagnostics.json` だけを見てよい
+- initial expected-error allow rule は exact file name、1-based line number、exact diagnostic message の一致だけを許容条件にしてよい
+- wildcard、directory-wide default、workspace-wide default、parent directory 継承、message prefix match は initial slice に含めない
 
 # 4. 概念モデル
 
@@ -1555,25 +1559,25 @@ test runner 定義:
 - `ssd annotate id:H1 rationale "未完 docs/examples/minimal.ssd`
   - quoted string が閉じていないため字句段階で失敗する
   - 期待 stderr は [docs/examples/golden/annotate-unterminated-quoted-string.error.stderr](docs/examples/golden/annotate-unterminated-quoted-string.error.stderr) と一致する
-- `ssd search docs/query/invalid-range-quoted-number-filter.ssq.txt docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-range-quoted-number-filter.ssq docs/examples/minimal.ssd`
   - range filter の rhs が quoted number の場合は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-range-quoted-number-filter.error.stderr](docs/examples/golden/search-invalid-range-quoted-number-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-unmatched-parenthesis-filter.ssq.txt docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-unmatched-parenthesis-filter.ssq docs/examples/minimal.ssd`
   - closing されない grouping は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-unmatched-parenthesis-filter.error.stderr](docs/examples/golden/search-invalid-unmatched-parenthesis-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-empty-group-filter.ssq.txt docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-empty-group-filter.ssq docs/examples/minimal.ssd`
   - empty grouping は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-empty-group-filter.error.stderr](docs/examples/golden/search-invalid-empty-group-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-group-adjacency-filter.ssq.txt docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-group-adjacency-filter.ssq docs/examples/minimal.ssd`
   - term と group の間に operator がない式は失敗する
   - 期待 stderr は [docs/examples/golden/search-invalid-group-adjacency-filter.error.stderr](docs/examples/golden/search-invalid-group-adjacency-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-dangling-not-filter.ssq.txt docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-dangling-not-filter.ssq docs/examples/minimal.ssd`
   - operand のない unary `not` は validation failure とする
   - 期待 stderr は [docs/examples/golden/search-invalid-dangling-not-filter.error.stderr](docs/examples/golden/search-invalid-dangling-not-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-not-right-paren-filter.ssq.txt docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-not-right-paren-filter.ssq docs/examples/minimal.ssd`
   - `not )` のように closing parenthesis が operand 位置へ現れる式は validation failure とする
   - 期待 stderr は [docs/examples/golden/search-invalid-not-right-paren-filter.error.stderr](docs/examples/golden/search-invalid-not-right-paren-filter.error.stderr) と一致する
-- `ssd search docs/query/invalid-not-field-filter.ssq.txt docs/examples/minimal.ssd`
+- `ssd search docs/query/invalid-not-field-filter.ssq docs/examples/minimal.ssd`
   - current `where` profile では reserved keyword `not` を field name として使えない
   - 期待 stderr は [docs/examples/golden/search-invalid-not-field-filter.error.stderr](docs/examples/golden/search-invalid-not-field-filter.error.stderr) と一致する
 
