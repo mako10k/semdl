@@ -37,6 +37,24 @@ step S28:
     annotation rationale:
       "正本情報が help 内だけで取得できるなら、同名 option の意味衝突も help 内で解ける必要があるため"
 
+problem P8:
+  "SEMDL の editor integration を導入する際、syntax highlighting と language server の責務をどこで切るか"
+  annotation rationale:
+    "highlighting と diagnostics/navigation を同時に広げると、VS Code extension host、server process、grammar artifact の境界が曖昧になりやすい"
+
+step S28B:
+  decision D28B based_on P8, D4, D8A:
+    |
+      first-party editor integration は VS Code extension を対象にしてよい。
+      initial syntax highlighting は `.ssd`、`.ssm`、`.ssq` 向け TextMate grammar に固定してよく、language server 非起動時でも有効でなければならない。
+      initial editor integration は `.ssd`、`.ssm`、`.ssq` の basic language identification を提供してよい。
+      initial language server は TypeScript 実装としてよく、extension host から分離した process にしてよい。
+      initial LSP feature set は parse / validate diagnostics と top-level document symbols に限定してよい。
+      completion、hover、rename、formatting、code action、semantic token、workspace-wide index は後続 slice に分離してよい。
+      editor surface は requirements、grammar artifacts、core / CLI behavior に準拠する adapter とし、editor-only semantics を先行定義してはならない。
+    annotation rationale:
+      "最初に VS Code / TextMate / TypeScript LSP の責務境界を固定すると、editor integration を小さく実装開始できるため"
+
 step S2:
   decision D2 based_on D1:
     "初期更新機能は言語拡張ではなく CLI の最小集合 add / set / remove / annotate として提供する"
