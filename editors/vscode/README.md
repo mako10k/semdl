@@ -72,3 +72,8 @@ The extension currently contributes a single command:
 - `SEMDL: Show Language Server Status`
 
 That command reports the current extension and LSP status. The language server starts automatically for `.ssd`, `.ssm`, and `.ssq` documents.
+
+## License
+
+This extension is distributed under the Mozilla Public License 2.0.
+The corresponding Source Code Form is available at https://github.com/mako10k/semdl.
