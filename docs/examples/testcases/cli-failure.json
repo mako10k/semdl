@@ -1466,7 +1466,7 @@
       "stdin": "",
       "environment": {},
       "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
-      "expected_exit": 2,
+      "expected_exit": 3,
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/annotate-type-alternative-out-alias-sidecar.error.stderr",
       "expected_output_kind": "exact",

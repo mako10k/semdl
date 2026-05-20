@@ -2490,7 +2490,7 @@
       "environment": {},
       "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
       "expected_files": {
-        "docs/examples/minimal.ssd": "docs/examples/fixtures/set-path-A1-label.expected.ssd",
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/set-path-A1-label.apply.expected.ssd",
         "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
       },
       "expected_exit": 0,
@@ -2526,7 +2526,7 @@
       "environment": {},
       "setup_files": ["docs/examples/minimal.ssd", "docs/examples/minimal.ssm"],
       "expected_files": {
-        "docs/examples/minimal.ssd": "docs/examples/fixtures/set-path-A1-label.expected.ssd",
+        "docs/examples/minimal.ssd": "docs/examples/fixtures/set-path-A1-label.apply.expected.ssd",
         "docs/examples/minimal.ssm": "docs/examples/minimal.ssm"
       },
       "expected_exit": 0,

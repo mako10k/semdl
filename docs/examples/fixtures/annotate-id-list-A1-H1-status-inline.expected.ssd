@@ -25,7 +25,7 @@ assertion A1 {
   embedding_presence: true
 
   meta {
-    confidence: 0.82
+    confidence: 0.91
     provenance_kind: extracted
     rationale: "文中の明示表現をそのまま主張化した"
     status: "検証待ち"

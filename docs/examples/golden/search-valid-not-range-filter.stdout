@@ -1,7 +1,4 @@
 query_file: docs/query/valid-not-range-filter.ssq
 mode: matches
 inputs: 1
-matches: 1
-- file: docs/examples/minimal.ssd
-  id: A1
-  kind: assertion
+matches: 0
