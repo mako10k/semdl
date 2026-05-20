@@ -128,7 +128,7 @@ segment HELP_LINE_23 {
 
 segment HELP_LINE_24 {
   source: HELP_TOPIC
-  text_quote: "- Write, preview, or emit one rationale, caveat, todo, status, or explanation field in inline or sidecar metadata."
+  text_quote: "- Write, preview, or emit one rationale, caveat, todo, status, or explanation field in Solo mode or Sidekick metadata."
 }
 
 segment HELP_LINE_25 {
@@ -138,7 +138,7 @@ segment HELP_LINE_25 {
 
 segment HELP_LINE_26 {
   source: HELP_TOPIC
-  text_quote: "- `--target auto` uses sidecar on paired input and otherwise prefers inline only where that standalone inline form is supported."
+  text_quote: "- `--target auto` uses Sidekick on paired input and otherwise prefers Solo mode only where that standalone form is supported."
 }
 
 segment HELP_LINE_27 {
@@ -148,12 +148,12 @@ segment HELP_LINE_27 {
 
 segment HELP_LINE_28 {
   source: HELP_TOPIC
-  text_quote: "- `type:<kind>` annotate is currently limited to sidecar output and requires `--allow-multi` even when one target matches."
+  text_quote: "- `type:<kind>` annotate is currently limited to Sidekick output and requires `--allow-multi` even when one target matches."
 }
 
 segment HELP_LINE_29 {
   source: HELP_TOPIC
-  text_quote: "- `--stdout` and `--out` return the canonical text for the resolved target profile."
+  text_quote: "- `--stdout` and `--out` return the canonical text for the resolved mode."
 }
 
 segment HELP_LINE_30 {

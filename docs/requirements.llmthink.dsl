@@ -4,6 +4,20 @@ framework SemdlRequirements:
 domain SEMDL:
   description "SEMDL requirements decisions for query, mutation, and CLI update boundaries"
 
+problem P0:
+  "SEMDL 固有 artifact 名称を modern で一貫した表示名にそろえる際、どこまで rename してよいか"
+  annotation rationale:
+    "display name の整理と wire identifier の変更を混同すると、用語統一が契約破壊に化けやすいため"
+
+step S0:
+  decision D0 based_on P0:
+    |
+      `.ssd`、`.ssm`、`.ssq` の canonical display name はそれぞれ SEMDL Canvas、SEMDL Sidekick、SEMDL Lens としてよい。
+      `Solo mode` と `Companion mode` は display-layer term として inline profile / sidecar profile に対応付けてよい。
+      ただし拡張子、CLI binary 名、subcommand 名、language id、tool id、schema key などの公開識別子は rename してはならない。
+    annotation rationale:
+      "用語の modern 化を display name と定義文に閉じると、仕様 drift を抑えながら public-facing surface を整えられるため"
+
 problem P1:
   "SEMDL で将来 semql を導入する場合、参照系と更新系の責務をどう分離するか"
   annotation rationale:
@@ -126,7 +140,7 @@ step S2D:
       `--stdout` は `--dry-run` や `--out` と併用してはならず、`--out` は source `.ssd` や source sibling `.ssm` を alias してはならない。
       inline target、auto target、upsert、broader conflict policy option はこの slice に含めない。
     annotation rationale:
-      "metadata-only add でも sidecar profile に閉じた non-destructive parity を足すと、create-only と layer ownership を保ったまま確認経路を増やせるため"
+      "metadata-only add でも Companion mode に閉じた non-destructive parity を足すと、create-only と layer ownership を保ったまま確認経路を増やせるため"
 
 problem P2:
   "初期更新 CLI において、更新対象 selector と各レイヤの責務をどの粒度まで固定するか"

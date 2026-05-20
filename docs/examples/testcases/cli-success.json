@@ -685,7 +685,7 @@
       "expected_stdout": "docs/examples/golden/extract-raw-stdout.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "raw extract stdout should emit a skeletal semantic document with one segment per non-empty line"
+      "notes": "raw extract stdout should emit a skeletal Canvas document with one segment per non-empty line"
     },
     {
       "id": "extract-stdout-standalone-ssd",
@@ -699,7 +699,7 @@
       "expected_stdout": "docs/examples/extract-source.ssd",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "no-provider stdout should emit canonical inline `.ssd` for a standalone existing semantic document"
+      "notes": "no-provider stdout should emit canonical Solo mode `.ssd` for a standalone existing Canvas document"
     },
     {
       "id": "extract-stdout-paired-ssd",
@@ -713,7 +713,7 @@
       "expected_stdout": "docs/examples/minimal.inline.ssd",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "no-provider stdout should emit the resolved canonical inline `.ssd` for a paired semantic document"
+      "notes": "no-provider stdout should emit the resolved canonical Solo mode `.ssd` for a paired Canvas document"
     },
     {
       "id": "extract-stdout-multi-existing",
@@ -799,7 +799,7 @@
       "expected_stdout": "docs/examples/golden/extract-multi-existing-out.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "extract --out should aggregate multiple existing semantic inputs into one rebased inline document while preserving source sidecar metadata"
+      "notes": "extract --out should aggregate multiple existing Canvas inputs into one rebased Solo mode document while preserving source Sidekick metadata"
     },
     {
       "id": "extract-mixed-openai-out",
@@ -1993,7 +1993,7 @@
       "expected_stdout": "docs/examples/golden/set-meta-A1-confidence.dryrun.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "sidecar metadata update preview"
+      "notes": "Sidekick metadata update preview"
     },
     {
       "id": "set-id-A1-label-dryrun",
@@ -2361,7 +2361,7 @@
       "expected_stdout": "docs/examples/golden/annotate-H1-rationale.dryrun.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "sidecar annotation preview"
+      "notes": "Sidekick annotation preview"
     },
     {
       "id": "annotate-H1-todo-sidecar-stdout",
@@ -2551,7 +2551,7 @@
       "expected_stdout": "docs/examples/golden/annotate-H1-todo.apply.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "annotate apply should append sidecar metadata through the common update path"
+      "notes": "annotate apply should append Sidekick metadata through the common update path"
     },
     {
       "id": "annotate-id-list-A1-H1-todo-sidecar-apply",
@@ -2802,7 +2802,7 @@
       "expected_stdout": "docs/examples/golden/remove-A1-embedding.apply.stdout",
       "expected_stderr": "",
       "expected_output_kind": "exact",
-      "notes": "remove meta apply should remove a sidecar metadata subtree when structural integrity remains intact"
+      "notes": "remove meta apply should remove a Sidekick metadata subtree when structural integrity remains intact"
     },
     {
       "id": "remove-ALT1B-apply",

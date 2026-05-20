@@ -25,7 +25,7 @@
       {
         "id": "semdl-ssd",
         "aliases": [
-          "SEMDL SSD",
+          "SEMDL Canvas",
           "ssd"
         ],
         "extensions": [
@@ -36,7 +36,7 @@
       {
         "id": "semdl-ssm",
         "aliases": [
-          "SEMDL SSM",
+          "SEMDL Sidekick",
           "ssm"
         ],
         "extensions": [
@@ -47,7 +47,7 @@
       {
         "id": "semdl-ssq",
         "aliases": [
-          "SEMDL SSQ",
+          "SEMDL Lens",
           "ssq"
         ],
         "extensions": [

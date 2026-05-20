@@ -153,27 +153,27 @@ segment HELP_LINE_28 {
 
 segment HELP_LINE_29 {
   source: HELP_TOPIC
-  text_quote: "- Apply, preview, or emit one target field update, or one explicit id-list / type allow-multi inline field update set, in inline structure or sidecar metadata."
+  text_quote: "- Apply, preview, or emit one target field update, or one explicit id-list / type allow-multi Solo mode field update set, in Solo mode structure or Sidekick metadata."
 }
 
 segment HELP_LINE_30 {
   source: HELP_TOPIC
-  text_quote: "- `path:` and current `id:` updates use canonical inline `.ssd` for `--stdout` and `--out`."
+  text_quote: "- `path:` and current `id:` updates use canonical Solo mode Canvas `.ssd` for `--stdout` and `--out`."
 }
 
 segment HELP_LINE_31 {
   source: HELP_TOPIC
-  text_quote: "- explicit id lists are limited to comma-separated `id:` atoms and currently preserve inline-only id field ownership."
+  text_quote: "- explicit id lists are limited to comma-separated `id:` atoms and currently preserve Solo mode id field ownership."
 }
 
 segment HELP_LINE_32 {
   source: HELP_TOPIC
-  text_quote: "- `type:<kind>` set is limited to inline-owned fields and currently requires `--allow-multi` even when one target matches."
+  text_quote: "- `type:<kind>` set is limited to Solo mode-owned fields and currently requires `--allow-multi` even when one target matches."
 }
 
 segment HELP_LINE_33 {
   source: HELP_TOPIC
-  text_quote: "- `meta:` updates use canonical sidecar `.ssm` for `--stdout` and `--out`."
+  text_quote: "- `meta:` updates use canonical Sidekick `.ssm` for `--stdout` and `--out`."
 }
 
 segment HELP_LINE_34 {

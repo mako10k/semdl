@@ -24,12 +24,12 @@ Usage:
 - `ssd annotate type:<kind> <kind> <text> --target sidecar --allow-multi --out <output-file> --dry-run <file>`
 
 Purpose:
-- Write, preview, or emit one rationale, caveat, todo, status, or explanation field in inline or sidecar metadata.
+- Write, preview, or emit one rationale, caveat, todo, status, or explanation field in Solo mode or Sidekick metadata.
 - `--target inline` is currently limited to standalone input and `assertion` / `hypothesis` targets.
-- `--target auto` uses sidecar on paired input and otherwise prefers inline only where that standalone inline form is supported.
+- `--target auto` uses Sidekick on paired input and otherwise prefers Solo mode only where that standalone form is supported.
 - explicit annotate id lists are limited to comma-separated `id:` atoms and currently require `--target inline` or `--target sidecar`.
-- `type:<kind>` annotate is currently limited to sidecar output and requires `--allow-multi` even when one target matches.
-- `--stdout` and `--out` return the canonical text for the resolved target profile.
+- `type:<kind>` annotate is currently limited to Sidekick output and requires `--allow-multi` even when one target matches.
+- `--stdout` and `--out` return the canonical text for the resolved mode.
 - Use `ssd add annotation ... --target sidecar` when you need create-only field-map semantics.
 
 Related help:

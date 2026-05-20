@@ -10,7 +10,7 @@ Usage:
 - `ssd remove type:<kind> --allow-multi --cascade [--stdout|--dry-run|--out <output.ssd> [--dry-run]] <file>`
 
 Purpose:
-- Remove one sidecar metadata field or one structural target set when the selector resolves safely.
+- Remove one Sidekick metadata field or one structural target set when the selector resolves safely.
 - Structural removals fail on inbound references unless `--cascade` removes dependent targets in the same step.
 - Explicit comma-separated structural selector lists resolve each `id:`, `path:`, or `type:` atom and remove the union target set.
 - `--stdout` and `--out` return the post-remove canonical inline `.ssd` without mutating the source files.

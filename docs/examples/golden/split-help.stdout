@@ -5,7 +5,7 @@ Usage:
 - `ssd split <input.ssd> --dry-run`
 
 Purpose:
-- Separate sidecar-eligible metadata into a paired `.ssm` while preserving the semantic skeleton in `.ssd`.
+- Separate Sidekick-eligible metadata into a paired Sidekick `.ssm` while preserving the Canvas skeleton in `.ssd`.
 - `--dry-run` previews what stays in `.ssd` and what moves to `.ssm`.
 
 Related help:

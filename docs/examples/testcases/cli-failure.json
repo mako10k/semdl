@@ -599,7 +599,7 @@
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/extract-stdout-inline-format-without-embedding.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "extract should reject stdout inline profile selection unless embedding generation is enabled"
+      "notes": "extract should reject stdout Solo mode selection unless embedding generation is enabled"
     },
     {
       "id": "extract-stdout-sidecar-format-without-embedding",
@@ -668,7 +668,7 @@
       "expected_stdout": "",
       "expected_stderr": "docs/examples/golden/extract-out-format-sidecar.error.stderr",
       "expected_output_kind": "exact",
-      "notes": "extract --out should reject sidecar profile selection because format stays stdout-only in this slice"
+      "notes": "extract --out should reject Companion mode selection because format stays stdout-only in this slice"
     },
     {
       "id": "extract-out-format-bundle",

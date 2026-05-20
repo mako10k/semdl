@@ -38,7 +38,7 @@ segment HELP_LINE_5 {
 
 segment HELP_LINE_6 {
   source: HELP_TOPIC
-  text_quote: "- Separate sidecar-eligible metadata into a paired `.ssm` while preserving the semantic skeleton in `.ssd`."
+  text_quote: "- Separate Sidekick-eligible metadata into a paired Sidekick `.ssm` while preserving the Canvas skeleton in `.ssd`."
 }
 
 segment HELP_LINE_7 {

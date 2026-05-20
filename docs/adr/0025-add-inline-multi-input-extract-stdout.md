@@ -47,7 +47,7 @@ multi-input no-provider stdout は、0023 で導入した resolved-view aggregat
 この slice では次を導入しない。
 
 - `--target`
-- stdout での inline / sidecar profile selection
+- stdout での Solo mode / Companion mode selection
 - inline `.ssd` と generated `.ssm` の multiplexed stdout framing
 
 ## Consequences

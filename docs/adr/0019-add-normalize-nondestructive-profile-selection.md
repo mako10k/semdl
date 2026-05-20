@@ -55,7 +55,7 @@ merge / sidecar conflict policy、priority selection、warning mode は引き続
 
 - help surface で `--format semdl` と `--format inline|sidecar` の役割差を具体化できる
 - normalize にだけ profile selection を開くことで、merge / split の責務境界を壊さずに option surface を一段進められる
-- sidecar profile は non-destructive output に閉じるため、paired apply lifecycle や conflict policy を同時に設計せずに済む
+- Companion mode は non-destructive output に閉じるため、paired apply lifecycle や conflict policy を同時に設計せずに済む
 
 ## Alternatives Considered
 

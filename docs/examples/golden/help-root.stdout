@@ -1,7 +1,7 @@
 SEMDL CLI Help
 
 1. Overview
-- `ssd` validates, explains, transforms, and updates `.ssd` and `.ssm` assets.
+- `ssd` validates, explains, transforms, and updates Canvas `.ssd` and Sidekick `.ssm` assets.
 - This help output is the canonical entrypoint for CLI guidance.
 - Necessary canonical CLI syntax can be obtained from this help and its topic pages without opening repository files.
 - Repository artifacts for requirements, acceptance, and formal notation may exist, but they are aligned maintenance assets rather than the user-facing authority.
@@ -27,15 +27,15 @@ SEMDL CLI Help
 4. Reference
 - `check`: validate syntax and references for a document set
 - `search`: evaluate a read-only query against document inputs
-- `extract`: build an initial semantic document from raw inputs
+- `extract`: build an initial Canvas document from raw inputs
 - `similarity`: compare two semantic targets
 - `explain`: show the merged semantic view for an entity id
-- `normalize`: canonicalize document shape and output profile
+- `normalize`: canonicalize Canvas or Sidekick shape and output mode
 - `add`: add one semantic entity skeleton
-- `set`: update one inline or sidecar field, including explicit id-list and type allow-multi inline updates
+- `set`: update one Solo mode field or one Sidekick field, including explicit id-list and type allow-multi Solo mode updates
 - `remove`: remove an explicit target set or fail on unsafe removal
 - `annotate`: add rationale/caveat/todo-like notes
-- `split`: move sidecar-eligible metadata out of inline form
+- `split`: move Sidekick-eligible metadata out of Solo mode form
 - `merge`: produce a merged inline view
 - `help`: navigate this help system
 
@@ -43,9 +43,9 @@ SEMDL CLI Help
 - Validate a document: `ssd check <file>`
 - Explain an assertion: `ssd explain <id> <file>`
 - Preview an inline edit: `ssd set path:<id>.<field> <value> --dry-run <file>`
-- Emit sidecar metadata without writing: `ssd set meta:<id>.<field> <value> --stdout <file>`
-- Preview a sidecar annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`
-- Emit an inline annotation without writing: `ssd annotate id:<id> status <text> --target inline --stdout <file>`
+- Emit Sidekick metadata without writing: `ssd set meta:<id>.<field> <value> --stdout <file>`
+- Preview a Sidekick annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`
+- Emit a Solo mode annotation without writing: `ssd annotate id:<id> status <text> --target inline --stdout <file>`
 - Machine-readable help: `ssd help grammar --format semdl`
 - Understand an option error: `ssd help grammar`
 - Understand a selector-layer error: `ssd help recipes wrong-layer`
@@ -62,6 +62,6 @@ SEMDL CLI Help
 - `extract` can read raw `.txt`, but embedding generation from raw text still requires `--out <output.ssd>` rather than `--stdout`.
 - Non-destructive output options such as `--dry-run`, `--stdout`, and `--out` are not available on every command or every target form.
 - Use `--format semdl` when another tool needs structured help output.
-- Some update and rewrite workflows are still narrower than the read-only commands. Check command-specific help when writing paired `.ssd` / `.ssm` files.
+- Some update and rewrite workflows are still narrower than the read-only commands. Check command-specific help when writing paired Canvas `.ssd` / Sidekick `.ssm` files.
 - Report problems with the command, argv, input paths, expected output, and actual output.
 - Preferred reporting path: repository issue or change request with a reproducing CLI case.

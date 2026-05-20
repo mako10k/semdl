@@ -30,7 +30,7 @@ id list set は current id-selector semantics をそのまま複数 target へ l
 - field 名は command argv 側に 1 回だけ置いてよい
 - current id set が inline ownership を持つ field だけを対象にしてよい
 - metadata-owned field は current single-id set と同じく wrong-layer failure としてよい
-- result payload は current id set と同じ inline profile を使ってよい
+- result payload は current id set と同じ Solo mode を使ってよい
 
 ### 3. validate the whole list before mutation
 

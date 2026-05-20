@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "SEMDL SSM",
+  "name": "SEMDL Sidekick",
   "scopeName": "source.semdl.ssm",
   "patterns": [
     { "include": "#comments" },

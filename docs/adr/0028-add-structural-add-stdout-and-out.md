@@ -72,7 +72,7 @@ option を付けない structural add は current behavior を維持する。
 却下。
 `merge` / `normalize` と異なる alias semantics になると、non-destructive output surface の一貫性が崩れる。
 
-### `--stdout` の result を paired input では sidecar profile にする
+### `--stdout` の result を paired input では Companion mode にする
 
 却下。
 stdout で複数ファイル surface を持ち込むと profile selection 設計を reopen してしまう。今回の slice は canonical inline result に限定する。

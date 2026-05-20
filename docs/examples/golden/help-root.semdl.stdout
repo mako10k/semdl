@@ -22,7 +22,7 @@ segment HELP_LINE_2 {
 
 segment HELP_LINE_3 {
   source: HELP_TOPIC
-  text_quote: "- `ssd` validates, explains, transforms, and updates `.ssd` and `.ssm` assets."
+  text_quote: "- `ssd` validates, explains, transforms, and updates Canvas `.ssd` and Sidekick `.ssm` assets."
 }
 
 segment HELP_LINE_4 {
@@ -137,7 +137,7 @@ segment HELP_LINE_25 {
 
 segment HELP_LINE_26 {
   source: HELP_TOPIC
-  text_quote: "- `extract`: build an initial semantic document from raw inputs"
+  text_quote: "- `extract`: build an initial Canvas document from raw inputs"
 }
 
 segment HELP_LINE_27 {
@@ -152,7 +152,7 @@ segment HELP_LINE_28 {
 
 segment HELP_LINE_29 {
   source: HELP_TOPIC
-  text_quote: "- `normalize`: canonicalize document shape and output profile"
+  text_quote: "- `normalize`: canonicalize Canvas or Sidekick shape and output mode"
 }
 
 segment HELP_LINE_30 {
@@ -162,7 +162,7 @@ segment HELP_LINE_30 {
 
 segment HELP_LINE_31 {
   source: HELP_TOPIC
-  text_quote: "- `set`: update one inline or sidecar field, including explicit id-list and type allow-multi inline updates"
+  text_quote: "- `set`: update one Solo mode field or one Sidekick field, including explicit id-list and type allow-multi Solo mode updates"
 }
 
 segment HELP_LINE_32 {
@@ -177,7 +177,7 @@ segment HELP_LINE_33 {
 
 segment HELP_LINE_34 {
   source: HELP_TOPIC
-  text_quote: "- `split`: move sidecar-eligible metadata out of inline form"
+  text_quote: "- `split`: move Sidekick-eligible metadata out of Solo mode form"
 }
 
 segment HELP_LINE_35 {
@@ -212,17 +212,17 @@ segment HELP_LINE_40 {
 
 segment HELP_LINE_41 {
   source: HELP_TOPIC
-  text_quote: "- Emit sidecar metadata without writing: `ssd set meta:<id>.<field> <value> --stdout <file>`"
+  text_quote: "- Emit Sidekick metadata without writing: `ssd set meta:<id>.<field> <value> --stdout <file>`"
 }
 
 segment HELP_LINE_42 {
   source: HELP_TOPIC
-  text_quote: "- Preview a sidecar annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`"
+  text_quote: "- Preview a Sidekick annotation: `ssd annotate id:<id> rationale <text> --target sidecar --dry-run <file>`"
 }
 
 segment HELP_LINE_43 {
   source: HELP_TOPIC
-  text_quote: "- Emit an inline annotation without writing: `ssd annotate id:<id> status <text> --target inline --stdout <file>`"
+  text_quote: "- Emit a Solo mode annotation without writing: `ssd annotate id:<id> status <text> --target inline --stdout <file>`"
 }
 
 segment HELP_LINE_44 {
@@ -297,7 +297,7 @@ segment HELP_LINE_57 {
 
 segment HELP_LINE_58 {
   source: HELP_TOPIC
-  text_quote: "- Some update and rewrite workflows are still narrower than the read-only commands. Check command-specific help when writing paired `.ssd` / `.ssm` files."
+  text_quote: "- Some update and rewrite workflows are still narrower than the read-only commands. Check command-specific help when writing paired Canvas `.ssd` / Sidekick `.ssm` files."
 }
 
 segment HELP_LINE_59 {

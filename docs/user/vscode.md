@@ -1,6 +1,6 @@
 # VS Code Guide
 
-SEMDL には `.ssd`、`.ssm`、`.ssq` 向けの first-party VS Code extension があります。
+SEMDL には `.ssd`（SEMDL Canvas）、`.ssm`（SEMDL Sidekick）、`.ssq`（SEMDL Lens）向けの first-party VS Code extension があります。
 
 現在の主な範囲は次のとおりです。
 

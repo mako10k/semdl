@@ -30,11 +30,11 @@ Usage:
 - `ssd set type:<kind> <field> <value> --allow-multi --out <output-file> --dry-run <file>`
 
 Purpose:
-- Apply, preview, or emit one target field update, or one explicit id-list / type allow-multi inline field update set, in inline structure or sidecar metadata.
-- `path:` and current `id:` updates use canonical inline `.ssd` for `--stdout` and `--out`.
-- explicit id lists are limited to comma-separated `id:` atoms and currently preserve inline-only id field ownership.
-- `type:<kind>` set is limited to inline-owned fields and currently requires `--allow-multi` even when one target matches.
-- `meta:` updates use canonical sidecar `.ssm` for `--stdout` and `--out`.
+- Apply, preview, or emit one target field update, or one explicit id-list / type allow-multi Solo mode field update set, in Solo mode structure or Sidekick metadata.
+- `path:` and current `id:` updates use canonical Solo mode Canvas `.ssd` for `--stdout` and `--out`.
+- explicit id lists are limited to comma-separated `id:` atoms and currently preserve Solo mode id field ownership.
+- `type:<kind>` set is limited to Solo mode-owned fields and currently requires `--allow-multi` even when one target matches.
+- `meta:` updates use canonical Sidekick `.ssm` for `--stdout` and `--out`.
 
 Related help:
 - `ssd help grammar`

@@ -1,0 +1,69 @@
+document DOC_TERMINOLOGY_INVENTORY {
+  title: "Terminology Inventory"
+  source_ref: "docs/developer/terminology-inventory.md"
+}
+
+resource INVENTORY_DOC {
+  type: process-doc
+  label: "terminology inventory"
+}
+
+assertion A1 {
+  subject: INVENTORY_DOC
+  predicate: purpose
+  object: "This document inventories terms that need definition or normalization rather than establishing the final glossary."
+}
+
+assertion A2 {
+  subject: INVENTORY_DOC
+  predicate: selection_rule
+  object: "The inventory focuses on terms without explicit definitions, terms whose meaning drifts across documents, and prerequisite terms used by major specifications."
+}
+
+assertion A3 {
+  subject: INVENTORY_DOC
+  predicate: existing_definition_cluster
+  object: "resource, segment, assertion, qualified assertion, provenance, hypothesis, alternative, and embedding already have primary definitions in requirements."
+}
+
+assertion A4 {
+  subject: INVENTORY_DOC
+  predicate: normalization_cluster
+  object: ".ssd, .ssm, and .ssq are normalized in this slice to the display names SEMDL Canvas, SEMDL Sidekick, and SEMDL Lens across requirements, README, extension manifest, and grammar files."
+}
+
+assertion A4B {
+  subject: INVENTORY_DOC
+  predicate: profile_display_names
+  object: "Solo mode and Companion mode are the canonical profile display names, while inline profile and sidecar profile remain migration aliases only."
+}
+
+assertion A5 {
+  subject: INVENTORY_DOC
+  predicate: integration_definition_cluster
+  object: "first-party VS Code extension, TypeScript language server, first-party MCP server, language model tool, Tool inventory, and input schema source of truth need concise boundary definitions."
+}
+
+assertion A6 {
+  subject: INVENTORY_DOC
+  predicate: migration_definition_cluster
+  object: "binary audit contract, local analyzer fallback, read-only tool, and mutation tool need migration-oriented definitions."
+}
+
+assertion A7 {
+  subject: INVENTORY_DOC
+  predicate: next_step_order
+  object: "After normalizing Canvas/Sidekick/Lens and Solo mode/Companion mode, define integration and migration terms next."
+}
+
+assertion A8 {
+  subject: INVENTORY_DOC
+  predicate: protected_identifiers
+  object: "Extensions, CLI names, language ids, tool ids, schema keys, environment variables, and argv contracts remain unchanged even when display names are modernized."
+}
+
+hypothesis H1 {
+  about: A4
+  kind: modeling-limit
+  summary: "This companion compresses many concrete file references into grouped assertions, so the md source remains the authoritative location list."
+}

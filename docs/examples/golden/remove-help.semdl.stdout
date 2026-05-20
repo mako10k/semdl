@@ -63,7 +63,7 @@ segment HELP_LINE_10 {
 
 segment HELP_LINE_11 {
   source: HELP_TOPIC
-  text_quote: "- Remove one sidecar metadata field or one structural target set when the selector resolves safely."
+  text_quote: "- Remove one Sidekick metadata field or one structural target set when the selector resolves safely."
 }
 
 segment HELP_LINE_12 {
