@@ -1,0 +1,13 @@
+{
+  // Generic remote MCP template for clients whose schema is close to standard MCP JSON layouts.
+  // Adjust the top-level key and file location to your client.
+  "mcpServers": {
+    "semdl": {
+      "type": "http",
+      "url": "__SEMDL_MCP_URL__",
+      "headers": {
+        "Authorization": "Bearer __SEMDL_MCP_TOKEN__"
+      }
+    }
+  }
+}

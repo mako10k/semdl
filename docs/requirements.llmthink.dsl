@@ -58,6 +58,24 @@ step S28B:
     annotation rationale:
       "最初に VS Code / TextMate / TypeScript LSP の責務境界を固定すると、editor integration を小さく実装開始できるため"
 
+problem P9:
+  "SEMDL の first-party MCP server、VS Code language model tool、TypeScript LSP、C++ binary の責務をどこで切るか"
+  annotation rationale:
+    "tool schema と監査元情報の正本が Node 側 convenience に流れると、VSIX・MCP・LSP 間で schema と semantics が分岐しやすい"
+
+step S28C:
+  decision D28C based_on P9, D4, D28B:
+    |
+      first-party MCP server は Node ベースの adapter surface として scope に入れてよい。
+      first-party MCP tool と VS Code language model tool は同一の Tool inventory と input schema source of truth を共有しなければならない。
+      first slice の public tool は read-only を優先し、check、explain、search、help のような既存 CLI surface の proxy から始めてよい。
+      mutation tool は後続 slice に分離してよく、初回 MCP 導入の必須条件にしない。
+      Node 層は orchestration、schema loading、tool registration、transport adaptation を担当してよいが、public tool semantics や監査元情報を独自定義してはならない。
+      language server は引き続き TypeScript process にしてよいが、LSP 監査に必要な元情報は将来 binary から Node adapter 経由で取得する前提で境界を切らなければならない。
+      binary audit contract が揃うまでの移行段階では、Node 側 local analyzer fallback を残してよいが、恒久的な source of truth と見なしてはならない。
+    annotation rationale:
+      "MCP、VSIX tool、LSP の入口を増やしても、Tool schema と audit data の正本を binary contract 側へ寄せると責務の二重化を避けやすいため"
+
 step S2:
   decision D2 based_on D1:
     "初期更新機能は言語拡張ではなく CLI の最小集合 add / set / remove / annotate として提供する"

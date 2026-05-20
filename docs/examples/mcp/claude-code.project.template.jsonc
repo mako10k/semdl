@@ -1,0 +1,22 @@
+{
+  // Copy to .mcp.json at your repository root when you want to share a project-scoped config.
+  // Keep only the transport entry that matches your server implementation.
+  // Server names are examples; rename them freely.
+  "mcpServers": {
+    "semdl-stdio-example": {
+      "type": "stdio",
+      "command": "__SEMDL_MCP_COMMAND__",
+      "args": [],
+      "env": {
+        "SEMDL_PROJECT_ROOT": "__SEMDL_PROJECT_ROOT__"
+      }
+    },
+    "semdl-http-example": {
+      "type": "http",
+      "url": "__SEMDL_MCP_URL__",
+      "headers": {
+        "Authorization": "Bearer __SEMDL_MCP_TOKEN__"
+      }
+    }
+  }
+}

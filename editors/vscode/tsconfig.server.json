@@ -2,8 +2,8 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "rootDir": "server/src",
+    "rootDir": ".",
     "outDir": "out/server"
   },
-  "include": ["server/src/**/*.ts"]
+  "include": ["server/src/**/*.ts", "src/shared/**/*.ts", "tooling/**/*.json"]
 }

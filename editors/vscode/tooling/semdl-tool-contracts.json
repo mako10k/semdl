@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "name": "check_semdl_document",
+      "displayName": "Check SEMDL Document",
+      "toolReferenceName": "semdl-check",
+      "userDescription": "Validate a SEMDL document and return the CLI validation output.",
+      "modelDescription": "Validate a SEMDL .ssd, .ssm, or .ssq document by absolute path. Use this tool when you need the CLI validation result before proposing edits or when you need a ground-truth parser and validator response. Do not use it for arbitrary file reading or for mutating content.",
+      "canBeReferencedInPrompt": true,
+      "when": "resourceExtname == .ssd || resourceExtname == .ssm || resourceExtname == .ssq",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "document_path": {
+            "type": "string",
+            "description": "Absolute path to the target .ssd, .ssm, or .ssq file."
+          }
+        },
+        "required": ["document_path"]
+      }
+    },
+    {
+      "name": "explain_semdl_entity",
+      "displayName": "Explain SEMDL Entity",
+      "toolReferenceName": "semdl-explain",
+      "userDescription": "Explain one entity from a SEMDL document by id.",
+      "modelDescription": "Explain one SEMDL entity from a document by entity id and absolute document path. Use this tool when you already know the entity id and want the CLI explanation output. Do not use it to search for unknown ids.",
+      "canBeReferencedInPrompt": true,
+      "when": "resourceExtname == .ssd || resourceExtname == .ssm",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "description": "The SEMDL entity identifier to explain."
+          },
+          "document_path": {
+            "type": "string",
+            "description": "Absolute path to the target .ssd or .ssm file."
+          }
+        },
+        "required": ["entity_id", "document_path"]
+      }
+    },
+    {
+      "name": "search_semdl_query",
+      "displayName": "Search SEMDL Query",
+      "toolReferenceName": "semdl-search",
+      "userDescription": "Run a saved SEMDL query file against a SEMDL document.",
+      "modelDescription": "Run a saved .ssq query file against a SEMDL document using the CLI. Use this tool when you already have a query file on disk and need the CLI result. Do not use it for free-form ad hoc query text in this first slice.",
+      "canBeReferencedInPrompt": true,
+      "when": "resourceExtname == .ssq || resourceExtname == .ssd || resourceExtname == .ssm",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "query_path": {
+            "type": "string",
+            "description": "Absolute path to the .ssq query file."
+          },
+          "document_path": {
+            "type": "string",
+            "description": "Absolute path to the .ssd or .ssm document to search."
+          }
+        },
+        "required": ["query_path", "document_path"]
+      }
+    },
+    {
+      "name": "read_semdl_help",
+      "displayName": "Read SEMDL Help",
+      "toolReferenceName": "semdl-help",
+      "userDescription": "Read canonical CLI help from the SEMDL binary.",
+      "modelDescription": "Read canonical CLI help from the SEMDL binary. Use this tool when you need authoritative command usage, topics, or --format semdl help output. Do not use it to inspect document content.",
+      "canBeReferencedInPrompt": true,
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Optional help topic such as a subcommand name."
+          },
+          "target": {
+            "type": "string",
+            "description": "Optional help target accepted by the selected topic. This requires topic to be set."
+          },
+          "format": {
+            "type": "string",
+            "description": "Optional help output format.",
+            "enum": ["text", "semdl"],
+            "default": "text"
+          }
+        },
+        "required": []
+      }
+    }
+  ]
+}

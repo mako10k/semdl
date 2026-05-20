@@ -1,0 +1,12 @@
+{
+  // Copy to your Claude Desktop config file and replace placeholders.
+  "mcpServers": {
+    "semdl": {
+      "command": "__SEMDL_MCP_COMMAND__",
+      "args": [],
+      "env": {
+        "SEMDL_PROJECT_ROOT": "__SEMDL_PROJECT_ROOT__"
+      }
+    }
+  }
+}

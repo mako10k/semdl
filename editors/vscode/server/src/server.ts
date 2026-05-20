@@ -8,14 +8,15 @@ import {
   type InitializeResult
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { analyzeDocument } from './analyzer';
+import { createAnalysisProvider } from './analysisProvider';
 import { filterExpectedDiagnostics } from './diagnosticPolicy';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
+const analysisProvider = createAnalysisProvider();
 
-function publishDiagnostics(document: TextDocument): void {
-  const result = analyzeDocument(document);
+async function publishDiagnostics(document: TextDocument): Promise<void> {
+  const result = await analysisProvider.analyzeDocument(document);
   connection.sendDiagnostics({ uri: document.uri, diagnostics: filterExpectedDiagnostics(document, result.diagnostics) });
 }
 
@@ -33,27 +34,27 @@ connection.onInitialize((_params: InitializeParams): InitializeResult => {
 });
 
 connection.onInitialized(() => {
-  connection.console.info('SEMDL language server initialized with basic diagnostics and document symbols.');
+  connection.console.info(`SEMDL language server initialized with basic diagnostics and document symbols. Analysis source: ${analysisProvider.describeSource()}`);
 });
 
 documents.onDidOpen((change) => {
-  publishDiagnostics(change.document);
+  void publishDiagnostics(change.document);
 });
 
 documents.onDidChangeContent((change) => {
-  publishDiagnostics(change.document);
+  void publishDiagnostics(change.document);
 });
 
 documents.onDidClose((change) => {
   connection.sendDiagnostics({ uri: change.document.uri, diagnostics: [] });
 });
 
-connection.onDocumentSymbol((params: DocumentSymbolParams) => {
+connection.onDocumentSymbol(async (params: DocumentSymbolParams) => {
   const document = documents.get(params.textDocument.uri);
   if (!document) {
     return [];
   }
-  return analyzeDocument(document).symbols;
+  return (await analysisProvider.analyzeDocument(document)).symbols;
 });
 
 documents.listen(connection);

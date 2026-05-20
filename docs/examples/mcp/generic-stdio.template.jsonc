@@ -1,0 +1,14 @@
+{
+  // Generic stdio MCP template for clients whose schema is close to standard MCP JSON layouts.
+  // Adjust the top-level key and file location to your client.
+  "mcpServers": {
+    "semdl": {
+      "type": "stdio",
+      "command": "__SEMDL_MCP_COMMAND__",
+      "args": [],
+      "env": {
+        "SEMDL_PROJECT_ROOT": "__SEMDL_PROJECT_ROOT__"
+      }
+    }
+  }
+}

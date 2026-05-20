@@ -23,6 +23,7 @@ SEMDL が提供する対象は以下とする。
 - .ssd の検証、抽出、検索、比較を行う CLI ツール ssd
 - 埋め込みベクトルを併用した意味類似検索機能
 - `.ssd`、`.ssm`、`.ssq` を対象とする first-party VS Code extension
+- Node ベースの first-party MCP server
 - `.ssd`、`.ssm`、`.ssq` の code highlighting
 - editor-side diagnostics / symbols を提供する TypeScript language server
 
@@ -68,6 +69,12 @@ SEMDL が対象外とするものは以下とする。
 - initial LSP feature set は parse / validate diagnostics と top-level document symbols に限定してよい
 - completion、hover、rename、formatting、code action、semantic token、workspace-wide index は後続 slice に分離してよい
 - editor integration は requirements、grammar artifacts、core / CLI behavior に準拠する adapter surface とし、editor-only semantics を先行定義してはならない
+- first-party MCP server は Node ベースの adapter surface として実装してよく、既存 CLI / core behavior を proxy または再利用する側に置いてよい
+- first-party MCP tool と VS Code language model tool は同じ Tool inventory と input schema source of truth を共有しなければならない
+- first-party MCP / VS Code language model tool の first slice は read-only tool を優先してよく、mutation tool は後続 slice に分離してよい
+- public tool schema、error semantics、監査入力の正本は Node 側 convenience ではなく CLI / core / binary contract から導出されなければならない
+- language server は TypeScript process に留めてよいが、LSP 監査に必要な元情報は将来的に binary から Node adapter 経由で取得できる形に寄せなければならない
+- binary audit contract が揃うまでの移行段階では、Node 側 local analyzer fallback を残してよいが、恒久的な source of truth と見なしてはならない
 - editor diagnostics の expected-error allow rule は editor-only policy file として定義してよく、core / CLI format へ先行して埋め込んではならない
 - initial expected-error allow rule は診断対象 file と同一ディレクトリの `.semdl-diagnostics.json` だけを見てよい
 - initial expected-error allow rule は exact file name、1-based line number、exact diagnostic message の一致だけを許容条件にしてよい

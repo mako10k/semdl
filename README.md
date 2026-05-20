@@ -2,43 +2,30 @@
 
 SEMDL は、自然言語文書や非構造データから抽出した意味的構造を、人間が読みやすく機械が検証しやすい形で保存するための記述系とツール群です。
 
-このリポジトリは spec-first で運用されており、要求仕様、ADR、grammar、acceptance artifacts を先に固定し、その後に CLI と editor integration を実装します。
-
-## Scope
+現在の公開面は次のとおりです。
 
 - `.ssd`: semantic document format
 - `.ssm`: sidecar metadata format
 - `.ssq`: query format
 - `ssd`: validate, extract, search, explain, transform, and update CLI
-- VS Code extension for `.ssd`, `.ssm`, and `.ssq`
+- `.ssd` / `.ssm` / `.ssq` 向けの first-party VS Code extension
+- Node ベースの first-party MCP server first slice
 
-## Authoritative Docs
+## Quick Start
 
-- [docs/requirements.md](docs/requirements.md): product requirements and behavior source of truth
-- [docs/adr/README.md](docs/adr/README.md): ADR process and architecture decision rules
-- [docs/cli.ebnf](docs/cli.ebnf): CLI grammar artifact
-- [docs/test-runner-format.md](docs/test-runner-format.md): test manifest format
-- [docs/test-runner-contract.md](docs/test-runner-contract.md): test runner execution contract
-- [editors/vscode/README.md](editors/vscode/README.md): VS Code extension development notes
-
-## Repository Layout
-
-- [docs](docs): requirements, ADRs, grammar, examples, and acceptance assets
-- [src](src): CLI, core library, and runner implementation
-- [include](include): public headers for the C++ implementation
-- [editors/vscode](editors/vscode): VS Code extension and TypeScript language server
-
-## Build
+SEMDL CLI は現在ソースから build して使う形が最短です。
 
 ```sh
 cmake -S . -B build
 cmake --build build
 ./build/ssd help
+./build/ssd check docs/examples/minimal.ssd
+./build/ssd explain A1 docs/examples/minimal.ssd
 ```
 
-## Install
+## Install CLI
 
-The public CLI command can be installed with CMake:
+CLI を prefix 配下へ install したい場合は次を使えます。
 
 ```sh
 cmake -S . -B build
@@ -46,12 +33,32 @@ cmake --build build
 cmake --install build --prefix "$HOME/.local"
 ```
 
-This installs `ssd` to `$HOME/.local/bin/ssd` in the example above.
+上の例では `$HOME/.local/bin/ssd` が生成されます。
 
-## VS Code Extension
+## User Docs
 
-The repository also contains a first-party VS Code extension and TypeScript language server for `.ssd`, `.ssm`, and `.ssq`.
-See [editors/vscode/README.md](editors/vscode/README.md) for local build and packaging steps.
+- [docs/user/README.md](docs/user/README.md): 利用者向けドキュメント入口
+- [docs/user/vscode.md](docs/user/vscode.md): VS Code 利用ガイド
+- [docs/user/mcp.md](docs/user/mcp.md): MCP クライアント接続ガイド
+- [docs/examples](docs/examples): CLI examples, fixtures, and golden assets
+
+## MCP Integration
+
+このリポジトリは、first slice として Node ベースの first-party MCP server を持ちます。
+この server は C++ の `ssd` バイナリを proxy する形で read-only tool から始め、VS Code language model tools と input schema source of truth を共有します。
+
+- [docs/user/mcp.md](docs/user/mcp.md)
+- [docs/examples/mcp/README.md](docs/examples/mcp/README.md)
+
+## Formal Specs And Developer Docs
+
+利用者向け入口から外した仕様・実装・開発者向け情報は次にまとめています。
+
+- [docs/developer/README.md](docs/developer/README.md)
+- [docs/requirements.md](docs/requirements.md)
+- [docs/adr/README.md](docs/adr/README.md)
+- [docs/cli.ebnf](docs/cli.ebnf)
+- [docs/test-runner-contract.md](docs/test-runner-contract.md)
 
 ## License
 

@@ -24,20 +24,35 @@
     "languages": [
       {
         "id": "semdl-ssd",
-        "aliases": ["SEMDL SSD", "ssd"],
-        "extensions": [".ssd"],
+        "aliases": [
+          "SEMDL SSD",
+          "ssd"
+        ],
+        "extensions": [
+          ".ssd"
+        ],
         "configuration": "./languages/ssd.language-configuration.json"
       },
       {
         "id": "semdl-ssm",
-        "aliases": ["SEMDL SSM", "ssm"],
-        "extensions": [".ssm"],
+        "aliases": [
+          "SEMDL SSM",
+          "ssm"
+        ],
+        "extensions": [
+          ".ssm"
+        ],
         "configuration": "./languages/ssm.language-configuration.json"
       },
       {
         "id": "semdl-ssq",
-        "aliases": ["SEMDL SSQ", "ssq"],
-        "extensions": [".ssq"],
+        "aliases": [
+          "SEMDL SSQ",
+          "ssq"
+        ],
+        "extensions": [
+          ".ssq"
+        ],
         "configuration": "./languages/ssq.language-configuration.json"
       }
     ],
@@ -62,28 +77,156 @@
       {
         "command": "semdl.showLanguageServerStatus",
         "title": "SEMDL: Show Language Server Status"
+      },
+      {
+        "command": "semdl.showToolRegistryStatus",
+        "title": "SEMDL: Show Tool Registry Status"
+      }
+    ],
+    "configuration": {
+      "title": "SEMDL",
+      "properties": {
+        "semdl.binaryPath": {
+          "type": "string",
+          "scope": "machine-overridable",
+          "default": "",
+          "markdownDescription": "Absolute path to the `ssd` binary used by SEMDL language model tools. When empty, the extension tries `SEMDL_BINARY`, then `ssd` from `PATH`, then `${workspaceFolder}/build/ssd`. The standalone first-party MCP server reads `SEMDL_BINARY` and `SEMDL_PROJECT_ROOT` from its process environment instead of this VS Code setting."
+        }
+      }
+    },
+    "languageModelTools": [
+      {
+        "name": "check_semdl_document",
+        "displayName": "Check SEMDL Document",
+        "userDescription": "Validate a SEMDL document and return the CLI validation output.",
+        "modelDescription": "Validate a SEMDL .ssd, .ssm, or .ssq document by absolute path. Use this tool when you need the CLI validation result before proposing edits or when you need a ground-truth parser and validator response. Do not use it for arbitrary file reading or for mutating content.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "document_path": {
+              "type": "string",
+              "description": "Absolute path to the target .ssd, .ssm, or .ssq file."
+            }
+          },
+          "required": [
+            "document_path"
+          ]
+        },
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "semdl-check",
+        "when": "resourceExtname == .ssd || resourceExtname == .ssm || resourceExtname == .ssq"
+      },
+      {
+        "name": "explain_semdl_entity",
+        "displayName": "Explain SEMDL Entity",
+        "userDescription": "Explain one entity from a SEMDL document by id.",
+        "modelDescription": "Explain one SEMDL entity from a document by entity id and absolute document path. Use this tool when you already know the entity id and want the CLI explanation output. Do not use it to search for unknown ids.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "entity_id": {
+              "type": "string",
+              "description": "The SEMDL entity identifier to explain."
+            },
+            "document_path": {
+              "type": "string",
+              "description": "Absolute path to the target .ssd or .ssm file."
+            }
+          },
+          "required": [
+            "entity_id",
+            "document_path"
+          ]
+        },
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "semdl-explain",
+        "when": "resourceExtname == .ssd || resourceExtname == .ssm"
+      },
+      {
+        "name": "search_semdl_query",
+        "displayName": "Search SEMDL Query",
+        "userDescription": "Run a saved SEMDL query file against a SEMDL document.",
+        "modelDescription": "Run a saved .ssq query file against a SEMDL document using the CLI. Use this tool when you already have a query file on disk and need the CLI result. Do not use it for free-form ad hoc query text in this first slice.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "query_path": {
+              "type": "string",
+              "description": "Absolute path to the .ssq query file."
+            },
+            "document_path": {
+              "type": "string",
+              "description": "Absolute path to the .ssd or .ssm document to search."
+            }
+          },
+          "required": [
+            "query_path",
+            "document_path"
+          ]
+        },
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "semdl-search",
+        "when": "resourceExtname == .ssq || resourceExtname == .ssd || resourceExtname == .ssm"
+      },
+      {
+        "name": "read_semdl_help",
+        "displayName": "Read SEMDL Help",
+        "userDescription": "Read canonical CLI help from the SEMDL binary.",
+        "modelDescription": "Read canonical CLI help from the SEMDL binary. Use this tool when you need authoritative command usage, topics, or --format semdl help output. Do not use it to inspect document content.",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "Optional help topic such as a subcommand name."
+            },
+            "target": {
+              "type": "string",
+              "description": "Optional help target accepted by the selected topic. This requires topic to be set."
+            },
+            "format": {
+              "type": "string",
+              "description": "Optional help output format.",
+              "enum": [
+                "text",
+                "semdl"
+              ],
+              "default": "text"
+            }
+          },
+          "required": []
+        },
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "semdl-help"
       }
     ]
   },
   "scripts": {
     "clean": "rm -rf out bundle dist",
-    "compile": "tsc -b tsconfig.json tsconfig.server.json",
-    "bundle": "npm run compile && mkdir -p bundle && esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=bundle/extension.js && esbuild server/src/server.ts --bundle --platform=node --format=cjs --outfile=bundle/server.js",
+    "sync:tools": "node ./scripts/sync-language-model-tools.mjs",
+    "compile": "npm run sync:tools && tsc -b tsconfig.json tsconfig.server.json",
+    "bundle": "npm run compile && mkdir -p bundle && esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=bundle/extension.js && esbuild server/src/server.ts --bundle --platform=node --format=cjs --outfile=bundle/server.js && esbuild src/mcpServer.ts --bundle --platform=node --format=cjs --outfile=bundle/mcp-server.js",
     "watch": "tsc -b tsconfig.json tsconfig.server.json --watch",
     "check": "npm run compile",
-    "test": "npm run compile && node --test out/server/**/*.test.js",
+    "test": "npm run compile && node --test $(find out -name '*.test.js' | sort)",
     "package:vsix": "npm run test && npm run bundle && mkdir -p dist && vsce package --out dist/semdl-${npm_package_version}.vsix"
   },
   "devDependencies": {
-    "@vscode/vsce": "^3.6.2",
     "@types/node": "^22.15.31",
     "@types/vscode": "^1.100.0",
+    "@vscode/vsce": "^3.6.2",
     "esbuild": "^0.25.5",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",
-    "vscode-languageserver-textdocument": "^1.0.12"
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "zod": "^4.4.3"
   }
 }
