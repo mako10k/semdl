@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MarkupContent, Position } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { analyzeDocument, getKeywordCompletionItems, getKeywordHover } from './analyzer';
+import { analyzeDocument, getCompletionItems, getKeywordCompletionItems, getKeywordHover } from './analyzer';
 
 function hoverMarkdownValue(hover: ReturnType<typeof getKeywordHover>): string {
   const contents = hover?.contents;
@@ -161,6 +161,140 @@ test('keyword completion does not offer suggestions after a field separator', ()
 
   const items = getKeywordCompletionItems(document, Position.create(1, 11));
   assert.equal(items.length, 0);
+});
+
+test('document-local identifier completion offers matching resource ids for segment.source', () => {
+  const document = TextDocument.create(
+    'file:///identifier-source.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      'resource R1 {',
+      '}',
+      'resource R2 {',
+      '}',
+      'segment S1 {',
+      '  source: R',
+      '}'
+    ].join('\n')
+  );
+
+  const items = getCompletionItems(document, Position.create(7, 11));
+  assert.deepEqual(items.map((item) => item.label), ['R1', 'R2']);
+  assert.ok(items.every((item) => item.detail === 'SEMDL document-local resource identifier'));
+});
+
+test('document-local identifier completion offers assertion ids for hypothesis.about', () => {
+  const document = TextDocument.create(
+    'file:///identifier-about.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      'assertion A1 {',
+      '}',
+      'assertion A2 {',
+      '}',
+      'hypothesis H1 {',
+      '  about: A',
+      '}'
+    ].join('\n')
+  );
+
+  const items = getCompletionItems(document, Position.create(7, 10));
+  assert.deepEqual(items.map((item) => item.label), ['A1', 'A2']);
+});
+
+test('document-local identifier completion offers resource and segment ids for the remaining eligible fields', () => {
+  const subjectDocument = TextDocument.create(
+    'file:///identifier-subject.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      'resource R1 {',
+      '}',
+      'resource R2 {',
+      '}',
+      'assertion A1 {',
+      '  subject: R',
+      '}'
+    ].join('\n')
+  );
+  const sourceSegmentDocument = TextDocument.create(
+    'file:///identifier-source-segment.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      'segment S1 {',
+      '}',
+      'segment S2 {',
+      '}',
+      'assertion A1 {',
+      '  source_segment: S',
+      '}'
+    ].join('\n')
+  );
+
+  assert.deepEqual(getCompletionItems(subjectDocument, Position.create(7, 12)).map((item) => item.label), ['R1', 'R2']);
+  assert.deepEqual(getCompletionItems(sourceSegmentDocument, Position.create(7, 19)).map((item) => item.label), ['S1', 'S2']);
+});
+
+test('document-local identifier completion stays out of non-reference and quoted-string fields', () => {
+  const predicateDocument = TextDocument.create(
+    'file:///identifier-negative-predicate.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      'resource R1 {',
+      '}',
+      'assertion A1 {',
+      '  predicate: re',
+      '}'
+    ].join('\n')
+  );
+  const quotedDocument = TextDocument.create(
+    'file:///identifier-negative-quoted.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      'resource R1 {',
+      '}',
+      'assertion A1 {',
+      '  subject: "R',
+      '}'
+    ].join('\n')
+  );
+  const nestedMetaDocument = TextDocument.create(
+    'file:///identifier-negative-nested-meta.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      'resource R1 {',
+      '}',
+      'assertion A1 {',
+      '  meta {',
+      '    subject: R',
+      '  }',
+      '}'
+    ].join('\n')
+  );
+
+  assert.equal(getCompletionItems(predicateDocument, Position.create(5, 15)).length, 0);
+  assert.equal(getCompletionItems(quotedDocument, Position.create(5, 13)).length, 0);
+  assert.equal(getCompletionItems(nestedMetaDocument, Position.create(6, 14)).length, 0);
 });
 
 test('top-level block keywords expose grammar-derived hover in .ssd documents', () => {

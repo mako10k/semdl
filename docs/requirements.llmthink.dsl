@@ -72,7 +72,10 @@ step S28B:
       initial hover は grammar-derived keyword hover に限定してよく、top-level block keyword、allowed nested block keyword、query header keyword、query entry keyword だけを対象にしてよい。
       initial hover の表示名と format 名は requirements から、構文形は primary grammar artifact から導出しなければならない。
       initial hover は document-local context だけで判定してよく、identifier explanation、field-level inference、cross-file lookup を要求してはならない。
-      local identifier completion は、その source-of-truth、単一文書内 scope、参照可能条件を明示するまで deferred のままにしてよい。
+      initial local identifier completion の source-of-truth は current `.ssd` document 内で宣言済みの top-level block identifier に限定してよい。
+      initial local identifier completion は document-local scope に限定し、cross-file symbol、workspace index、paired file lookup を要求してはならない。
+      initial local identifier completion は requirements 既存 relation で参照先 kind が固定されている `segment.source`、`assertion.subject`、`assertion.source_segment`、`hypothesis.about` の field value だけで提供してよい。
+      initial local identifier completion は `predicate`、`kind`、`group`、free scalar field、quoted string position、reference eligibility が未固定の field では候補を出してはならない。
       hover、definition、references、rename、formatting、code action、workspace-wide index は、それぞれの source-of-truth、stable symbol identity、cross-file data source、canonical formatting contract、mutation safety rule の必要条件を満たすまで deferred のままにしてよい。
       semantic token は後続 slice に分離してよい。
       expected diagnostic allow rule は editor-only policy file として扱い、core / CLI format へ先行して埋め込んではならない。

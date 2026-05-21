@@ -76,8 +76,31 @@ test('analysis provider exposes grammar-derived keyword completion through the p
     ['query {', '  select: assertion', '  '].join('\n')
   );
 
-  const items = await provider.getKeywordCompletionItems(document, Position.create(2, 2));
+  const items = await provider.getCompletionItems(document, Position.create(2, 2));
   assert.deepEqual(items.map((item) => item.label), ['where', 'similar', 'return']);
+});
+
+test('analysis provider exposes document-local identifier completion through the provider boundary', async () => {
+  const provider = createAnalysisProvider({});
+  const document = TextDocument.create(
+    'file:///provider-identifier-completion.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      'resource R1 {',
+      '}',
+      'resource R2 {',
+      '}',
+      'segment S1 {',
+      '  source: R',
+      '}'
+    ].join('\n')
+  );
+
+  const items = await provider.getCompletionItems(document, Position.create(7, 11));
+  assert.deepEqual(items.map((item) => item.label), ['R1', 'R2']);
 });
 
 test('analysis provider exposes grammar-derived keyword hover through the provider boundary', async () => {

@@ -9,6 +9,7 @@ SEMDL には `.ssd`（SEMDL Canvas）、`.ssm`（SEMDL Sidekick）、`.ssq`（SE
 - richer syntax diagnostics
 - grammar-derived keyword completion
 - grammar-derived keyword hover
+- document-local identifier completion for `segment.source`, `assertion.subject`, `assertion.source_segment`, and `hypothesis.about`
 - top-level document symbols
 
 ## Local Build
@@ -37,6 +38,7 @@ npm run package:vsix
 - syntax diagnostics
 - grammar-derived keyword completion for block and query keywords
 - grammar-derived keyword hover for block and query keywords
+- document-local identifier completion for requirements-defined reference fields in `.ssd`
 - top-level document symbols
 
 次の richer IDE features は後続 slice 扱いです。

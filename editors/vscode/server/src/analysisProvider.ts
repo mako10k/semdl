@@ -1,6 +1,6 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import type { CompletionItem, Diagnostic, DocumentSymbol, Hover, Position } from 'vscode-languageserver/node';
-import { analyzeDocument, getKeywordCompletionItems, getKeywordHover } from './analyzer';
+import { analyzeDocument, getCompletionItems, getKeywordHover } from './analyzer';
 
 export interface AnalysisSourceMetadata {
   requestedSource: 'auto' | 'binary';
@@ -12,7 +12,7 @@ export interface AnalysisSourceMetadata {
 export interface AnalysisProvider {
   getDiagnostics(document: TextDocument): Promise<Diagnostic[]>;
   getDocumentSymbols(document: TextDocument): Promise<DocumentSymbol[]>;
-  getKeywordCompletionItems(document: TextDocument, position: Position): Promise<CompletionItem[]>;
+  getCompletionItems(document: TextDocument, position: Position): Promise<CompletionItem[]>;
   getHover(document: TextDocument, position: Position): Promise<Hover | null>;
   describeSource(): string;
   getSourceMetadata(): AnalysisSourceMetadata;
@@ -29,8 +29,8 @@ class LocalAnalyzerProvider implements AnalysisProvider {
     return analyzeDocument(document).symbols;
   }
 
-  async getKeywordCompletionItems(document: TextDocument, position: Position): Promise<CompletionItem[]> {
-    return getKeywordCompletionItems(document, position);
+  async getCompletionItems(document: TextDocument, position: Position): Promise<CompletionItem[]> {
+    return getCompletionItems(document, position);
   }
 
   async getHover(document: TextDocument, position: Position): Promise<Hover | null> {

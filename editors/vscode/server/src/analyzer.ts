@@ -58,6 +58,11 @@ interface SsqCompletionContext {
   lastEntryOrder: number;
 }
 
+interface TopLevelIdentifier {
+  kind: string;
+  identifier: string;
+}
+
 interface KeywordHoverContext {
   category: 'top-level-block' | 'nested-block' | 'query-header' | 'query-entry';
   keyword: string;
@@ -138,6 +143,15 @@ export function getKeywordCompletionItems(document: TextDocument, position: Posi
   const allowedTopLevelKinds = extension === '.ssm' || document.languageId === 'semdl-ssm' ? ssmAllowedTopLevelKinds : ssdAllowedTopLevelKinds;
   const requireDocumentFirst = !(extension === '.ssm' || document.languageId === 'semdl-ssm');
   return getSemdlKeywordCompletionItems(document, position, allowedTopLevelKinds, requireDocumentFirst, prefix);
+}
+
+export function getCompletionItems(document: TextDocument, position: Position): CompletionItem[] {
+  const keywordItems = getKeywordCompletionItems(document, position);
+  if (keywordItems.length > 0) {
+    return keywordItems;
+  }
+
+  return getLocalIdentifierCompletionItems(document, position);
 }
 
 export function getKeywordHover(document: TextDocument, position: Position): Hover | null {
@@ -449,6 +463,63 @@ function getSsqKeywordCompletionItems(document: TextDocument, position: Position
   return buildKeywordCompletionItems(keywords, prefix, 'query-entry');
 }
 
+function getLocalIdentifierCompletionItems(document: TextDocument, position: Position): CompletionItem[] {
+  if (document.languageId === 'semdl-ssm' || document.languageId === 'semdl-ssq') {
+    return [];
+  }
+
+  const extension = path.extname(document.uri).toLowerCase();
+  if (extension === '.ssm' || extension === '.ssq') {
+    return [];
+  }
+
+  const lines = buildLineInfos(document);
+  const line = lines[position.line];
+  if (!line) {
+    return [];
+  }
+
+  const linePrefix = line.text.slice(0, position.character);
+  const separatorIndex = linePrefix.indexOf(':');
+  if (separatorIndex === -1) {
+    return [];
+  }
+
+  const fieldName = linePrefix.slice(0, separatorIndex).trim();
+  if (!isIdentifier(fieldName)) {
+    return [];
+  }
+
+  const rawValuePrefix = linePrefix.slice(separatorIndex + 1).trim();
+  if (rawValuePrefix.startsWith('"')) {
+    return [];
+  }
+  if (rawValuePrefix.length > 0 && !isIdentifier(rawValuePrefix)) {
+    return [];
+  }
+
+  const context = buildSemdlCompletionContext(document, Position.create(position.line, 0), ssdAllowedTopLevelKinds);
+  if (context.stack.length !== 1) {
+    return [];
+  }
+
+  const enclosingKind = context.stack[0];
+  if (!enclosingKind) {
+    return [];
+  }
+
+  const referencedKind = getReferencedTopLevelKind(enclosingKind, fieldName);
+  if (!referencedKind) {
+    return [];
+  }
+
+  const identifiers = collectTopLevelIdentifiers(document)
+    .filter((entry) => entry.kind === referencedKind)
+    .map((entry) => entry.identifier);
+
+  return buildIdentifierCompletionItems(identifiers, rawValuePrefix, referencedKind);
+}
+
 function getKeywordHoverContext(document: TextDocument, position: Position): KeywordHoverContext | undefined {
   const hoveredWord = getWordAtPosition(document, position);
   if (!hoveredWord) {
@@ -694,6 +765,30 @@ function getAllowedQueryEntryKeywords(context: SsqCompletionContext): string[] {
   });
 }
 
+function getReferencedTopLevelKind(enclosingKind: string, fieldName: string): string | undefined {
+  if (enclosingKind === 'segment' && fieldName === 'source') {
+    return 'resource';
+  }
+  if (enclosingKind === 'assertion' && fieldName === 'subject') {
+    return 'resource';
+  }
+  if (enclosingKind === 'assertion' && fieldName === 'source_segment') {
+    return 'segment';
+  }
+  if (enclosingKind === 'hypothesis' && fieldName === 'about') {
+    return 'assertion';
+  }
+  return undefined;
+}
+
+function collectTopLevelIdentifiers(document: TextDocument): TopLevelIdentifier[] {
+  return buildLineInfos(document)
+    .map((line) => line.text.trim())
+    .map((trimmed) => trimmed.match(topLevelBlockPattern))
+    .filter((match): match is RegExpMatchArray => Boolean(match))
+    .map((match) => ({ kind: match[1], identifier: match[2] }));
+}
+
 function buildLineInfos(document: TextDocument): LineInfo[] {
   const text = document.getText();
   const rawLines = text.split(/\r?\n/);
@@ -780,6 +875,18 @@ function buildKeywordCompletionItems(keywords: string[], prefix: string, categor
       kind: CompletionItemKind.Keyword,
       detail: describeCompletionCategory(category),
       insertText: completionInsertText(keyword, category),
+      sortText: `${index}`.padStart(2, '0')
+    }));
+}
+
+function buildIdentifierCompletionItems(identifiers: string[], prefix: string, referencedKind: string): CompletionItem[] {
+  return identifiers
+    .filter((identifier) => prefix.length === 0 || identifier.startsWith(prefix))
+    .map((identifier, index) => ({
+      label: identifier,
+      kind: CompletionItemKind.Reference,
+      detail: `SEMDL document-local ${referencedKind} identifier`,
+      insertText: identifier,
       sortText: `${index}`.padStart(2, '0')
     }));
 }

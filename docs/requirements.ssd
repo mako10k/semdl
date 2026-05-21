@@ -44,19 +44,25 @@ assertion A6 {
   object: "initial hover is limited to document-local grammar-derived keyword hover for top-level block keywords, allowed nested block keywords, query header keywords, and query entry keywords, with display names from requirements and syntax shapes from the primary grammar artifacts, and without identifier explanation, field-level inference, or cross-file lookup"
 }
 
+assertion A7 {
+  subject: REQUIREMENTS_DOC
+  predicate: identifier_completion_scope
+  object: "initial local identifier completion is limited to current .ssd top-level block identifiers and only to document-local field values for segment.source, assertion.subject, assertion.source_segment, and hypothesis.about, without free scalar inference or cross-file lookup"
+}
+
 hypothesis H1 {
   about: A4
   kind: modeling-limit
   summary: "This companion intentionally compresses a large requirements document and currently preserves only the editor-integration decisions touched in this slice."
 }
 
-assertion A7 {
+assertion A8 {
   subject: REQUIREMENTS_DOC
   predicate: lsp_deferred_features
-  object: "identifier completion, broader hover beyond the initial keyword-hover slice, definition, references, rename, formatting, code actions, and workspace-wide index remain deferred until their source-of-truth and contract boundaries are explicit"
+  object: "broader hover beyond the initial identifier-completion slice, definition, references, rename, formatting, code actions, and workspace-wide index remain deferred until their source-of-truth and contract boundaries are explicit"
 }
 
-assertion A8 {
+assertion A9 {
   subject: REQUIREMENTS_DOC
   predicate: drift_note
   object: "The companion is partial by design; uncovered requirements remain only in the authoritative markdown and should be expanded in later pilot slices if they become active change surfaces."

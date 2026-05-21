@@ -38,7 +38,7 @@ connection.onInitialize((_params: InitializeParams): InitializeResult => {
 });
 
 connection.onInitialized(() => {
-  connection.console.info(`SEMDL language server initialized with richer diagnostics, keyword completion, keyword hover, and top-level document symbols. Analysis source: ${analysisProvider.describeSource()}`);
+  connection.console.info(`SEMDL language server initialized with richer diagnostics, keyword completion, document-local identifier completion, keyword hover, and top-level document symbols. Analysis source: ${analysisProvider.describeSource()}`);
 });
 
 documents.onDidOpen((change) => {
@@ -66,7 +66,7 @@ connection.onCompletion(async (params: CompletionParams) => {
   if (!document) {
     return [];
   }
-  return analysisProvider.getKeywordCompletionItems(document, params.position);
+  return analysisProvider.getCompletionItems(document, params.position);
 });
 
 connection.onHover(async (params: HoverParams) => {
