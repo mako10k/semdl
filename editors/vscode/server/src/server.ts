@@ -16,8 +16,8 @@ const documents = new TextDocuments(TextDocument);
 const analysisProvider = createAnalysisProvider();
 
 async function publishDiagnostics(document: TextDocument): Promise<void> {
-  const result = await analysisProvider.analyzeDocument(document);
-  connection.sendDiagnostics({ uri: document.uri, diagnostics: filterExpectedDiagnostics(document, result.diagnostics) });
+  const diagnostics = await analysisProvider.getDiagnostics(document);
+  connection.sendDiagnostics({ uri: document.uri, diagnostics: filterExpectedDiagnostics(document, diagnostics) });
 }
 
 connection.onInitialize((_params: InitializeParams): InitializeResult => {
@@ -54,7 +54,7 @@ connection.onDocumentSymbol(async (params: DocumentSymbolParams) => {
   if (!document) {
     return [];
   }
-  return (await analysisProvider.analyzeDocument(document)).symbols;
+  return analysisProvider.getDocumentSymbols(document);
 });
 
 documents.listen(connection);

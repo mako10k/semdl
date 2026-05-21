@@ -76,7 +76,12 @@ SEMDL が対象外とするものは以下とする。
 - initial language server は TypeScript 実装にしてよく、extension host から分離した process として扱ってよい
 - initial editor integration は `.ssd`、`.ssm`、`.ssq` の basic language identification を提供してよい
 - initial LSP feature set は parse / validate diagnostics と top-level document symbols に限定してよい
-- completion、hover、rename、formatting、code action、semantic token、workspace-wide index は後続 slice に分離してよい
+- richer LSP surface を広げる前に、現行 diagnostics / symbols を binary 由来監査情報へ差し替え可能にする analysis provider boundary を先に導入しなければならない
+- provider boundary 導入後の最初の richer LSP slice は、existing parser / validator semantics だけから導出できる richer diagnostics を優先してよい
+- completion は 1 slice にまとめず、grammar artifact 由来の keyword completion を local identifier completion より先に導入してよい
+- local identifier completion は、その source-of-truth、単一文書内 scope、参照可能条件を明示するまで deferred のままにしてよい
+- hover、definition、references、rename、formatting、code action、workspace-wide index は、それぞれの source-of-truth、stable symbol identity、cross-file data source、canonical formatting contract、mutation safety rule の必要条件を満たすまで deferred のままにしてよい
+- semantic token は後続 slice に分離してよい
 - editor integration は requirements、grammar artifacts、core / CLI behavior に準拠する adapter surface とし、editor-only semantics を先行定義してはならない
 - first-party MCP server は Node ベースの adapter surface として実装してよく、既存 CLI / core behavior を proxy または再利用する側に置いてよい
 - first-party MCP tool と VS Code language model tool は同じ Tool inventory と input schema source of truth を共有しなければならない

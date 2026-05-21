@@ -64,6 +64,12 @@ step S28B:
       initial editor integration は `.ssd`、`.ssm`、`.ssq` の basic language identification を提供してよい。
       initial language server は TypeScript 実装としてよく、extension host から分離した process にしてよい。
       initial LSP feature set は parse / validate diagnostics と top-level document symbols に限定してよい。
+      richer LSP surface を広げる前に、現行 diagnostics / symbols を binary 由来監査情報へ差し替え可能にする analysis provider boundary を先に導入しなければならない。
+      provider boundary 導入後の最初の richer LSP slice は、existing parser / validator semantics だけから導出できる richer diagnostics を優先してよい。
+      completion は 1 slice にまとめず、grammar artifact 由来の keyword completion を local identifier completion より先に導入してよい。
+      local identifier completion は、その source-of-truth、単一文書内 scope、参照可能条件を明示するまで deferred のままにしてよい。
+      hover、definition、references、rename、formatting、code action、workspace-wide index は、それぞれの source-of-truth、stable symbol identity、cross-file data source、canonical formatting contract、mutation safety rule の必要条件を満たすまで deferred のままにしてよい。
+      semantic token は後続 slice に分離してよい。
       expected diagnostic allow rule は editor-only policy file として扱い、core / CLI format へ先行して埋め込んではならない。
       initial expected diagnostic allow rule は同一ディレクトリの `.semdl-diagnostics.json` だけを見てよく、exact file name、1-based line number、exact diagnostic message 一致だけを許容条件にしてよい。
       wildcard、directory-wide default、workspace-wide default、parent directory 継承、message prefix match は初回では許可しない。

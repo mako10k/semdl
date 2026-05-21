@@ -1,0 +1,51 @@
+document REQUIREMENTS_COMPANION {
+  title: "Requirements Companion"
+  source_ref: "docs/requirements.md"
+}
+
+resource REQUIREMENTS_DOC {
+  type: contract-doc
+  label: "requirements companion"
+}
+
+assertion A1 {
+  subject: REQUIREMENTS_DOC
+  predicate: authority
+  object: "requirements.md remains authoritative during the pairing pilot"
+}
+
+assertion A2 {
+  subject: REQUIREMENTS_DOC
+  predicate: editor_integration_boundary
+  object: "editor integration stays an adapter surface that follows requirements, accepted ADRs, grammar artifacts, and CLI or core behavior"
+}
+
+assertion A3 {
+  subject: REQUIREMENTS_DOC
+  predicate: lsp_initial_scope
+  object: "the initial LSP slice is limited to diagnostics and top-level document symbols"
+}
+
+assertion A4 {
+  subject: REQUIREMENTS_DOC
+  predicate: lsp_expansion_order
+  object: "expand LSP by adding an analysis provider boundary first, then richer diagnostics, then grammar-derived keyword completion before more contract-heavy features"
+}
+
+assertion A5 {
+  subject: REQUIREMENTS_DOC
+  predicate: lsp_deferred_features
+  object: "identifier completion, hover, definition, references, rename, formatting, code actions, and workspace-wide index remain deferred until their source-of-truth and contract boundaries are explicit"
+}
+
+hypothesis H1 {
+  about: A4
+  kind: modeling-limit
+  summary: "This companion intentionally compresses a large requirements document and currently preserves only the editor-integration decisions touched in this slice."
+}
+
+assertion A6 {
+  subject: REQUIREMENTS_DOC
+  predicate: drift_note
+  object: "The companion is partial by design; uncovered requirements remain only in the authoritative markdown and should be expanded in later pilot slices if they become active change surfaces."
+}
