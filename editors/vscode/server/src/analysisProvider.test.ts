@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { Position } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { createAnalysisProvider } from './analysisProvider';
 
@@ -56,4 +57,17 @@ test('binary-requested analysis provider reports fallback metadata while keeping
     fallbackReason: 'binary audit source requested but not implemented yet'
   });
   assert.match(provider.describeSource(), /local-ts-analyzer fallback/);
+});
+
+test('analysis provider exposes grammar-derived keyword completion through the provider boundary', async () => {
+  const provider = createAnalysisProvider({});
+  const document = TextDocument.create(
+    'file:///provider-completion.ssq',
+    'semdl-ssq',
+    1,
+    ['query {', '  select: assertion', '  '].join('\n')
+  );
+
+  const items = await provider.getKeywordCompletionItems(document, Position.create(2, 2));
+  assert.deepEqual(items.map((item) => item.label), ['where', 'similar', 'return']);
 });

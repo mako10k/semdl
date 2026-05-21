@@ -1,4 +1,5 @@
 import {
+  CompletionParams,
   createConnection,
   ProposedFeatures,
   TextDocumentSyncKind,
@@ -24,7 +25,8 @@ connection.onInitialize((_params: InitializeParams): InitializeResult => {
   return {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
-      documentSymbolProvider: true
+      documentSymbolProvider: true,
+      completionProvider: {}
     },
     serverInfo: {
       name: 'semdl-language-server',
@@ -55,6 +57,14 @@ connection.onDocumentSymbol(async (params: DocumentSymbolParams) => {
     return [];
   }
   return analysisProvider.getDocumentSymbols(document);
+});
+
+connection.onCompletion(async (params: CompletionParams) => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) {
+    return [];
+  }
+  return analysisProvider.getKeywordCompletionItems(document, params.position);
 });
 
 documents.listen(connection);

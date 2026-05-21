@@ -34,8 +34,8 @@ assertion A4 {
 
 assertion A5 {
   subject: REQUIREMENTS_DOC
-  predicate: lsp_deferred_features
-  object: "identifier completion, hover, definition, references, rename, formatting, code actions, and workspace-wide index remain deferred until their source-of-truth and contract boundaries are explicit"
+  predicate: keyword_completion_scope
+  object: "initial keyword completion is limited to grammar-derived top-level block keywords, allowed nested block keywords, query header keywords, and query entry keywords, without identifiers or field names"
 }
 
 hypothesis H1 {
@@ -45,6 +45,12 @@ hypothesis H1 {
 }
 
 assertion A6 {
+  subject: REQUIREMENTS_DOC
+  predicate: lsp_deferred_features
+  object: "identifier completion, hover, definition, references, rename, formatting, code actions, and workspace-wide index remain deferred until their source-of-truth and contract boundaries are explicit"
+}
+
+assertion A7 {
   subject: REQUIREMENTS_DOC
   predicate: drift_note
   object: "The companion is partial by design; uncovered requirements remain only in the authoritative markdown and should be expanded in later pilot slices if they become active change surfaces."

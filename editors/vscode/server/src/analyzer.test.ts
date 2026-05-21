@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { Position } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { analyzeDocument } from './analyzer';
+import { analyzeDocument, getKeywordCompletionItems } from './analyzer';
 
 test('valid .ssd document has no diagnostics and exposes top-level symbols', () => {
   const document = TextDocument.create(
@@ -59,6 +60,99 @@ test('invalid nested embedding outside meta reports a diagnostic', () => {
 
   const result = analyzeDocument(document);
   assert.ok(result.diagnostics.some((diagnostic) => diagnostic.message.includes('`embedding` blocks are only allowed inside `meta` blocks')));
+});
+
+test('invalid field lines report more specific diagnostics', () => {
+  const document = TextDocument.create(
+    'file:///invalid-fields.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '  title',
+      '  label:',
+      '  kind: [not-a-scalar]',
+      '}'
+    ].join('\n')
+  );
+
+  const result = analyzeDocument(document);
+  assert.ok(result.diagnostics.some((diagnostic) => diagnostic.code === 'field-missing-separator' && diagnostic.message.includes('Expected `:` separating')));
+  assert.ok(result.diagnostics.some((diagnostic) => diagnostic.code === 'field-missing-value' && diagnostic.message.includes('Field `label` requires a scalar value.')));
+  assert.ok(result.diagnostics.some((diagnostic) => diagnostic.code === 'field-invalid-scalar' && diagnostic.message.includes('Field `kind` must contain a quoted string, number, boolean, or identifier.')));
+});
+
+test('duplicate document blocks point back to the first document block', () => {
+  const document = TextDocument.create(
+    'file:///duplicate-document.ssd',
+    'semdl-ssd',
+    1,
+    [
+      'document D1 {',
+      '}',
+      '',
+      'document D2 {',
+      '}'
+    ].join('\n')
+  );
+
+  const result = analyzeDocument(document);
+  const duplicateDiagnostic = result.diagnostics.find((diagnostic) => diagnostic.code === 'duplicate-document-block');
+
+  assert.ok(duplicateDiagnostic);
+  assert.equal(duplicateDiagnostic?.range.start.line, 3);
+  assert.equal(duplicateDiagnostic?.relatedInformation?.[0]?.location.range.start.line, 0);
+});
+
+test('empty .ssd document offers only the leading document keyword', () => {
+  const document = TextDocument.create('file:///empty.ssd', 'semdl-ssd', 1, '');
+
+  const items = getKeywordCompletionItems(document, Position.create(0, 0));
+  assert.deepEqual(items.map((item) => item.label), ['document']);
+});
+
+test('inside assertion blocks only meta is offered as a nested keyword', () => {
+  const document = TextDocument.create(
+    'file:///assertion-context.ssd',
+    'semdl-ssd',
+    1,
+    ['document D1 {', '}', '', 'assertion A1 {', '  '].join('\n')
+  );
+
+  const items = getKeywordCompletionItems(document, Position.create(4, 2));
+  assert.deepEqual(items.map((item) => item.label), ['meta']);
+});
+
+test('empty .ssq document offers the query keyword', () => {
+  const document = TextDocument.create('file:///empty.ssq', 'semdl-ssq', 1, '');
+
+  const items = getKeywordCompletionItems(document, Position.create(0, 0));
+  assert.deepEqual(items.map((item) => item.label), ['query']);
+});
+
+test('query entry completion follows grammar order and excludes identifiers', () => {
+  const document = TextDocument.create(
+    'file:///query-completion.ssq',
+    'semdl-ssq',
+    1,
+    ['query {', '  select: assertion', '  '].join('\n')
+  );
+
+  const items = getKeywordCompletionItems(document, Position.create(2, 2));
+  assert.deepEqual(items.map((item) => item.label), ['where', 'similar', 'return']);
+  assert.ok(items.every((item) => item.kind === 14));
+});
+
+test('keyword completion does not offer suggestions after a field separator', () => {
+  const document = TextDocument.create(
+    'file:///field-context.ssd',
+    'semdl-ssd',
+    1,
+    ['document D1 {', '  title: do', '}'].join('\n')
+  );
+
+  const items = getKeywordCompletionItems(document, Position.create(1, 11));
+  assert.equal(items.length, 0);
 });
 
 test('valid .ssm document has no diagnostics', () => {
@@ -149,6 +243,50 @@ test('invalid .ssq query catches quoted similar targets', () => {
 
   const result = analyzeDocument(document);
   assert.ok(result.diagnostics.some((diagnostic) => diagnostic.message.includes('`similar:` must reference an identifier target')));
+});
+
+test('duplicate .ssq query entries point back to the first occurrence', () => {
+  const document = TextDocument.create(
+    'file:///duplicate-query-entry.ssq',
+    'semdl-ssq',
+    1,
+    [
+      'query {',
+      '  select: assertion',
+      '  where: source_presence',
+      '  where: confidence > 0.8',
+      '}'
+    ].join('\n')
+  );
+
+  const result = analyzeDocument(document);
+  const duplicateDiagnostic = result.diagnostics.find((diagnostic) => diagnostic.code === 'duplicate-query-entry');
+
+  assert.ok(duplicateDiagnostic);
+  assert.equal(duplicateDiagnostic?.range.start.line, 3);
+  assert.equal(duplicateDiagnostic?.relatedInformation?.[0]?.location.range.start.line, 2);
+});
+
+test('out-of-order .ssq query entries point back to the order boundary', () => {
+  const document = TextDocument.create(
+    'file:///out-of-order-query-entry.ssq',
+    'semdl-ssq',
+    1,
+    [
+      'query {',
+      '  select: assertion',
+      '  return: matches',
+      '  where: source_presence',
+      '}'
+    ].join('\n')
+  );
+
+  const result = analyzeDocument(document);
+  const orderDiagnostic = result.diagnostics.find((diagnostic) => diagnostic.code === 'query-entry-order');
+
+  assert.ok(orderDiagnostic);
+  assert.equal(orderDiagnostic?.range.start.line, 3);
+  assert.equal(orderDiagnostic?.relatedInformation?.[0]?.location.range.start.line, 2);
 });
 
 test('invalid .ssq query catches out-of-order entries', () => {

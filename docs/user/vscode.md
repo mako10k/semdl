@@ -6,7 +6,8 @@ SEMDL には `.ssd`（SEMDL Canvas）、`.ssm`（SEMDL Sidekick）、`.ssq`（SE
 
 - file type registration
 - TextMate syntax highlighting
-- basic diagnostics
+- richer syntax diagnostics
+- grammar-derived keyword completion
 - top-level document symbols
 
 ## Local Build
@@ -33,12 +34,12 @@ npm run package:vsix
 
 - `.ssd`、`.ssm`、`.ssq` の language identification
 - syntax diagnostics
+- grammar-derived keyword completion for block and query keywords
 - top-level document symbols
 
 次の richer IDE features は後続 slice 扱いです。
 
 - hover
-- completion
 - rename
 - formatting
 - semantic tokens
