@@ -38,7 +38,7 @@ connection.onInitialize((_params: InitializeParams): InitializeResult => {
 });
 
 connection.onInitialized(() => {
-  connection.console.info(`SEMDL language server initialized with basic diagnostics and document symbols. Analysis source: ${analysisProvider.describeSource()}`);
+  connection.console.info(`SEMDL language server initialized with richer diagnostics, keyword completion, keyword hover, and top-level document symbols. Analysis source: ${analysisProvider.describeSource()}`);
 });
 
 documents.onDidOpen((change) => {
