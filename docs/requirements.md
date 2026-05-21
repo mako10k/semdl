@@ -81,6 +81,9 @@ SEMDL が対象外とするものは以下とする。
 - completion は 1 slice にまとめず、grammar artifact 由来の keyword completion を local identifier completion より先に導入してよい
 - initial keyword completion は grammar-derived keyword に限定してよく、top-level block keyword、allowed nested block keyword、query header keyword、query entry keyword だけを候補にしてよい
 - initial keyword completion は document-local context だけで判定してよく、identifier、field name、cross-file symbol は候補に含めてはならない
+- initial hover は grammar-derived keyword hover に限定してよく、top-level block keyword、allowed nested block keyword、query header keyword、query entry keyword だけを対象にしてよい
+- initial hover の表示名と format 名は requirements から、構文形は primary grammar artifact から導出しなければならない
+- initial hover は document-local context だけで判定してよく、identifier explanation、field-level inference、cross-file lookup を要求してはならない
 - local identifier completion は、その source-of-truth、単一文書内 scope、参照可能条件を明示するまで deferred のままにしてよい
 - hover、definition、references、rename、formatting、code action、workspace-wide index は、それぞれの source-of-truth、stable symbol identity、cross-file data source、canonical formatting contract、mutation safety rule の必要条件を満たすまで deferred のままにしてよい
 - semantic token は後続 slice に分離してよい

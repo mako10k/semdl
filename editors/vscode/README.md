@@ -7,7 +7,7 @@ Current scope:
 - Language registration for `.ssd`, `.ssm`, and `.ssq`
 - TextMate grammars for `.ssd`, `.ssm`, and `.ssq`
 - Runtime LanguageClient wiring for `.ssd`, `.ssm`, and `.ssq`
-- Richer syntax diagnostics, grammar-derived keyword completion, and top-level document symbols
+- Richer syntax diagnostics, grammar-derived keyword completion, grammar-derived keyword hover, and top-level document symbols
 - TypeScript build wiring for extension and language server
 - Language server entrypoint
 
@@ -37,7 +37,7 @@ Example:
 ```
 
 Intentionally deferred:
-- Hover, identifier completion, rename, formatting, code actions, and semantic tokens
+- Identifier hover, explanation-rich hover, identifier completion, rename, formatting, code actions, and semantic tokens
 
 ## Local development
 

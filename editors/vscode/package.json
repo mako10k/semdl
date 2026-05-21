@@ -208,7 +208,8 @@
   "scripts": {
     "clean": "rm -rf out bundle dist",
     "sync:tools": "node ./scripts/sync-language-model-tools.mjs",
-    "compile": "npm run sync:tools && tsc -b tsconfig.json tsconfig.server.json",
+    "sync:hover-contract": "node ./scripts/generate-hover-contract.mjs",
+    "compile": "npm run sync:tools && npm run sync:hover-contract && tsc -b tsconfig.json tsconfig.server.json",
     "bundle": "npm run compile && mkdir -p bundle && esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=bundle/extension.js && esbuild server/src/server.ts --bundle --platform=node --format=cjs --outfile=bundle/server.js && esbuild src/mcpServer.ts --bundle --platform=node --format=cjs --outfile=bundle/mcp-server.js",
     "watch": "tsc -b tsconfig.json tsconfig.server.json --watch",
     "check": "npm run compile",

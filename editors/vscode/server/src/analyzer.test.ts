@@ -1,8 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Position } from 'vscode-languageserver/node';
+import { MarkupContent, Position } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { analyzeDocument, getKeywordCompletionItems } from './analyzer';
+import { analyzeDocument, getKeywordCompletionItems, getKeywordHover } from './analyzer';
+
+function hoverMarkdownValue(hover: ReturnType<typeof getKeywordHover>): string {
+  const contents = hover?.contents;
+  if (!contents || Array.isArray(contents) || typeof contents === 'string') {
+    return '';
+  }
+  return (contents as MarkupContent).value;
+}
 
 test('valid .ssd document has no diagnostics and exposes top-level symbols', () => {
   const document = TextDocument.create(
@@ -153,6 +161,132 @@ test('keyword completion does not offer suggestions after a field separator', ()
 
   const items = getKeywordCompletionItems(document, Position.create(1, 11));
   assert.equal(items.length, 0);
+});
+
+test('top-level block keywords expose grammar-derived hover in .ssd documents', () => {
+  const document = TextDocument.create(
+    'file:///hover-document.ssd',
+    'semdl-ssd',
+    1,
+    ['document D1 {', '}'].join('\n')
+  );
+
+  const hover = getKeywordHover(document, Position.create(0, 2));
+  assert.equal((hover?.contents as MarkupContent | undefined)?.kind, 'markdown');
+  assert.match(hoverMarkdownValue(hover), /SEMDL Canvas top-level block keyword/);
+  assert.match(hoverMarkdownValue(hover), /document-block = "document"/);
+});
+
+test('nested block keywords expose grammar-derived hover in document-local context', () => {
+  const document = TextDocument.create(
+    'file:///hover-nested.ssd',
+    'semdl-ssd',
+    1,
+    ['document D1 {', '}', '', 'assertion A1 {', '  meta {', '  }', '}'].join('\n')
+  );
+
+  const hover = getKeywordHover(document, Position.create(4, 4));
+  assert.match(hoverMarkdownValue(hover), /SEMDL Canvas nested block keyword/);
+  assert.match(hoverMarkdownValue(hover), /inline-meta-block = "meta"/);
+});
+
+test('top-level block keywords expose sidekick hover in .ssm documents', () => {
+  const document = TextDocument.create(
+    'file:///hover-document.ssm',
+    'semdl-ssm',
+    1,
+    ['document_meta D1 {', '}'].join('\n')
+  );
+
+  const hover = getKeywordHover(document, Position.create(0, 4));
+  assert.match(hoverMarkdownValue(hover), /SEMDL Sidekick top-level block keyword/);
+  assert.match(hoverMarkdownValue(hover), /document-meta-block = "document_meta"/);
+});
+
+test('query header and query entry keywords expose lens hover', () => {
+  const document = TextDocument.create(
+    'file:///hover-query.ssq',
+    'semdl-ssq',
+    1,
+    ['query {', '  similar: A1', '}'].join('\n')
+  );
+
+  const headerHover = getKeywordHover(document, Position.create(0, 2));
+  const entryHover = getKeywordHover(document, Position.create(1, 3));
+  assert.match(hoverMarkdownValue(headerHover), /SEMDL Lens query header keyword/);
+  assert.match(hoverMarkdownValue(headerHover), /query-block = "query"/);
+  assert.match(hoverMarkdownValue(entryHover), /SEMDL Lens query entry keyword/);
+  assert.match(hoverMarkdownValue(entryHover), /similar-entry = "similar"/);
+});
+
+test('hover is not returned for field names or field values', () => {
+  const document = TextDocument.create(
+    'file:///hover-field.ssd',
+    'semdl-ssd',
+    1,
+    ['document D1 {', '  title: Sample', '}'].join('\n')
+  );
+
+  assert.equal(getKeywordHover(document, Position.create(1, 2)), null);
+  assert.equal(getKeywordHover(document, Position.create(1, 10)), null);
+});
+
+test('hover is not returned for invalid nested-block placement', () => {
+  const document = TextDocument.create(
+    'file:///hover-invalid-nested.ssd',
+    'semdl-ssd',
+    1,
+    ['document D1 {', '}', '', 'resource R1 {', '  meta {', '  }', '}'].join('\n')
+  );
+
+  assert.equal(getKeywordHover(document, Position.create(4, 3)), null);
+});
+
+test('hover is not returned for invalid top-level block placement', () => {
+  const sidekickDocument = TextDocument.create(
+    'file:///hover-invalid-top-level.ssm',
+    'semdl-ssm',
+    1,
+    'resource R1 {'
+  );
+  const secondDocument = TextDocument.create(
+    'file:///hover-second-document.ssd',
+    'semdl-ssd',
+    1,
+    ['document D1 {', '}', '', 'document D2 {'].join('\n')
+  );
+
+  assert.equal(getKeywordHover(sidekickDocument, Position.create(0, 2)), null);
+  assert.equal(getKeywordHover(secondDocument, Position.create(3, 2)), null);
+});
+
+test('hover is not returned for out-of-context query entry lines', () => {
+  const document = TextDocument.create(
+    'file:///hover-invalid-query.ssq',
+    'semdl-ssq',
+    1,
+    'select: assertion'
+  );
+
+  assert.equal(getKeywordHover(document, Position.create(0, 2)), null);
+});
+
+test('hover is not returned for duplicate or out-of-order query entries', () => {
+  const duplicateDocument = TextDocument.create(
+    'file:///hover-duplicate-query.ssq',
+    'semdl-ssq',
+    1,
+    ['query {', '  select: assertion', '  where: source_presence', '  where: confidence > 0.8', '}'].join('\n')
+  );
+  const outOfOrderDocument = TextDocument.create(
+    'file:///hover-out-of-order-query.ssq',
+    'semdl-ssq',
+    1,
+    ['query {', '  select: assertion', '  return: matches', '  where: source_presence', '}'].join('\n')
+  );
+
+  assert.equal(getKeywordHover(duplicateDocument, Position.create(3, 3)), null);
+  assert.equal(getKeywordHover(outOfOrderDocument, Position.create(3, 3)), null);
 });
 
 test('valid .ssm document has no diagnostics', () => {

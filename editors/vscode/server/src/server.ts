@@ -1,6 +1,7 @@
 import {
   CompletionParams,
   createConnection,
+  HoverParams,
   ProposedFeatures,
   TextDocumentSyncKind,
   TextDocuments,
@@ -26,7 +27,8 @@ connection.onInitialize((_params: InitializeParams): InitializeResult => {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
       documentSymbolProvider: true,
-      completionProvider: {}
+      completionProvider: {},
+      hoverProvider: true
     },
     serverInfo: {
       name: 'semdl-language-server',
@@ -65,6 +67,14 @@ connection.onCompletion(async (params: CompletionParams) => {
     return [];
   }
   return analysisProvider.getKeywordCompletionItems(document, params.position);
+});
+
+connection.onHover(async (params: HoverParams) => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) {
+    return null;
+  }
+  return analysisProvider.getHover(document, params.position);
 });
 
 documents.listen(connection);

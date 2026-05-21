@@ -5,13 +5,16 @@ import {
   DiagnosticSeverity,
   DiagnosticRelatedInformation,
   DocumentSymbol,
+  Hover,
   Location,
+  MarkupKind,
   Position,
   Range,
   SymbolKind,
   type Diagnostic
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { keywordHoverProjection, semdlDisplayNames } from './generated/hoverContract';
 
 export interface AnalysisResult {
   diagnostics: Diagnostic[];
@@ -53,6 +56,12 @@ interface SsqCompletionContext {
   queryClosed: boolean;
   seenEntries: Set<string>;
   lastEntryOrder: number;
+}
+
+interface KeywordHoverContext {
+  category: 'top-level-block' | 'nested-block' | 'query-header' | 'query-entry';
+  keyword: string;
+  displayName: string;
 }
 
 const semdlTopLevelKinds = new Map<string, SymbolKind>([
@@ -129,6 +138,33 @@ export function getKeywordCompletionItems(document: TextDocument, position: Posi
   const allowedTopLevelKinds = extension === '.ssm' || document.languageId === 'semdl-ssm' ? ssmAllowedTopLevelKinds : ssdAllowedTopLevelKinds;
   const requireDocumentFirst = !(extension === '.ssm' || document.languageId === 'semdl-ssm');
   return getSemdlKeywordCompletionItems(document, position, allowedTopLevelKinds, requireDocumentFirst, prefix);
+}
+
+export function getKeywordHover(document: TextDocument, position: Position): Hover | null {
+  const hoverContext = getKeywordHoverContext(document, position);
+  if (!hoverContext) {
+    return null;
+  }
+
+  const projection = getHoverProjectionEntry(hoverContext);
+
+  return {
+    contents: {
+      kind: MarkupKind.Markdown,
+      value: [
+        `**${hoverContext.keyword}**`,
+        '',
+        `${hoverContext.displayName} ${describeHoverCategory(hoverContext.category)}.`,
+        '',
+        'Grammar:',
+        '```semdl',
+        projection.excerpt,
+        '```',
+        '',
+        `Sources: docs/requirements.md, ${projection.sourcePath}`
+      ].join('\n')
+    }
+  };
 }
 
 function analyzeSemdlDocument(document: TextDocument, allowedTopLevelKinds: Set<string>, requireDocumentFirst: boolean): AnalysisResult {
@@ -385,18 +421,7 @@ function getSemdlKeywordCompletionItems(
   const context = buildSemdlCompletionContext(document, position, allowedTopLevelKinds);
 
   if (context.stack.length === 0) {
-    const keywords = topLevelCompletionOrder.filter((kind) => {
-      if (!allowedTopLevelKinds.has(kind)) {
-        return false;
-      }
-      if (requireDocumentFirst && !context.seenTopLevelBlock) {
-        return kind === 'document';
-      }
-      if (kind === 'document' && context.seenDocumentBlock) {
-        return false;
-      }
-      return true;
-    });
+    const keywords = getAllowedTopLevelKeywords(context, allowedTopLevelKinds, requireDocumentFirst);
     return buildKeywordCompletionItems(keywords, prefix, 'block');
   }
 
@@ -420,13 +445,94 @@ function getSsqKeywordCompletionItems(document: TextDocument, position: Position
     return [];
   }
 
-  const keywords = queryEntryCompletionOrder.filter((key) => {
-    if (context.seenEntries.has(key)) {
-      return false;
-    }
-    return (entryOrder.get(key) ?? -1) >= context.lastEntryOrder;
-  });
+  const keywords = getAllowedQueryEntryKeywords(context);
   return buildKeywordCompletionItems(keywords, prefix, 'query-entry');
+}
+
+function getKeywordHoverContext(document: TextDocument, position: Position): KeywordHoverContext | undefined {
+  const hoveredWord = getWordAtPosition(document, position);
+  if (!hoveredWord) {
+    return undefined;
+  }
+
+  if (document.languageId === 'semdl-ssq' || path.extname(document.uri).toLowerCase() === '.ssq') {
+    return getSsqKeywordHoverContext(document, position, hoveredWord.word);
+  }
+
+  return getSemdlKeywordHoverContext(document, position, hoveredWord.word);
+}
+
+function getSemdlKeywordHoverContext(document: TextDocument, position: Position, word: string): KeywordHoverContext | undefined {
+  const line = buildLineInfos(document)[position.line];
+  if (!line) {
+    return undefined;
+  }
+
+  const trimmed = line.text.trim();
+  if (!trimmed.endsWith('{')) {
+    return undefined;
+  }
+
+  const extension = path.extname(document.uri).toLowerCase();
+  const languageDisplayName = getDocumentDisplayName(document);
+  const allowedTopLevelKinds = extension === '.ssm' || document.languageId === 'semdl-ssm' ? ssmAllowedTopLevelKinds : ssdAllowedTopLevelKinds;
+  const requireDocumentFirst = !(extension === '.ssm' || document.languageId === 'semdl-ssm');
+  const context = buildSemdlCompletionContext(document, Position.create(position.line, 0), allowedTopLevelKinds);
+  const allowedTopLevelKeywords = getAllowedTopLevelKeywords(context, allowedTopLevelKinds, requireDocumentFirst);
+
+  const topLevelMatch = trimmed.match(topLevelBlockPattern);
+  if (context.stack.length === 0 && topLevelMatch && topLevelMatch[1] === word && allowedTopLevelKeywords.includes(word)) {
+    return {
+      category: 'top-level-block',
+      keyword: word,
+      displayName: languageDisplayName
+    };
+  }
+
+  const nestedMatch = trimmed.match(nestedBlockPattern);
+  const parentKind = context.stack[context.stack.length - 1];
+  const nestedAllowed = (word === 'meta' && (parentKind === 'assertion' || parentKind === 'hypothesis'))
+    || (word === 'embedding' && parentKind === 'meta');
+  if (context.stack.length > 0 && nestedMatch && nestedMatch[1] === word && nestedAllowed) {
+    return {
+      category: 'nested-block',
+      keyword: word,
+      displayName: languageDisplayName
+    };
+  }
+
+  return undefined;
+}
+
+function getSsqKeywordHoverContext(document: TextDocument, position: Position, word: string): KeywordHoverContext | undefined {
+  const line = buildLineInfos(document)[position.line];
+  if (!line) {
+    return undefined;
+  }
+
+  const trimmed = line.text.trim();
+  const context = buildSsqCompletionContext(document, Position.create(position.line, 0));
+  if (queryHeaderPattern.test(trimmed) && word === 'query') {
+    if (context.queryStarted) {
+      return undefined;
+    }
+    return {
+      category: 'query-header',
+      keyword: 'query',
+      displayName: semdlDisplayNames.ssq
+    };
+  }
+
+  const entryMatch = trimmed.match(queryEntryPattern);
+  if (entryMatch && entryMatch[1] === word && context.queryStarted && !context.queryClosed && getAllowedQueryEntryKeywords(context).includes(word)) {
+    return {
+      category: 'query-entry',
+      keyword: word,
+      displayName: semdlDisplayNames.ssq
+    };
+  }
+
+  return undefined;
 }
 
 function validateSsqEntryValue(document: TextDocument, line: LineInfo, key: string, value: string, diagnostics: Diagnostic[]): void {
@@ -560,6 +666,34 @@ function buildSsqCompletionContext(document: TextDocument, position: Position): 
   return context;
 }
 
+function getAllowedTopLevelKeywords(
+  context: SemdlCompletionContext,
+  allowedTopLevelKinds: Set<string>,
+  requireDocumentFirst: boolean
+): string[] {
+  return topLevelCompletionOrder.filter((kind) => {
+    if (!allowedTopLevelKinds.has(kind)) {
+      return false;
+    }
+    if (requireDocumentFirst && !context.seenTopLevelBlock) {
+      return kind === 'document';
+    }
+    if (kind === 'document' && context.seenDocumentBlock) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function getAllowedQueryEntryKeywords(context: SsqCompletionContext): string[] {
+  return queryEntryCompletionOrder.filter((key) => {
+    if (context.seenEntries.has(key)) {
+      return false;
+    }
+    return (entryOrder.get(key) ?? -1) >= context.lastEntryOrder;
+  });
+}
+
 function buildLineInfos(document: TextDocument): LineInfo[] {
   const text = document.getText();
   const rawLines = text.split(/\r?\n/);
@@ -582,6 +716,35 @@ function lineRange(line: LineInfo): Range {
 function getCompletionPrefix(beforeCursor: string): string {
   const match = beforeCursor.match(/([A-Za-z][A-Za-z0-9_-]*)$/);
   return match?.[1] ?? '';
+}
+
+function getWordAtPosition(document: TextDocument, position: Position): { word: string; range: Range } | undefined {
+  const line = buildLineInfos(document)[position.line]?.text ?? '';
+  if (line.length === 0) {
+    return undefined;
+  }
+
+  let cursor = Math.min(position.character, line.length - 1);
+  if (!/[A-Za-z0-9_-]/.test(line[cursor] ?? '')) {
+    cursor -= 1;
+  }
+  if (cursor < 0 || !/[A-Za-z0-9_-]/.test(line[cursor] ?? '')) {
+    return undefined;
+  }
+
+  let start = cursor;
+  let end = cursor + 1;
+  while (start > 0 && /[A-Za-z0-9_-]/.test(line[start - 1])) {
+    start -= 1;
+  }
+  while (end < line.length && /[A-Za-z0-9_-]/.test(line[end])) {
+    end += 1;
+  }
+
+  return {
+    word: line.slice(start, end),
+    range: Range.create(Position.create(position.line, start), Position.create(position.line, end))
+  };
 }
 
 function tokenRange(line: LineInfo, token: string): Range {
@@ -619,6 +782,42 @@ function buildKeywordCompletionItems(keywords: string[], prefix: string, categor
       insertText: completionInsertText(keyword, category),
       sortText: `${index}`.padStart(2, '0')
     }));
+}
+
+function getDocumentDisplayName(document: TextDocument): string {
+  if (document.languageId === 'semdl-ssm' || path.extname(document.uri).toLowerCase() === '.ssm') {
+    return semdlDisplayNames.ssm;
+  }
+  if (document.languageId === 'semdl-ssq' || path.extname(document.uri).toLowerCase() === '.ssq') {
+    return semdlDisplayNames.ssq;
+  }
+  return semdlDisplayNames.ssd;
+}
+
+function getHoverProjectionEntry(context: KeywordHoverContext) {
+  if (context.category === 'top-level-block') {
+    return keywordHoverProjection.topLevel[context.keyword as keyof typeof keywordHoverProjection.topLevel];
+  }
+  if (context.category === 'nested-block') {
+    return keywordHoverProjection.nested[context.keyword as keyof typeof keywordHoverProjection.nested];
+  }
+  if (context.category === 'query-header') {
+    return keywordHoverProjection.queryHeader.query;
+  }
+  return keywordHoverProjection.queryEntry[context.keyword as keyof typeof keywordHoverProjection.queryEntry];
+}
+
+function describeHoverCategory(category: KeywordHoverContext['category']): string {
+  if (category === 'top-level-block') {
+    return 'top-level block keyword';
+  }
+  if (category === 'nested-block') {
+    return 'nested block keyword';
+  }
+  if (category === 'query-header') {
+    return 'query header keyword';
+  }
+  return 'query entry keyword';
 }
 
 function completionInsertText(keyword: string, category: 'block' | 'nested-block' | 'query-header' | 'query-entry'): string {

@@ -1,8 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Position } from 'vscode-languageserver/node';
+import { MarkupContent, Position } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { createAnalysisProvider } from './analysisProvider';
+
+function hoverMarkdownValue(hover: Awaited<ReturnType<ReturnType<typeof createAnalysisProvider>['getHover']>>): string {
+  const contents = hover?.contents;
+  if (!contents || Array.isArray(contents) || typeof contents === 'string') {
+    return '';
+  }
+  return (contents as MarkupContent).value;
+}
 
 test('default analysis provider serves diagnostics and symbols through the provider boundary', async () => {
   const provider = createAnalysisProvider({});
@@ -70,4 +78,18 @@ test('analysis provider exposes grammar-derived keyword completion through the p
 
   const items = await provider.getKeywordCompletionItems(document, Position.create(2, 2));
   assert.deepEqual(items.map((item) => item.label), ['where', 'similar', 'return']);
+});
+
+test('analysis provider exposes grammar-derived keyword hover through the provider boundary', async () => {
+  const provider = createAnalysisProvider({});
+  const document = TextDocument.create(
+    'file:///provider-hover.ssq',
+    'semdl-ssq',
+    1,
+    ['query {', '  return: matches', '}'].join('\n')
+  );
+
+  const hover = await provider.getHover(document, Position.create(1, 3));
+  assert.match(hoverMarkdownValue(hover), /SEMDL Lens query entry keyword/);
+  assert.match(hoverMarkdownValue(hover), /return-entry = "return"/);
 });

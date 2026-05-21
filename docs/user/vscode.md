@@ -8,6 +8,7 @@ SEMDL には `.ssd`（SEMDL Canvas）、`.ssm`（SEMDL Sidekick）、`.ssq`（SE
 - TextMate syntax highlighting
 - richer syntax diagnostics
 - grammar-derived keyword completion
+- grammar-derived keyword hover
 - top-level document symbols
 
 ## Local Build
@@ -35,11 +36,12 @@ npm run package:vsix
 - `.ssd`、`.ssm`、`.ssq` の language identification
 - syntax diagnostics
 - grammar-derived keyword completion for block and query keywords
+- grammar-derived keyword hover for block and query keywords
 - top-level document symbols
 
 次の richer IDE features は後続 slice 扱いです。
 
-- hover
+- identifier hover and richer explanation hover
 - rename
 - formatting
 - semantic tokens
